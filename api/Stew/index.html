@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="plugin-moonwave plugin-id-moonwave">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="generator" content="Docusaurus v2.0.1">
+<title data-rh="true">Stew | Stew</title><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://solarscuffle-bot.github.io/Stew/api/Stew"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="Stew | Stew"><meta data-rh="true" name="description" content="Stew is the package itself. Here you can mess with worlds and types."><meta data-rh="true" property="og:description" content="Stew is the package itself. Here you can mess with worlds and types."><link data-rh="true" rel="icon" href="/Stew/favicon.ico"><link data-rh="true" rel="canonical" href="https://solarscuffle-bot.github.io/Stew/api/Stew"><link data-rh="true" rel="alternate" href="https://solarscuffle-bot.github.io/Stew/api/Stew" hreflang="en"><link data-rh="true" rel="alternate" href="https://solarscuffle-bot.github.io/Stew/api/Stew" hreflang="x-default"><link rel="stylesheet" href="/Stew/assets/css/styles.77d02042.css">
+<link rel="preload" href="/Stew/assets/js/runtime~main.90fbd4e1.js" as="script">
+<link rel="preload" href="/Stew/assets/js/main.b87dca8c.js" as="script">
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function e(e){document.documentElement.setAttribute("data-theme",e)}var t=function(){var e=null;try{e=localStorage.getItem("theme")}catch(e){}return e}();null!==t?e(t):window.matchMedia("(prefers-color-scheme: dark)").matches?e("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,e("light"))}()</script><div id="__docusaurus">
+<div role="region"><a href="#" class="skipToContent_fXgn">Skip to main content</a></div><nav class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Navigation bar toggle" class="navbar__toggle clean-btn" type="button" tabindex="0"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/Stew/"><b class="navbar__title text--truncate">Stew</b></a><a class="navbar__item navbar__link" href="/Stew/docs/intro">Docs</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/Stew/api/">API</a></div><div class="navbar__items navbar__items--right"><a href="https://github.com/solarscuffle-bot/stew" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="searchBox_ZlJk"><div class="navbar__search"><span aria-label="expand searchbar" role="button" class="search-icon" tabindex="0"></span><input type="search" id="search_input_react" placeholder="Press S to Search..." aria-label="Search" class="navbar__search-input search-bar"></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div class="main-wrapper mainWrapper_z2l0 docPageContainer_wNNk"><div class="docPage_Dpn1"><div class="docSidebarContainer_o_re"><div class="sidebar_njMd"><nav class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" href="/Stew/api/Stew">​Stew</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/Stew/api/World">​World</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/Stew/api/Entity">​Entity</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/Stew/api/Component">​Component</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/Stew/api/Collection">​Collection</a></li></ul></nav></div></div><main class="docMainContainer_HJE1"><div class="container padding-vert--lg"><div class="row"><div class="col docItemCol_MU3C"><div class="docItemContainer_Wv98"><article><div class="member_J0w1 markdown"><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_oUs_"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><header><h1 class="docTitle_mZRt" style="text-decoration:none"><span style="display:inline-block">Stew</span></h1><div class="luaClassTags_EipM"></div><label class="privateToggle_lmfE"><span class="privateCheckboxContainer_psRa"><input type="checkbox" class="privateCheckboxInternal_IKP2" name="checkbox"><span class="privateCheckboxControl_Ov8U"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="3" d="M4 11.91l5.37 5.37L19.79 5.59"></path></svg></span></span><span class="privateCheckboxLabel_Vmvs">Show Private</span></label><div>
+<p>Stew is the package itself. Here you can mess with worlds and types.</p>
+</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="types">Types<a class="hash-link" href="#types" title="Direct link to heading">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Name"><code style="text-decoration:none">Name</code><a class="hash-link" href="#Name" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L85"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">type</code> <code>Name<!-- --> = </code> <code class="blue_P4bS">any</code></div><div>
+<p>A name is a unique identifier used as a key to access components of entities.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Component"><code style="text-decoration:none">Component</code><a class="hash-link" href="#Component" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L93"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">type</code> <code>Component<!-- --> = </code> <code class="blue_P4bS">any</code></div><div>
+<p>A component is user-defined data that is accessed by an entity. It is defined through the Component.Build function. It is created through the Component.Create function.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Entity&lt;E&gt;"><code style="text-decoration:none">Entity&lt;E&gt;</code><a class="hash-link" href="#Entity&lt;E&gt;" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L101"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">type</code> <code>Entity&lt;E&gt;<!-- --> = </code> <code class="blue_P4bS">E</code></div><div>
+<p>An entity is a unique identifier used to access components by their names. It is created through the Entity.Create function. The entity's components can be accessed by Component.Get or Component.GetAll.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Collection"><code style="text-decoration:none">Collection</code><a class="hash-link" href="#Collection" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L110"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>Collection<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>[Entity]<!-- -->: </code><code class="blue_P4bS">true</code></div></div><code>}</code></div><div>
+<p>A set of entities containing specific components.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="ComponentArgs&lt;E, N, C, D&gt;"><code style="text-decoration:none">ComponentArgs&lt;E, N, C, D&gt;</code><a class="hash-link" href="#ComponentArgs&lt;E, N, C, D&gt;" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L136"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>ComponentArgs&lt;E, N, C, D&gt;<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>Constructor<!-- -->: </code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">T...</code><code class="op_lSLc">&gt;</code><code class="purple_ieR2">(</code><div class="inset_uKQm"><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">E</code><code class="op_lSLc">&gt;</code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS">N</code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code class="blue_P4bS">T...</code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS">C</code></div><div><code>Destructor<!-- -->: </code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">T...</code><code class="op_lSLc">&gt;</code><code class="purple_ieR2">(</code><div class="inset_uKQm"><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">E</code><code class="op_lSLc">&gt;</code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS">N</code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code class="blue_P4bS">T...</code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS">D</code></div></div><code>}</code></div><div>
+<p>Optional arguments to build a component with the Component.Build function.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="WorldArgs"><code style="text-decoration:none">WorldArgs</code><a class="hash-link" href="#WorldArgs" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L168"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>WorldArgs<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>Component?.Build<!-- -->: </code><code class="purple_ieR2">(</code><code class="green_DgR4">(</code><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="green_DgR4">,</code></div><div class="inset_uKQm"><code>ComponentData<!-- -->: </code><code class="blue_P4bS">ComponentData</code></div><code class="green_DgR4">)</code><code class="green_DgR4"> → </code><code class="green_DgR4">(</code><code class="green_DgR4">)</code><code class="purple_ieR2">)</code><code class="blue_P4bS">?</code></div><div><code>Component?.Create<!-- -->: </code><code class="purple_ieR2">(</code><code class="green_DgR4">(</code><div class="inset_uKQm"><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="green_DgR4">,</code></div><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="green_DgR4">,</code></div><div class="inset_uKQm"><code>Component<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Component">Component</a></code></div><code class="green_DgR4">)</code><code class="green_DgR4"> → </code><code class="green_DgR4">(</code><code class="green_DgR4">)</code><code class="purple_ieR2">)</code><code class="blue_P4bS">?</code></div><div><code>Component?.Delete<!-- -->: </code><code class="purple_ieR2">(</code><code class="green_DgR4">(</code><div class="inset_uKQm"><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="green_DgR4">,</code></div><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="green_DgR4">,</code></div><div class="inset_uKQm"><code>Deleted<!-- -->: </code><code class="blue_P4bS">any</code></div><code class="green_DgR4">)</code><code class="green_DgR4"> → </code><code class="green_DgR4">(</code><code class="green_DgR4">)</code><code class="purple_ieR2">)</code><code class="blue_P4bS">?</code></div><div><code>Entity?.Create<!-- -->: </code><code class="purple_ieR2">(</code><code class="green_DgR4">(</code><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="green_DgR4">)</code><code class="green_DgR4"> → </code><code class="green_DgR4">(</code><code class="green_DgR4">)</code><code class="purple_ieR2">)</code><code class="blue_P4bS">?</code></div><div><code>Entity?.Delete<!-- -->: </code><code class="purple_ieR2">(</code><code class="green_DgR4">(</code><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="green_DgR4">)</code><code class="green_DgR4"> → </code><code class="green_DgR4">(</code><code class="green_DgR4">)</code><code class="purple_ieR2">)</code><code class="blue_P4bS">?</code></div></div><code>}</code></div><div>
+<p>Optional arguments to build a component with the Component.Build function. Everything is optional, including the On table.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="World"><code style="text-decoration:none">World</code><a class="hash-link" href="#World" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L205"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>World<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>Collection.Get<!-- -->: </code><code class="purple_ieR2">(</code><code>Names<!-- -->: </code><code class="green_DgR4">{</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="green_DgR4">}</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Collection">Collection</a></code></div><div><code>Collection.GetFirst<!-- -->: </code><code class="purple_ieR2">(</code><code>Names<!-- -->: </code><code class="green_DgR4">{</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="green_DgR4">}</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">any</code><code class="op_lSLc">&gt;</code></div><div><code>Component.Build<!-- -->: </code><code class="purple_ieR2">(</code><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>ComponentArgs<!-- -->: </code><code class="blue_P4bS">ComponentArgs?</code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div><div><code>Component.Create<!-- -->: </code><code class="purple_ieR2">(</code><div class="inset_uKQm"><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code class="blue_P4bS">...any</code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Component">Component?</a></code></div><div><code>Component.Delete<!-- -->: </code><code class="purple_ieR2">(</code><div class="inset_uKQm"><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code class="blue_P4bS">...any</code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS">any?</code></div><div><code>Component.GetAll<!-- -->: </code><code class="purple_ieR2">(</code><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code>]</code></span><code>: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Component">Component</a></code><code class="purple_ieR2">}</code></div><div><code>Component.Get<!-- -->: </code><code class="purple_ieR2">(</code><div class="inset_uKQm"><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Component">Component?</a></code></div><div><code>Entity.Create<!-- -->: </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code></div><div><code>Entity.Delete<!-- -->: </code><code class="purple_ieR2">(</code><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div><div><code>Entity.Register<!-- -->: </code><code class="purple_ieR2">(</code><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div><div><code>_NextPlace<!-- -->: </code><code class="blue_P4bS">number</code></div><div><code>_NameToData<!-- -->: </code><code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code>]</code></span><code>: </code><code class="blue_P4bS">ComponentData</code><code class="purple_ieR2">}</code></div><div><code>_EntityToData<!-- -->: </code><code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code>]</code></span><code>: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#EntityData">EntityData</a></code><code class="purple_ieR2">}</code></div><div><code>_SignatureToCollection<!-- -->: </code><code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Signature">Signature</a></code><code>]</code></span><code>: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Collection">Collection</a></code><code class="purple_ieR2">}</code></div><div><code>_Component.Build<!-- -->: </code><code class="purple_ieR2">(</code><div class="inset_uKQm"><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code>: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code class="blue_P4bS">ComponentData</code><code>: </code><code class="blue_P4bS">ComponentData</code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div><div><code>_Component.Create<!-- -->: </code><code class="purple_ieR2">(</code><div class="inset_uKQm"><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>Component<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Component">Component</a></code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div><div><code>_Component.Delete<!-- -->: </code><code class="purple_ieR2">(</code><div class="inset_uKQm"><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>Deleted<!-- -->: </code><code class="blue_P4bS">any</code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div><div><code>_Entity.Create<!-- -->: </code><code class="purple_ieR2">(</code><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div><div><code>_Entity.Delete<!-- -->: </code><code class="purple_ieR2">(</code><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div></div><code>}</code></div><div></div></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
+    &quot;functions&quot;: [],
+    &quot;properties&quot;: [],
+    &quot;types&quot;: [
+        {
+            &quot;name&quot;: &quot;Signature&quot;,
+            &quot;desc&quot;: &quot;Signatures are used to represent bitsets of components.&quot;,
+            &quot;lua_type&quot;: &quot;string&quot;,
+            &quot;private&quot;: true,
+            &quot;source&quot;: {
+                &quot;line&quot;: 77,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Name&quot;,
+            &quot;desc&quot;: &quot;A name is a unique identifier used as a key to access components of entities.&quot;,
+            &quot;lua_type&quot;: &quot;any&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 85,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Component&quot;,
+            &quot;desc&quot;: &quot;A component is user-defined data that is accessed by an entity. It is defined through the Component.Build function. It is created through the Component.Create function.&quot;,
+            &quot;lua_type&quot;: &quot;any&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 93,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Entity&lt;E&gt;&quot;,
+            &quot;desc&quot;: &quot;An entity is a unique identifier used to access components by their names. It is created through the Entity.Create function. The entity&#x27;s components can be accessed by Component.Get or Component.GetAll.&quot;,
+            &quot;lua_type&quot;: &quot;E&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 101,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Collection&quot;,
+            &quot;desc&quot;: &quot;A set of entities containing specific components.&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;[Entity]&quot;,
+                    &quot;lua_type&quot;: &quot;true&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 110,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;EntityData&quot;,
+            &quot;desc&quot;: &quot;Information about an entity&#x27;s components.&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;Signature&quot;,
+                    &quot;lua_type&quot;: &quot;Signature&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Components&quot;,
+                    &quot;lua_type&quot;: &quot;{ [Name]: Component }&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;private&quot;: true,
+            &quot;source&quot;: {
+                &quot;line&quot;: 123,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;ComponentArgs&lt;E, N, C, D&gt;&quot;,
+            &quot;desc&quot;: &quot;Optional arguments to build a component with the Component.Build function.&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;Constructor&quot;,
+                    &quot;lua_type&quot;: &quot;&lt;T...&gt;(Entity: Entity&lt;E&gt;, Name: N, T...) -&gt; C&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Destructor&quot;,
+                    &quot;lua_type&quot;: &quot;&lt;T...&gt;(Entity: Entity&lt;E&gt;, Name: N, T...) -&gt; D&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 136,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;ComponentData&lt;E, N, C, D&gt;&quot;,
+            &quot;desc&quot;: &quot;Information about a component.&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;Constructor&quot;,
+                    &quot;lua_type&quot;: &quot;&lt;T...&gt;(Entity: Entity&lt;E&gt;, Name: N, T...) -&gt; C&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Destructor&quot;,
+                    &quot;lua_type&quot;: &quot;&lt;T...&gt;(Entity: Entity&lt;E&gt;, Name: N, T...) -&gt; D&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Signature&quot;,
+                    &quot;lua_type&quot;: &quot;Signature&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;private&quot;: true,
+            &quot;source&quot;: {
+                &quot;line&quot;: 151,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;WorldArgs&quot;,
+            &quot;desc&quot;: &quot;Optional arguments to build a component with the Component.Build function. Everything is optional, including the On table.&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;Component?.Build&quot;,
+                    &quot;lua_type&quot;: &quot;((Name: Name, ComponentData: ComponentData) -&gt; ())?&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Component?.Create&quot;,
+                    &quot;lua_type&quot;: &quot;((Entity: Entity, Name: Name, Component: Component) -&gt; ())?&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Component?.Delete&quot;,
+                    &quot;lua_type&quot;: &quot;((Entity: Entity, Name: Name, Deleted: any) -&gt; ())?&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Entity?.Create&quot;,
+                    &quot;lua_type&quot;: &quot;((Entity: Entity) -&gt; ())?&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Entity?.Delete&quot;,
+                    &quot;lua_type&quot;: &quot;((Entity: Entity) -&gt; ())?&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 168,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;World&quot;,
+            &quot;desc&quot;: &quot;&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;Collection.Get&quot;,
+                    &quot;lua_type&quot;: &quot;(Names: { Name }) -&gt; Collection&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Collection.GetFirst&quot;,
+                    &quot;lua_type&quot;: &quot;(Names: { Name }) -&gt; Entity&lt;any&gt;&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Component.Build&quot;,
+                    &quot;lua_type&quot;: &quot;(Name: Name, ComponentArgs: ComponentArgs?) -&gt; ()&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Component.Create&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity, Name: Name, ...any) -&gt; Component?&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Component.Delete&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity, Name: Name, ...any) -&gt; any?&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Component.GetAll&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity) -&gt; { [Name]: Component }&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Component.Get&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity, Name: Name) -&gt; Component?&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Entity.Create&quot;,
+                    &quot;lua_type&quot;: &quot;() -&gt; Entity&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Entity.Delete&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity) -&gt; ()&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Entity.Register&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity) -&gt; ()&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;_NextPlace&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;_NameToData&quot;,
+                    &quot;lua_type&quot;: &quot;{ [Name]: ComponentData }&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;_EntityToData&quot;,
+                    &quot;lua_type&quot;: &quot;{ [Entity]: EntityData }&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;_SignatureToCollection&quot;,
+                    &quot;lua_type&quot;: &quot;{ [Signature]: Collection }&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;_Component.Build&quot;,
+                    &quot;lua_type&quot;: &quot;(Name : Name, ComponentData : ComponentData) -&gt; ()&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;_Component.Create&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity, Name: Name, Component: Component) -&gt; ()&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;_Component.Delete&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity, Name: Name, Deleted: any) -&gt; ()&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;_Entity.Create&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity) -&gt; ()&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;_Entity.Delete&quot;,
+                    &quot;lua_type&quot;: &quot;(Entity: Entity) -&gt; ()&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 205,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        }
+    ],
+    &quot;name&quot;: &quot;Stew&quot;,
+    &quot;desc&quot;: &quot;Stew is the package itself. Here you can mess with worlds and types.&quot;,
+    &quot;source&quot;: {
+        &quot;line&quot;: 68,
+        &quot;path&quot;: &quot;src/init.lua&quot;
+    }
+}</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a><ul><li><a href="#Collection" class="table-of-contents__link toc-highlight">Collection</a></li><li><a href="#Component" class="table-of-contents__link toc-highlight">Component</a></li><li><a href="#ComponentArgs&lt;E, N, C, D&gt;" class="table-of-contents__link toc-highlight">ComponentArgs<e , n, c, d></e></a></li><li><a href="#Entity&lt;E&gt;" class="table-of-contents__link toc-highlight">Entity<e></e></a></li><li><a href="#Name" class="table-of-contents__link toc-highlight">Name</a></li><li><a href="#World" class="table-of-contents__link toc-highlight">World</a></li><li><a href="#WorldArgs" class="table-of-contents__link toc-highlight">WorldArgs</a></li></ul></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2023 SolarScuffle-Bot. Built with Moonwave and Docusaurus</div></div></div></footer></div>
+<script src="/Stew/assets/js/runtime~main.90fbd4e1.js"></script>
+<script src="/Stew/assets/js/main.b87dca8c.js"></script>
+</body>
+</html>

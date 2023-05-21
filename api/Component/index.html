@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="plugin-moonwave plugin-id-moonwave">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="generator" content="Docusaurus v2.0.1">
+<title data-rh="true">Component | Stew</title><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://solarscuffle-bot.github.io/Stew/api/Component"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="Component | Stew"><meta data-rh="true" name="description" content="Contains methods for dealing with components.
+	"><meta data-rh="true" property="og:description" content="Contains methods for dealing with components.
+	"><link data-rh="true" rel="icon" href="/Stew/favicon.ico"><link data-rh="true" rel="canonical" href="https://solarscuffle-bot.github.io/Stew/api/Component"><link data-rh="true" rel="alternate" href="https://solarscuffle-bot.github.io/Stew/api/Component" hreflang="en"><link data-rh="true" rel="alternate" href="https://solarscuffle-bot.github.io/Stew/api/Component" hreflang="x-default"><link rel="stylesheet" href="/Stew/assets/css/styles.77d02042.css">
+<link rel="preload" href="/Stew/assets/js/runtime~main.90fbd4e1.js" as="script">
+<link rel="preload" href="/Stew/assets/js/main.b87dca8c.js" as="script">
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function e(e){document.documentElement.setAttribute("data-theme",e)}var t=function(){var e=null;try{e=localStorage.getItem("theme")}catch(e){}return e}();null!==t?e(t):window.matchMedia("(prefers-color-scheme: dark)").matches?e("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,e("light"))}()</script><div id="__docusaurus">
+<div role="region"><a href="#" class="skipToContent_fXgn">Skip to main content</a></div><nav class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Navigation bar toggle" class="navbar__toggle clean-btn" type="button" tabindex="0"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/Stew/"><b class="navbar__title text--truncate">Stew</b></a><a class="navbar__item navbar__link" href="/Stew/docs/intro">Docs</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/Stew/api/">API</a></div><div class="navbar__items navbar__items--right"><a href="https://github.com/solarscuffle-bot/stew" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="searchBox_ZlJk"><div class="navbar__search"><span aria-label="expand searchbar" role="button" class="search-icon" tabindex="0"></span><input type="search" id="search_input_react" placeholder="Press S to Search..." aria-label="Search" class="navbar__search-input search-bar"></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div class="main-wrapper mainWrapper_z2l0 docPageContainer_wNNk"><div class="docPage_Dpn1"><div class="docSidebarContainer_o_re"><div class="sidebar_njMd"><nav class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/Stew/api/Stew">​Stew</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/Stew/api/World">​World</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/Stew/api/Entity">​Entity</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" href="/Stew/api/Component">​Component</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/Stew/api/Collection">​Collection</a></li></ul></nav></div></div><main class="docMainContainer_HJE1"><div class="container padding-vert--lg"><div class="row"><div class="col docItemCol_MU3C"><div class="docItemContainer_Wv98"><article><div class="member_J0w1 markdown"><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_oUs_"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><header><h1 class="docTitle_mZRt" style="text-decoration:none"><span style="display:inline-block">Component</span></h1><div class="luaClassTags_EipM"></div><div>
+<p>Contains methods for dealing with components.</p>
+</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a class="hash-link" href="#functions" title="Direct link to heading">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Build"><code style="text-decoration:none">Build</code><a class="hash-link" href="#Build" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L456"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Component<!-- -->.</code><code class="green_DgR4">Build</code><code>(</code><div class="inset_uKQm"><div><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The name of the component.</p>
+</span></span></div><div><code>ComponentArgs<!-- -->: </code><code class="blue_P4bS">ComponentArgs?</code><span class="inlineDescription_G7Er">-- <span>
+<p>The arguments to build the component</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>Sets up an internal constructor and destructor for a component. This is used to create and destroy components. If arguments are not provided, an empty table will be used instead.</p>
+<p>Both the constructor and destructor are optional and can be omitted. If no constructor is specified, a default constructor that returns true is used. If no destructor is specified, a default destructor that does nothing is used.</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> World <span class="token operator">=</span> Stew<span class="token punctuation">.</span>World<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Build</span><span class="token punctuation">(</span><span class="token string">"Poisoned"</span><span class="token punctuation">)</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Build</span><span class="token punctuation">(</span><span class="token string">"Health"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+	Constructor <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>Entity <span class="token punctuation">:</span> any<span class="token punctuation">,</span> Name <span class="token punctuation">:</span> string<span class="token punctuation">,</span> Max <span class="token punctuation">:</span> number<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token punctuation">{</span>
+			Current <span class="token operator">=</span> Max<span class="token punctuation">;</span>
+			Max <span class="token operator">=</span> Max<span class="token punctuation">;</span>
+		<span class="token punctuation">}</span>
+	<span class="token keyword">end</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Build</span><span class="token punctuation">(</span><span class="token string">"Model"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+	Constructor <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>Entity <span class="token punctuation">:</span> any<span class="token punctuation">,</span> Name <span class="token punctuation">:</span> string<span class="token punctuation">,</span> Model <span class="token punctuation">:</span> Model<span class="token punctuation">,</span> NewName <span class="token punctuation">:</span> string<span class="token punctuation">)</span>
+		<span class="token keyword">local</span> NewModel <span class="token operator">=</span> Model<span class="token punctuation">:</span><span class="token function">Clone</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		NewModel<span class="token punctuation">.</span>Name <span class="token operator">=</span> NewName
+		<span class="token keyword">return</span> NewModel
+	<span class="token keyword">end</span><span class="token punctuation">;</span>
+
+	Destructor <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>Entity <span class="token punctuation">:</span> any<span class="token punctuation">,</span> Name <span class="token punctuation">:</span> string<span class="token punctuation">)</span>
+		Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>Entity<span class="token punctuation">,</span> Name<span class="token punctuation">)</span> <span class="token punctuation">:</span><span class="token function">Destroy</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token keyword">end</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+</div><h3>Errors</h3><table class="errorTable_jfN8"><thead><tr><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>Component Built Twice</td><td>A component with the given name has already been built.</td></tr></tbody></table><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Create"><code style="text-decoration:none">Create</code><a class="hash-link" href="#Create" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L508"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Component<!-- -->.</code><code class="green_DgR4">Create</code><code>(</code><div class="inset_uKQm"><div><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The entity that accesses this component.</p>
+</span></span></div><div><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The name of the component to be created.</p>
+</span></span></div><div><code>...<!-- -->: </code><code class="blue_P4bS">any</code><span class="inlineDescription_G7Er">-- <span>
+<p>Any additional arguments.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Component">Component?</a></code><span class="inlineDescription_G7Er">-- <span>
+<p>The component that was created.</p>
+</span></span></div><div>
+<p>Creates a unique component associated with the entity and returns it. Automatically registers the entity if it hasn't been registered yet.</p>
+<p>If the constructor returns void or nil, the component will not be created.</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> World <span class="token operator">=</span> Stew<span class="token punctuation">.</span>World<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Build</span><span class="token punctuation">(</span><span class="token string">"Model"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+	Constructor <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>Entity <span class="token punctuation">:</span> any<span class="token punctuation">,</span> Name <span class="token punctuation">:</span> string<span class="token punctuation">,</span> Model <span class="token punctuation">:</span> Model<span class="token punctuation">,</span> Allow <span class="token punctuation">:</span> boolean<span class="token punctuation">)</span>
+		<span class="token keyword">if</span> <span class="token keyword">not</span> Allow <span class="token keyword">then</span> <span class="token keyword">return</span> <span class="token keyword">end</span>
+		<span class="token keyword">return</span> Model<span class="token punctuation">:</span><span class="token function">Clone</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token keyword">end</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> LocalPlayer <span class="token punctuation">:</span> Player <span class="token operator">=</span> Players<span class="token punctuation">.</span>LocalPlayer
+<span class="token function">print</span><span class="token punctuation">(</span>World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>LocalPlayer<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">--> nil</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span>LocalPlayer<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">,</span> workspace<span class="token punctuation">.</span>CoolModel<span class="token punctuation">,</span> <span class="token keyword">false</span><span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span>World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>LocalPlayer<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">--> nil</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span>LocalPlayer<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">,</span> workspace<span class="token punctuation">.</span>CoolModel<span class="token punctuation">,</span> <span class="token keyword">true</span><span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span>World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>LocalPlayer<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">--> CoolModel</span>
+</code></pre>
+</div><h3>Errors</h3><table class="errorTable_jfN8"><thead><tr><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>Component Not Built</td><td>A component with the given name is not built.</td></tr></tbody></table><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Delete"><code style="text-decoration:none">Delete</code><a class="hash-link" href="#Delete" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L576"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Component<!-- -->.</code><code class="green_DgR4">Delete</code><code>(</code><div class="inset_uKQm"><div><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The entity to delete the component from.</p>
+</span></span></div><div><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The name of the component to be deleted.</p>
+</span></span></div><div><code>...<!-- -->: </code><code class="blue_P4bS">...any</code><span class="inlineDescription_G7Er">-- <span>
+<p>Any additional arguments.</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>Deletes the component associated with the passed entity.</p>
+<p>If the destructor returns a truthy value, the component will not be deleted.</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> World <span class="token operator">=</span> Stew<span class="token punctuation">.</span>World<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Build</span><span class="token punctuation">(</span><span class="token string">"Model"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+	Constructor <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>Entity <span class="token punctuation">:</span> any<span class="token punctuation">,</span> Name <span class="token punctuation">:</span> string<span class="token punctuation">,</span> Model <span class="token punctuation">:</span> Model<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> Model<span class="token punctuation">:</span><span class="token function">Clone</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token keyword">end</span><span class="token punctuation">;</span>
+
+	Destructor <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>Entity <span class="token punctuation">:</span> any<span class="token punctuation">,</span> Name <span class="token punctuation">:</span> string<span class="token punctuation">,</span> Allow <span class="token punctuation">:</span> boolean<span class="token punctuation">)</span>
+		<span class="token keyword">if</span> <span class="token keyword">not</span> Allow <span class="token keyword">then</span> <span class="token keyword">return</span> <span class="token keyword">true</span> <span class="token keyword">end</span>
+		Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>Entity<span class="token punctuation">,</span> Name<span class="token punctuation">)</span> <span class="token punctuation">:</span><span class="token function">Destroy</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token keyword">end</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> Part <span class="token punctuation">:</span> Part <span class="token operator">=</span> Instance<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span><span class="token string">"Part"</span><span class="token punctuation">)</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span>Part<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">,</span> workspace<span class="token punctuation">.</span>CoolModel<span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span>Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>Part<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">--> CoolModel</span>
+
+Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Delete</span><span class="token punctuation">(</span>Part<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">,</span> <span class="token keyword">false</span><span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span>Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>Part<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">--> CoolModel</span>
+
+Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Delete</span><span class="token punctuation">(</span>Part<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">,</span> <span class="token keyword">true</span><span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span>Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>Part<span class="token punctuation">,</span> <span class="token string">"Model"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">--> nil</span>
+</code></pre>
+</div><h3>Errors</h3><table class="errorTable_jfN8"><thead><tr><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>Component Not Built</td><td>A component with the given name is not built.</td></tr></tbody></table><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Get"><code style="text-decoration:none">Get</code><a class="hash-link" href="#Get" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L633"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Component<!-- -->.</code><code class="green_DgR4">Get</code><code>(</code><div class="inset_uKQm"><div><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code>,</code></div><div><code>Name<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Component">Component?</a></code></div><div>
+<p>Gets a component from an entity.</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> World <span class="token operator">=</span> Stew<span class="token punctuation">.</span>World<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Build</span><span class="token punctuation">(</span><span class="token string">"Grid"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+	Constructor <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>Entity <span class="token punctuation">:</span> any<span class="token punctuation">,</span> Name <span class="token punctuation">:</span> string<span class="token punctuation">,</span> Properties<span class="token punctuation">:</span> <span class="token punctuation">{</span> Dimensions <span class="token punctuation">:</span> Vector2<span class="token punctuation">;</span> Default <span class="token punctuation">:</span> number<span class="token punctuation">;</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> <span class="token punctuation">{</span>
+			Cells <span class="token operator">=</span> table<span class="token punctuation">.</span><span class="token function">create</span><span class="token punctuation">(</span>Properties<span class="token punctuation">.</span>Dimensions<span class="token punctuation">.</span>X <span class="token operator">*</span> Properties<span class="token punctuation">.</span>Dimensions<span class="token punctuation">.</span>Y<span class="token punctuation">,</span> Properties<span class="token punctuation">.</span>Default<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token punctuation">}</span>
+	<span class="token keyword">end</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> GridId <span class="token operator">=</span> <span class="token number">1</span>
+
+<span class="token keyword">local</span> Grid1 <span class="token operator">=</span> Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>GridId<span class="token punctuation">,</span> <span class="token string">"Grid"</span><span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span>Grid1<span class="token punctuation">)</span> <span class="token comment">--> nil</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span>GridId<span class="token punctuation">,</span> <span class="token string">"Grid"</span><span class="token punctuation">,</span> Vector2<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> Grid2 <span class="token operator">=</span> Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Get</span><span class="token punctuation">(</span>GridId<span class="token punctuation">,</span> <span class="token string">"Grid"</span><span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span>Grid2<span class="token punctuation">)</span> <span class="token comment">--> CoolModel</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetAll"><code style="text-decoration:none">GetAll</code><a class="hash-link" href="#GetAll" title="Direct link to heading">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/solarscuffle-bot/stew/blob/main/src/init.lua#L672"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Component<!-- -->.</code><code class="green_DgR4">GetAll</code><code>(</code><code>Entity<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Entity">Entity</a></code><code>) → </code><code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Name">Name</a></code><code>]</code></span><code>: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Stew/api/Stew#Component">Component</a></code><code class="purple_ieR2">}</code></div><div>
+<p>Returns a table of all an entity's components in the form of a dictionary. This dictionary is cloned to prevent tampering.</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> World <span class="token operator">=</span> Stew<span class="token punctuation">.</span>World<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Build</span><span class="token punctuation">(</span><span class="token string">"Red"</span><span class="token punctuation">)</span>
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Build</span><span class="token punctuation">(</span><span class="token string">"Green"</span><span class="token punctuation">)</span>
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Build</span><span class="token punctuation">(</span><span class="token string">"Blue"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+	Constructor <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>Entity <span class="token punctuation">:</span> any<span class="token punctuation">,</span> Name <span class="token punctuation">:</span> string<span class="token punctuation">,</span> Value <span class="token punctuation">:</span> number<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> Value
+	<span class="token keyword">end</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> Entity <span class="token operator">=</span> World<span class="token punctuation">.</span>Entity<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span>Entity<span class="token punctuation">,</span> <span class="token string">"Red"</span><span class="token punctuation">)</span>
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span>Entity<span class="token punctuation">,</span> <span class="token string">"Green"</span><span class="token punctuation">)</span>
+World<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">Create</span><span class="token punctuation">(</span>Entity<span class="token punctuation">,</span> <span class="token string">"Blue"</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span>
+
+<span class="token keyword">for</span> Name<span class="token punctuation">:</span> string<span class="token punctuation">,</span> Component<span class="token punctuation">:</span> any <span class="token keyword">in</span> Stew<span class="token punctuation">.</span>Component<span class="token punctuation">.</span><span class="token function">GetAll</span><span class="token punctuation">(</span>Entity<span class="token punctuation">)</span> <span class="token keyword">do</span>
+	<span class="token function">print</span><span class="token punctuation">(</span>Name<span class="token punctuation">,</span> Component<span class="token punctuation">)</span> <span class="token comment">--[[
+		Red true
+		Green true
+		Blue 5
+	]]</span>
+<span class="token keyword">end</span>
+</code></pre>
+</div></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
+    &quot;functions&quot;: [
+        {
+            &quot;name&quot;: &quot;Build&quot;,
+            &quot;desc&quot;: &quot;Sets up an internal constructor and destructor for a component. This is used to create and destroy components. If arguments are not provided, an empty table will be used instead.\n\nBoth the constructor and destructor are optional and can be omitted. If no constructor is specified, a default constructor that returns true is used. If no destructor is specified, a default destructor that does nothing is used.\n\n```lua\nlocal World = Stew.World.Create()\n\nWorld.Component.Build(\&quot;Poisoned\&quot;)\n\nWorld.Component.Build(\&quot;Health\&quot;, {\n\tConstructor = function(Entity : any, Name : string, Max : number)\n\t\treturn {\n\t\t\tCurrent = Max;\n\t\t\tMax = Max;\n\t\t}\n\tend;\n})\n\nWorld.Component.Build(\&quot;Model\&quot;, {\n\tConstructor = function(Entity : any, Name : string, Model : Model, NewName : string)\n\t\tlocal NewModel = Model:Clone()\n\t\tNewModel.Name = NewName\n\t\treturn NewModel\n\tend;\n\n\tDestructor = function(Entity : any, Name : string)\n\t\tStew.Component.Get(Entity, Name) :Destroy()\n\tend;\n})\n```\n\t&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;Name&quot;,
+                    &quot;desc&quot;: &quot;The name of the component.&quot;,
+                    &quot;lua_type&quot;: &quot;Name&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;ComponentArgs&quot;,
+                    &quot;desc&quot;: &quot;The arguments to build the component&quot;,
+                    &quot;lua_type&quot;: &quot;ComponentArgs?&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;errors&quot;: [
+                {
+                    &quot;lua_type&quot;: &quot;Component Built Twice&quot;,
+                    &quot;desc&quot;: &quot;A component with the given name has already been built.&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 456,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Create&quot;,
+            &quot;desc&quot;: &quot;Creates a unique component associated with the entity and returns it. Automatically registers the entity if it hasn&#x27;t been registered yet.\n\nIf the constructor returns void or nil, the component will not be created.\n\n```lua\nlocal World = Stew.World.Create()\n\nWorld.Component.Build(\&quot;Model\&quot;, {\n\tConstructor = function(Entity : any, Name : string, Model : Model, Allow : boolean)\n\t\tif not Allow then return end\n\t\treturn Model:Clone()\n\tend;\n})\n\nlocal LocalPlayer : Player = Players.LocalPlayer\nprint(World.Component.Get(LocalPlayer, \&quot;Model\&quot;)) --&gt; nil\n\nWorld.Component.Create(LocalPlayer, \&quot;Model\&quot;, workspace.CoolModel, false)\nprint(World.Component.Get(LocalPlayer, \&quot;Model\&quot;)) --&gt; nil\n\nWorld.Component.Create(LocalPlayer, \&quot;Model\&quot;, workspace.CoolModel, true)\nprint(World.Component.Get(LocalPlayer, \&quot;Model\&quot;)) --&gt; CoolModel\n```\n\t&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;Entity&quot;,
+                    &quot;desc&quot;: &quot;The entity that accesses this component.&quot;,
+                    &quot;lua_type&quot;: &quot;Entity&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Name&quot;,
+                    &quot;desc&quot;: &quot;The name of the component to be created.&quot;,
+                    &quot;lua_type&quot;: &quot;Name&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;...&quot;,
+                    &quot;desc&quot;: &quot;Any additional arguments.&quot;,
+                    &quot;lua_type&quot;: &quot;any&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;The component that was created.&quot;,
+                    &quot;lua_type&quot;: &quot;Component?&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;errors&quot;: [
+                {
+                    &quot;lua_type&quot;: &quot;Component Not Built&quot;,
+                    &quot;desc&quot;: &quot;A component with the given name is not built.&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 508,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Delete&quot;,
+            &quot;desc&quot;: &quot;Deletes the component associated with the passed entity.\n\nIf the destructor returns a truthy value, the component will not be deleted.\n\n```lua\nlocal World = Stew.World.Create()\n\nWorld.Component.Build(\&quot;Model\&quot;, {\n\tConstructor = function(Entity : any, Name : string, Model : Model)\n\t\treturn Model:Clone()\n\tend;\n\n\tDestructor = function(Entity : any, Name : string, Allow : boolean)\n\t\tif not Allow then return true end\n\t\tStew.Component.Get(Entity, Name) :Destroy()\n\tend;\n})\n\nlocal Part : Part = Instance.new(\&quot;Part\&quot;)\n\nWorld.Component.Create(Part, \&quot;Model\&quot;, workspace.CoolModel)\nprint(Stew.Component.Get(Part, \&quot;Model\&quot;)) --&gt; CoolModel\n\nStew.Component.Delete(Part, \&quot;Model\&quot;, false)\nprint(Stew.Component.Get(Part, \&quot;Model\&quot;)) --&gt; CoolModel\n\nStew.Component.Delete(Part, \&quot;Model\&quot;, true)\nprint(Stew.Component.Get(Part, \&quot;Model\&quot;)) --&gt; nil\n```\n\t&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;Entity&quot;,
+                    &quot;desc&quot;: &quot;The entity to delete the component from.&quot;,
+                    &quot;lua_type&quot;: &quot;Entity&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Name&quot;,
+                    &quot;desc&quot;: &quot;The name of the component to be deleted.&quot;,
+                    &quot;lua_type&quot;: &quot;Name&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;...&quot;,
+                    &quot;desc&quot;: &quot;Any additional arguments.&quot;,
+                    &quot;lua_type&quot;: &quot;...any&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;errors&quot;: [
+                {
+                    &quot;lua_type&quot;: &quot;Component Not Built&quot;,
+                    &quot;desc&quot;: &quot;A component with the given name is not built.&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 576,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Get&quot;,
+            &quot;desc&quot;: &quot;Gets a component from an entity.\n\n```lua\nlocal World = Stew.World.Create()\n\nWorld.Component.Build(\&quot;Grid\&quot;, {\n\tConstructor = function(Entity : any, Name : string, Properties: { Dimensions : Vector2; Default : number; })\n\t\treturn {\n\t\t\tCells = table.create(Properties.Dimensions.X * Properties.Dimensions.Y, Properties.Default);\n\t\t}\n\tend;\n})\n\nlocal GridId = 1\n\nlocal Grid1 = Stew.Component.Get(GridId, \&quot;Grid\&quot;)\nprint(Grid1) --&gt; nil\n\nWorld.Component.Create(GridId, \&quot;Grid\&quot;, Vector2.new(10, 10))\n\nlocal Grid2 = Stew.Component.Get(GridId, \&quot;Grid\&quot;)\nprint(Grid2) --&gt; CoolModel\n```\n\t&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;Entity&quot;,
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;Entity&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Name&quot;,
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;Name&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;Component?&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 633,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetAll&quot;,
+            &quot;desc&quot;: &quot;Returns a table of all an entity&#x27;s components in the form of a dictionary. This dictionary is cloned to prevent tampering.\n\n```lua\nlocal World = Stew.World.Create()\n\nWorld.Component.Build(\&quot;Red\&quot;)\nWorld.Component.Build(\&quot;Green\&quot;)\nWorld.Component.Build(\&quot;Blue\&quot;, {\n\tConstructor = function(Entity : any, Name : string, Value : number)\n\t\treturn Value\n\tend;\n})\n\nlocal Entity = World.Entity.Create()\n\nWorld.Component.Create(Entity, \&quot;Red\&quot;)\nWorld.Component.Create(Entity, \&quot;Green\&quot;)\nWorld.Component.Create(Entity, \&quot;Blue\&quot;, 5)\n\nfor Name: string, Component: any in Stew.Component.GetAll(Entity) do\n\tprint(Name, Component) --[[\n\t\tRed true\n\t\tGreen true\n\t\tBlue 5\n\t]]\nend\n```\n\t&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;Entity&quot;,
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;Entity&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;{ [Name] : Component }&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 672,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        }
+    ],
+    &quot;properties&quot;: [],
+    &quot;types&quot;: [],
+    &quot;name&quot;: &quot;Component&quot;,
+    &quot;desc&quot;: &quot;Contains methods for dealing with components.\n\t&quot;,
+    &quot;source&quot;: {
+        &quot;line&quot;: 415,
+        &quot;path&quot;: &quot;src/init.lua&quot;
+    }
+}</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#Build" class="table-of-contents__link toc-highlight">.Build</a></li><li><a href="#Create" class="table-of-contents__link toc-highlight">.Create</a></li><li><a href="#Delete" class="table-of-contents__link toc-highlight">.Delete</a></li><li><a href="#Get" class="table-of-contents__link toc-highlight">.Get</a></li><li><a href="#GetAll" class="table-of-contents__link toc-highlight">.GetAll</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2023 SolarScuffle-Bot. Built with Moonwave and Docusaurus</div></div></div></footer></div>
+<script src="/Stew/assets/js/runtime~main.90fbd4e1.js"></script>
+<script src="/Stew/assets/js/main.b87dca8c.js"></script>
+</body>
+</html>
