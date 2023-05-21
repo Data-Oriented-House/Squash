@@ -124,15 +124,16 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Boolean(y: string): boolean
-	return string.byte(y) ~= 0,
-		string.byte(y, 2) ~= 0,
-		string.byte(y, 3) ~= 0,
-		string.byte(y, 4) ~= 0,
-		string.byte(y, 5) ~= 0,
-		string.byte(y, 6) ~= 0,
-		string.byte(y, 7) ~= 0,
-		string.byte(y, 8) ~= 0
+function Squash.Des.Boolean(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+	local x = string.byte(y)
+	return (x * 2 ^ -0) % 2 >= 1,
+		(x * 2 ^ -1) % 2 >= 1,
+		(x * 2 ^ -2) % 2 >= 1,
+		(x * 2 ^ -3) % 2 >= 1,
+		(x * 2 ^ -4) % 2 >= 1,
+		(x * 2 ^ -5) % 2 >= 1,
+		(x * 2 ^ -6) % 2 >= 1,
+		(x * 2 ^ -7) % 2 >= 1
 end
 
 return Squash
