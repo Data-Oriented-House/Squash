@@ -9,14 +9,14 @@ enabled = true
 includeReadme = false
 
 [[home.features]]
-title = "Serialization-Deserialization"
-description = "Tiny tiny"
-image = "/Squash.png"
-
-[[home.features]]
 title = "Minimalist"
 description = "Squash stomp"
 image = "/Scaffolding.png"
+
+[[home.features]]
+title = "Serialization-Deserialization"
+description = "Tiny tiny"
+image = "/Squash.png"
 
 [docusaurus]
 onBrokenLinks = "throw"
