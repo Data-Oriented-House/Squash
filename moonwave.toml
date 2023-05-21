@@ -1,33 +1,21 @@
-title = "Stew"  # From Git
-gitRepoUrl = "https://github.com/solarscuffle-bot/stew" # From Git
+title = "Squash"  # From Git
+gitRepoUrl = "https://github.com/Data-Oriented-House/Squash" # From Git
 
 gitSourceBranch = "main"
-changelog = true
-classOrder = [
-	"Stew",
-	"World",
-	"Entity",
-	"Component",
-	"Collection"
-]
+changelog = false
 
 [home]
 enabled = true
 includeReadme = false
 
 [[home.features]]
-title = "Mutual Respect"
-description = "Stew understands that you need to get things done your way and quickly. It offers a simple API that is unintrusive, easy to learn and use, and still flexible enough for any use case."
-image = "/Handshake.png"
-
-[[home.features]]
-title = "Component-Based Architecture"
-description = "Stew enables you to create modular, reusable components that can be accessed through entity intersections. Entities can be anything, easily integrating with pre-existing data layouts such as the Roblox data-model."
-image = "/SoupWhiteBlack.png"
+title = "Serialization-Deserialization"
+description = "Tiny tiny"
+image = "/Squash.png"
 
 [[home.features]]
 title = "Minimalist"
-description = "Stew does not try to be everything to everyone. It leverages the flexibility of lua callbacks to provide full control over the behavior of Stew's core features without the complex configuration, enforced patterns and dependencies, or overhead found elsewhere. \"It just works.\""
+description = "Squash stomp"
 image = "/Scaffolding.png"
 
 [docusaurus]
@@ -36,11 +24,11 @@ onBrokenMarkdownLinks = "warn"
 favicon = "/favicon.ico"
 
 # From git:
-organizationName = "SolarScuffle-Bot"
-projectName = "Stew"
-url = "https://solarscuffle-bot.github.io"
-baseUrl = "/Stew/"
-tagline = "Luau's minimal Entity-Component module"
+organizationName = "Data-Oriented-House"
+projectName = "Squash"
+url = "https://data-oriented-house.github.io"
+baseUrl = "/Squash/"
+tagline = "Roblox's Minimal SerDes Library"
 
 [navbar]
 # hideableSidebar = true
