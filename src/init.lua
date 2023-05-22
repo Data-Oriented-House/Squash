@@ -10,91 +10,70 @@ local Squash = {}
 Squash.Ser = {}
 Squash.Des = {}
 
---[[
-	@within Squash
-]]
-function Squash.Ser.Uint8(x: number): string
-	return string.char(
-		math.floor(x * 256 ^ -0) % 256
-	)
-end
+-- local a = string.byte("a")
+-- local A = string.byte("A")
 
---[[
-	@within Squash
-]]
-function Squash.Des.Uint8(y: string): number
-	return string.byte(y)
-end
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Ser.StringCased(
+-- 	x: string,
+-- 	upper: boolean?
+-- ): string
+-- 	local case = upper and A or a
+-- 	local sum = 0
+-- 	local result = {}
 
---[[
-	@within Squash
-]]
-function Squash.Ser.Uint16(x: number): string
-	return string.char(
-		math.floor(x * 256 ^ -0) % 256,
-		math.floor(x * 256 ^ -1) % 256
-	)
-end
+-- 	for i = 1, #x do
+-- 		sum = sum * 26 + string.byte(x, i) - case
+-- 		table.insert(
+-- 			result,
+-- 			string.char(sum % 256)
+-- 		)
+-- 		sum = math.floor(sum / 256)
+-- 	end
 
---[[
-	@within Squash
-]]
-function Squash.Des.Uint16(y: string): number
-	return string.byte(y, 1) * 256 ^ 0
-		+ string.byte(y, 2) * 256 ^ 1
-end
+-- 	while sum > 0 do
+-- 		table.insert(
+-- 			result,
+-- 			string.char(sum % 256)
+-- 		)
+-- 		sum = math.floor(sum / 256)
+-- 	end
 
---[[
-	@within Squash
-]]
-function Squash.Ser.Uint32(x: number): string
-	return string.char(
-		math.floor(x * 256 ^ -0) % 256,
-		math.floor(x * 256 ^ -1) % 256,
-		math.floor(x * 256 ^ -2) % 256,
-		math.floor(x * 256 ^ -3) % 256
-	)
-end
+-- 	return table.concat(result)
+-- end
 
---[[
-	@within Squash
-]]
-function Squash.Des.Uint32(y: string): number
-	return string.byte(y, 1) * 256 ^ 0
-		+ string.byte(y, 2) * 256 ^ 1
-		+ string.byte(y, 3) * 256 ^ 2
-		+ string.byte(y, 4) * 256 ^ 3
-end
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Des.StringCased(
+-- 	x: string,
+-- 	upper: boolean?
+-- ): string
+-- 	local case = upper and A or a
+-- 	local sum = 0
+-- 	local result = {}
 
---[[
-	@within Squash
-]]
-function Squash.Ser.Uint64(x: number): string
-	return string.char(
-		math.floor(x * 256 ^ -0) % 256,
-		math.floor(x * 256 ^ -1) % 256,
-		math.floor(x * 256 ^ -2) % 256,
-		math.floor(x * 256 ^ -3) % 256,
-		math.floor(x * 256 ^ -4) % 256,
-		math.floor(x * 256 ^ -5) % 256,
-		math.floor(x * 256 ^ -6) % 256,
-		math.floor(x * 256 ^ -7) % 256
-	)
-end
+-- 	for i = 1, #x do
+-- 		sum = sum * 256 + string.byte(x, i)
+-- 		table.insert(
+-- 			result,
+-- 			string.char(case + sum % 26)
+-- 		)
+-- 		sum = math.floor(sum / 26)
+-- 	end
 
---[[
-	@within Squash
-]]
-function Squash.Des.Uint64(y: string): number
-	return string.byte(y, 1) * 256 ^ 0
-		+ string.byte(y, 2) * 256 ^ 1
-		+ string.byte(y, 3) * 256 ^ 2
-		+ string.byte(y, 4) * 256 ^ 3
-		+ string.byte(y, 5) * 256 ^ 4
-		+ string.byte(y, 6) * 256 ^ 5
-		+ string.byte(y, 7) * 256 ^ 6
-		+ string.byte(y, 8) * 256 ^ 7
-end
+-- 	while sum > 0 do
+-- 		table.insert(
+-- 			result,
+-- 			string.char(case + sum % 26)
+-- 		)
+-- 		sum = math.floor(sum / 26)
+-- 	end
+
+-- 	return table.concat(result)
+-- end
 
 --[[
 	@within Squash
@@ -124,7 +103,16 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Boolean(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+function Squash.Des.Boolean(y: string): (
+	boolean,
+	boolean,
+	boolean,
+	boolean,
+	boolean,
+	boolean,
+	boolean,
+	boolean
+)
 	local x = string.byte(y)
 	return (x * 2 ^ -0) % 2 >= 1,
 		(x * 2 ^ -1) % 2 >= 1,
@@ -135,5 +123,111 @@ function Squash.Des.Boolean(y: string): (boolean, boolean, boolean, boolean, boo
 		(x * 2 ^ -6) % 2 >= 1,
 		(x * 2 ^ -7) % 2 >= 1
 end
+
+local function bytesAssert(bytes: number)
+	assert(
+		bytes == 1
+			or bytes == 2
+			or bytes == 3
+			or bytes == 4
+			or bytes == 5
+			or bytes == 6
+			or bytes == 7
+			or bytes == 8,
+		"bytes must be 1, 2, 3, 4, 5, 6, 7, or 8"
+	)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Uint(bytes: number, x: number): string
+	bytesAssert(bytes)
+
+	local chars = {}
+	for i = 1, bytes do
+		chars[i] = math.floor(x * 256 ^ (1 - i)) % 256
+	end
+	return string.char(table.unpack(chars))
+end
+
+-- print(Squash.Ser.Uint(1, 0))
+-- print(Squash.Ser.Uint(1, 1))
+-- print(Squash.Ser.Uint(1, 255))
+-- print(Squash.Ser.Uint(1, 256))
+-- print(Squash.Ser.Uint(1, 257))
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Uint(bytes: number, y: string): number
+	bytesAssert(bytes)
+
+	local sum = 0
+	for i = 1, bytes do
+		sum += string.byte(y, i) * 256 ^ (i - 1)
+	end
+	return sum
+end
+
+-- Signed Integer Stuff
+
+-- ...
+
+-- Array Stuff
+
+--[[
+	@within Squash
+--]]
+function Squash.Ser.ArrayUint(bytes: number, x: { number }): string
+	bytesAssert(bytes)
+
+	local y = {}
+	for i, v in x do
+		y[i] = Squash.Ser.Uint(bytes, v)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+--]]
+function Squash.Des.ArrayUint(bytes: number, y: string): { number }
+	bytesAssert(bytes)
+
+	local x = {}
+	for i = 1, #y/bytes do
+		local a = 1 + bytes * i - bytes
+		local b = bytes * i
+		x[i] = Squash.Des.Uint(bytes, string.sub(y, a, b))
+	end
+	return x
+end
+
+-- local function printarray(arr: { number })
+-- 	return "[" .. table.concat(arr, ", ") .. "]"
+-- end
+
+-- local function test(name: string, size: number, x: number | { number })
+-- 	local y = Squash.Ser[name](size, x)
+-- 	local z = Squash.Des[name](size, y)
+-- 	print(
+-- 		name .. size,
+-- 		if typeof(x) == "table" then printarray(x) else x,
+-- 		"->",
+-- 		if typeof(y) == "table" then printarray(y) else y,
+-- 		"->",
+-- 		if typeof(z) == "table" then printarray(z) else z
+-- 	)
+-- end
+
+-- local numbers = { math.random(0, 9) }
+-- for j = 0, 10 do
+-- 	table.insert(numbers, math.random(2 ^ (j*3)))
+-- end
+
+-- for i = 1, 8 do
+-- 	test("ArrayUint", i, numbers)
+-- end
 
 return Squash
