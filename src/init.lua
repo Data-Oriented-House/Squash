@@ -179,6 +179,39 @@ end
 --[[
 	@within Squash
 --]]
+function Squash.Ser.ArrayBoolean(x: { boolean }): string
+	local y = {}
+	for i = 1, math.ceil(#x / 8) do
+		y[i] = Squash.Ser.Boolean(
+			x[i + 0],
+			x[i + 1],
+			x[i + 2],
+			x[i + 3],
+			x[i + 4],
+			x[i + 5],
+			x[i + 6],
+			x[i + 7]
+		)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+--]]
+function Squash.Des.ArrayBoolean(y: string): { boolean }
+	local x = {}
+	for i = 1, #y do
+		local j = 8 * i
+		x[j - 7], x[j - 6], x[j - 5], x[j - 4], x[j - 3], x[j - 2], x[j - 1], x[j] =
+			Squash.Des.Boolean(string.sub(y, i, i))
+	end
+	return x
+end
+
+--[[
+	@within Squash
+--]]
 function Squash.Ser.ArrayUint(bytes: number, x: { number }): string
 	bytesAssert(bytes)
 
@@ -196,8 +229,8 @@ function Squash.Des.ArrayUint(bytes: number, y: string): { number }
 	bytesAssert(bytes)
 
 	local x = {}
-	for i = 1, #y/bytes do
-		local a = 1 + bytes * i - bytes
+	for i = 1, #y / bytes do
+		local a = bytes * (i - 1) + 1
 		local b = bytes * i
 		x[i] = Squash.Des.Uint(bytes, string.sub(y, a, b))
 	end
