@@ -10,70 +10,157 @@ local Squash = {}
 Squash.Ser = {}
 Squash.Des = {}
 
--- local a = string.byte("a")
--- local A = string.byte("A")
+--[[
+	@within Squash
+]]
+function Squash.Ser.u8(x: number): string
+	return string.char(math.floor(x * 256 ^ -0) % 256)
+end
 
--- --[[
--- 	@within Squash
--- ]]
--- function Squash.Ser.StringCased(
--- 	x: string,
--- 	upper: boolean?
--- ): string
--- 	local case = upper and A or a
--- 	local sum = 0
--- 	local result = {}
+--[[
+	@within Squash
+]]
+function Squash.Des.u8(y: string): number
+	return string.byte(y)
+end
 
--- 	for i = 1, #x do
--- 		sum = sum * 26 + string.byte(x, i) - case
--- 		table.insert(
--- 			result,
--- 			string.char(sum % 256)
--- 		)
--- 		sum = math.floor(sum / 256)
--- 	end
+--[[
+	@within Squash
+]]
+function Squash.Ser.u16(x: number): string
+	return string.char(math.floor(x * 256 ^ -0) % 256, math.floor(x * 256 ^ -1) % 256)
+end
 
--- 	while sum > 0 do
--- 		table.insert(
--- 			result,
--- 			string.char(sum % 256)
--- 		)
--- 		sum = math.floor(sum / 256)
--- 	end
+--[[
+	@within Squash
+]]
+function Squash.Des.u16(y: string): number
+	return string.byte(y, 1) * 256 ^ 0 + string.byte(y, 2) * 256 ^ 1
+end
 
--- 	return table.concat(result)
--- end
+--[[
+	@within Squash
+]]
+function Squash.Ser.u32(x: number): string
+	return string.char(
+		math.floor(x * 256 ^ -0) % 256,
+		math.floor(x * 256 ^ -1) % 256,
+		math.floor(x * 256 ^ -2) % 256,
+		math.floor(x * 256 ^ -3) % 256
+	)
+end
 
--- --[[
--- 	@within Squash
--- ]]
--- function Squash.Des.StringCased(
--- 	x: string,
--- 	upper: boolean?
--- ): string
--- 	local case = upper and A or a
--- 	local sum = 0
--- 	local result = {}
+--[[
+	@within Squash
+]]
+function Squash.Des.u32(y: string): number
+	return string.byte(y, 1) * 256 ^ 0
+		+ string.byte(y, 2) * 256 ^ 1
+		+ string.byte(y, 3) * 256 ^ 2
+		+ string.byte(y, 4) * 256 ^ 3
+end
 
--- 	for i = 1, #x do
--- 		sum = sum * 256 + string.byte(x, i)
--- 		table.insert(
--- 			result,
--- 			string.char(case + sum % 26)
--- 		)
--- 		sum = math.floor(sum / 26)
--- 	end
+--[[
+	@within Squash
+]]
+function Squash.Ser.u64(x: number): string
+	return string.char(
+		math.floor(x * 256 ^ -0) % 256,
+		math.floor(x * 256 ^ -1) % 256,
+		math.floor(x * 256 ^ -2) % 256,
+		math.floor(x * 256 ^ -3) % 256,
+		math.floor(x * 256 ^ -4) % 256,
+		math.floor(x * 256 ^ -5) % 256,
+		math.floor(x * 256 ^ -6) % 256,
+		math.floor(x * 256 ^ -7) % 256
+	)
+end
 
--- 	while sum > 0 do
--- 		table.insert(
--- 			result,
--- 			string.char(case + sum % 26)
--- 		)
--- 		sum = math.floor(sum / 26)
--- 	end
+--[[
+	@within Squash
+]]
+function Squash.Des.u64(y: string): number
+	return string.byte(y, 1) * 256 ^ 0
+		+ string.byte(y, 2) * 256 ^ 1
+		+ string.byte(y, 3) * 256 ^ 2
+		+ string.byte(y, 4) * 256 ^ 3
+		+ string.byte(y, 5) * 256 ^ 4
+		+ string.byte(y, 6) * 256 ^ 5
+		+ string.byte(y, 7) * 256 ^ 6
+		+ string.byte(y, 8) * 256 ^ 7
+end
 
--- 	return table.concat(result)
--- end
+--[[
+	@within Squash
+]]
+function Squash.Ser.i8(x: number): string
+	local sx = if x < 0 then 2 ^ 8 + x else x
+
+	return Squash.Ser.u8(sx)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.i8(y: string): number
+	local x = Squash.Des.u8(y)
+
+	return if x > 2 ^ 7 - 1 then x - 2 ^ 8 else x
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.i16(x: number): string
+	local sx = if x < 0 then 2 ^ 16 + x else x
+
+	return Squash.Ser.u16(sx)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.i16(y: string): number
+	local x = Squash.Des.u16(y)
+
+	return if x > 2 ^ 15 - 1 then x - 2 ^ 16 else x
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.i32(x: number): string
+	local sx = if x < 0 then 2 ^ 32 + x else x
+
+	return Squash.Ser.u32(sx)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.i32(y: string): number
+	local x = Squash.Des.u32(y)
+
+	return if x > 2 ^ 31 - 1 then x - 2 ^ 32 else x
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.i64(x: number): string
+	local sx = if x < 0 then 2 ^ 64 + x else x
+
+	return Squash.Ser.u64(sx)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.i64(y: string): number
+	local x = Squash.Des.u64(y)
+
+	return if x > 2 ^ 63 - 1 then x - 2 ^ 64 else x
+end
 
 --[[
 	@within Squash
@@ -151,12 +238,6 @@ function Squash.Ser.Uint(bytes: number, x: number): string
 	return string.char(table.unpack(chars))
 end
 
--- print(Squash.Ser.Uint(1, 0))
--- print(Squash.Ser.Uint(1, 1))
--- print(Squash.Ser.Uint(1, 255))
--- print(Squash.Ser.Uint(1, 256))
--- print(Squash.Ser.Uint(1, 257))
-
 --[[
 	@within Squash
 ]]
@@ -172,7 +253,92 @@ end
 
 -- Signed Integer Stuff
 
--- ...
+--[[
+	@within Squash
+]]
+function Squash.Ser.Int(bytes: number, x: number): string
+	bytesAssert(bytes)
+
+	local sx = if x < 0 then x + 256 ^ bytes else x
+	return Squash.Ser.Uint(bytes, sx)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Int(bytes: number, y: string): number
+	bytesAssert(bytes)
+
+	local x = Squash.Des.Uint(bytes, y)
+	return if x > 0.5 * 256 ^ bytes - 1 then x - 256 ^ bytes else x
+end
+
+-- String Stuff
+
+-- local a = string.byte("a")
+-- local A = string.byte("A")
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Ser.StringCased(
+-- 	x: string,
+-- 	upper: boolean?
+-- ): string
+-- 	local case = upper and A or a
+-- 	local sum = 0
+-- 	local result = {}
+
+-- 	for i = 1, #x do
+-- 		sum = sum * 26 + string.byte(x, i) - case
+-- 		table.insert(
+-- 			result,
+-- 			string.char(sum % 256)
+-- 		)
+-- 		sum = math.floor(sum / 256)
+-- 	end
+
+-- 	while sum > 0 do
+-- 		table.insert(
+-- 			result,
+-- 			string.char(sum % 256)
+-- 		)
+-- 		sum = math.floor(sum / 256)
+-- 	end
+
+-- 	return table.concat(result)
+-- end
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Des.StringCased(
+-- 	x: string,
+-- 	upper: boolean?
+-- ): string
+-- 	local case = upper and A or a
+-- 	local sum = 0
+-- 	local result = {}
+
+-- 	for i = 1, #x do
+-- 		sum = sum * 256 + string.byte(x, i)
+-- 		table.insert(
+-- 			result,
+-- 			string.char(case + sum % 26)
+-- 		)
+-- 		sum = math.floor(sum / 26)
+-- 	end
+
+-- 	while sum > 0 do
+-- 		table.insert(
+-- 			result,
+-- 			string.char(case + sum % 26)
+-- 		)
+-- 		sum = math.floor(sum / 26)
+-- 	end
+
+-- 	return table.concat(result)
+-- end
 
 -- Array Stuff
 
