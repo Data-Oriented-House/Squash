@@ -251,6 +251,34 @@ function Squash.Des.ArrayUint(bytes: number, y: string): { number }
 	return x
 end
 
+--[[
+	@within Squash
+--]]
+function Squash.Ser.ArrayInt(bytes: number, x: { number }): string
+	bytesAssert(bytes)
+
+	local y = {}
+	for i, v in x do
+		y[i] = Squash.Ser.Int(bytes, v)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+--]]
+function Squash.Des.ArrayInt(bytes: number, y: string): { number }
+	bytesAssert(bytes)
+
+	local x = {}
+	for i = 1, #y / bytes do
+		local a = bytes * (i - 1) + 1
+		local b = bytes * i
+		x[i] = Squash.Des.Int(bytes, string.sub(y, a, b))
+	end
+	return x
+end
+
 -- local function printarray(arr: { number })
 -- 	return "[" .. table.concat(arr, ", ") .. "]"
 -- end
