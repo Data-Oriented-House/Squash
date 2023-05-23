@@ -92,7 +92,6 @@ function Squash.Des.ArrayBoolean(y: string): { boolean }
 	return x
 end
 
-
 local function bytesAssert(bytes: number)
 	assert(
 		bytes == 1
@@ -160,8 +159,6 @@ function Squash.Des.ArrayUint(bytes: number, y: string): { number }
 	end
 	return x
 end
-
--- Signed Integer Stuff
 
 --[[
 	@within Squash
