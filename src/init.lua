@@ -254,6 +254,47 @@ function Squash.Des.ArrayColor3(y: string): { Color3 }
 	return x
 end
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.ColorSequenceKeypoint(x: ColorSequenceKeypoint): string
+	return string.char(x.Time * 255) .. Squash.Ser.Color3(x.Value)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.ColorSequenceKeypoint(y: string): ColorSequenceKeypoint
+	return ColorSequenceKeypoint.new(
+		string.byte(y, 1) / 255,
+		Squash.Des.Color3(string.sub(y, 2, 4))
+	)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.ArrayColorSequenceKeypoint(x: { ColorSequenceKeypoint }): string
+	local y = {}
+	for i, v in x do
+		y[i] = Squash.Ser.ColorSequenceKeypoint(v)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.ArrayColorSequenceKeypoint(y: string): { ColorSequenceKeypoint }
+	local x = {}
+	for i = 1, #y / 4 do
+		local a = 4 * (i - 1) + 1
+		local b = 4 * i
+		x[i] = Squash.Des.ColorSequenceKeypoint(string.sub(y, a, b))
+	end
+	return x
+end
+
 return Squash
 
 -- String Stuff
