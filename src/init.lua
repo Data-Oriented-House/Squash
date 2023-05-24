@@ -38,16 +38,7 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Boolean(y: string): (
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean
-)
+function Squash.Des.Boolean(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = string.byte(y)
 	return (x * 2 ^ -0) % 2 >= 1,
 		(x * 2 ^ -1) % 2 >= 1,
@@ -65,16 +56,7 @@ end
 function Squash.Ser.ArrayBoolean(x: { boolean }): string
 	local y = {}
 	for i = 1, math.ceil(#x / 8) do
-		y[i] = Squash.Ser.Boolean(
-			x[i + 0],
-			x[i + 1],
-			x[i + 2],
-			x[i + 3],
-			x[i + 4],
-			x[i + 5],
-			x[i + 6],
-			x[i + 7]
-		)
+		y[i] = Squash.Ser.Boolean(x[i + 0], x[i + 1], x[i + 2], x[i + 3], x[i + 4], x[i + 5], x[i + 6], x[i + 7])
 	end
 	return table.concat(y)
 end
@@ -94,14 +76,7 @@ end
 
 local function bytesAssert(bytes: number)
 	assert(
-		bytes == 1
-			or bytes == 2
-			or bytes == 3
-			or bytes == 4
-			or bytes == 5
-			or bytes == 6
-			or bytes == 7
-			or bytes == 8,
+		bytes == 1 or bytes == 2 or bytes == 3 or bytes == 4 or bytes == 5 or bytes == 6 or bytes == 7 or bytes == 8,
 		"bytes must be 1, 2, 3, 4, 5, 6, 7, or 8"
 	)
 end
@@ -208,6 +183,56 @@ function Squash.Des.ArrayInt(bytes: number, y: string): { number }
 	return x
 end
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.DockWidgetPluginGuiInfo(x: DockWidgetPluginGuiInfo): string
+	return table.concat({
+		Squash.Ser.Boolean(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore),
+		Squash.Ser.Int(2, x.FloatingXSize),
+		Squash.Ser.Int(2, x.FloatingYSize),
+		Squash.Ser.Int(2, x.MinWidth),
+		Squash.Ser.Int(2, x.MinHeight),
+	})
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.DockWidgetPluginGuiInfo(y: string): DockWidgetPluginGuiInfo
+	local x = DockWidgetPluginGuiInfo.new()
+	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.Des.Boolean(string.sub(y, 1, 1))
+	x.FloatingXSize = Squash.Des.Int(2, string.sub(y, 2, 3))
+	x.FloatingYSize = Squash.Des.Int(2, string.sub(y, 4, 5))
+	x.MinWidth = Squash.Des.Int(2, string.sub(y, 6, 7))
+	x.MinHeight = Squash.Des.Int(2, string.sub(y, 8, 9))
+	return x
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.ArrayDockWidgetPluginGuiInfo(x: { DockWidgetPluginGuiInfo }): string
+	local y = {}
+	for i, v in x do
+		y[i] = Squash.Ser.DockWidgetPluginGuiInfo(v)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.ArrayDockWidgetPluginGuiInfo(y: string): { DockWidgetPluginGuiInfo }
+	local x = {}
+	for i = 1, #y / 9 do
+		local a = 9 * (i - 1) + 1
+		local b = 9 * i
+		x[i] = Squash.Des.DockWidgetPluginGuiInfo(string.sub(y, a, b))
+	end
+	return x
+end
+
 return Squash
 
 -- String Stuff
@@ -279,8 +304,6 @@ return Squash
 
 -- Array Stuff
 
-
-
 -- local function printarray(arr: { number })
 -- 	return "[" .. table.concat(arr, ", ") .. "]"
 -- end
@@ -306,4 +329,3 @@ return Squash
 -- for i = 1, 8 do
 -- 	test("ArrayUint", i, numbers)
 -- end
-
