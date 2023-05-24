@@ -7,8 +7,8 @@
 ]]
 local Squash = {}
 
-Squash.Ser = {}
-Squash.Des = {}
+Squash.Ser = { Array = {} }
+Squash.Des = { Array = {} }
 
 --[[
 	@within Squash
@@ -62,7 +62,7 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Ser.ArrayBoolean(x: { boolean }): string
+function Squash.Ser.Array.Boolean(x: { boolean }): string
 	local y = {}
 	for i = 1, math.ceil(#x / 8) do
 		y[i] = Squash.Ser.Boolean(
@@ -82,7 +82,7 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Des.ArrayBoolean(y: string): { boolean }
+function Squash.Des.Array.Boolean(y: string): { boolean }
 	local x = {}
 	for i = 1, #y do
 		local j = 8 * i
@@ -135,7 +135,7 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Ser.ArrayUint(bytes: number, x: { number }): string
+function Squash.Ser.Array.Uint(bytes: number, x: { number }): string
 	bytesAssert(bytes)
 
 	local y = {}
@@ -148,7 +148,7 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Des.ArrayUint(bytes: number, y: string): { number }
+function Squash.Des.Array.Uint(bytes: number, y: string): { number }
 	bytesAssert(bytes)
 
 	local x = {}
@@ -183,7 +183,7 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Ser.ArrayInt(bytes: number, x: { number }): string
+function Squash.Ser.Array.Int(bytes: number, x: { number }): string
 	bytesAssert(bytes)
 
 	local y = {}
@@ -196,7 +196,7 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Des.ArrayInt(bytes: number, y: string): { number }
+function Squash.Des.Array.Int(bytes: number, y: string): { number }
 	bytesAssert(bytes)
 
 	local x = {}
@@ -212,7 +212,7 @@ end
 	@within Squash
 ]]
 function Squash.Ser.Axes(axes: Axes)
-	return Squash.Ser.ArrayBoolean {
+	return Squash.Ser.Array.Boolean {
 		axes.X,
 		axes.Y,
 		axes.Z,
@@ -227,7 +227,7 @@ end
 	@within Squash
 ]]
 function Squash.Des.Axes(y: string): Axes
-	local x = Squash.Des.ArrayBoolean(y)
+	local x = Squash.Des.Array.Boolean(y)
 	local axes = Axes.new()
 	axes.X = x[1]
 	axes.Y = x[2]
@@ -242,7 +242,7 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Ser.ArrayAxes(x: { Axes }): string
+function Squash.Ser.Array.Axes(x: { Axes }): string
 	local y = {}
 	for i, v in x do
 		y[i] = Squash.Ser.Axes(v)
@@ -253,7 +253,7 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Des.ArrayAxes(y: string): { Axes }
+function Squash.Des.Array.Axes(y: string): { Axes }
 	local x = {}
 	for i = 1, #y / 8 do
 		local a = 8 * (i - 1) + 1
@@ -280,7 +280,7 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Ser.ArrayBrickColor(x: { BrickColor }): string
+function Squash.Ser.Array.BrickColor(x: { BrickColor }): string
 	local y = {}
 	for i, v in x do
 		y[i] = Squash.Ser.BrickColor(v)
@@ -291,7 +291,7 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.ArrayBrickColor(y: string): { BrickColor }
+function Squash.Des.Array.BrickColor(y: string): { BrickColor }
 	local x = {}
 	for i = 1, #y / 2 do
 		local a = 2 * (i - 1) + 1
