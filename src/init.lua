@@ -260,9 +260,7 @@ end
 	@within Squash
 ]]
 function Squash.Des.DateTime(y: string): DateTime
-	return DateTime.fromUnixTimestamp(
-		Squash.Des.Uint(5, y) - 17_987_443_200
-	)
+	return DateTime.fromUnixTimestamp(Squash.Des.Uint(5, y) - 17_987_443_200)
 end
 
 --[[
@@ -274,6 +272,42 @@ Squash.Ser.ArrayDateTime = serArrayInstance(Squash.Ser.DateTime)
 	@within Squash
 ]]
 Squash.Des.ArrayDateTime = desArrayInstance(5, Squash.Des.DateTime)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.DockWidgetPluginGuiInfo(x: DockWidgetPluginGuiInfo): string
+	return table.concat {
+		Squash.Ser.Boolean(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore),
+		Squash.Ser.Int(2, x.FloatingXSize),
+		Squash.Ser.Int(2, x.FloatingYSize),
+		Squash.Ser.Int(2, x.MinWidth),
+		Squash.Ser.Int(2, x.MinHeight),
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.DockWidgetPluginGuiInfo(y: string): DockWidgetPluginGuiInfo
+	local x = DockWidgetPluginGuiInfo.new()
+	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.Des.Boolean(string.sub(y, 1))
+	x.FloatingXSize = Squash.Des.Int(2, string.sub(y, 2, 3))
+	x.FloatingYSize = Squash.Des.Int(2, string.sub(y, 4, 5))
+	x.MinWidth = Squash.Des.Int(2, string.sub(y, 6, 7))
+	x.MinHeight = Squash.Des.Int(2, string.sub(y, 8, 9))
+	return x
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.ArrayDockWidgetPluginGuiInfo = serArrayInstance(Squash.Ser.DockWidgetPluginGuiInfo)
+
+--[[
+	@within Squash
+]]
+Squash.Des.ArrayDockWidgetPluginGuiInfo = desArrayInstance(9, Squash.Des.DockWidgetPluginGuiInfo)
 
 return Squash
 
