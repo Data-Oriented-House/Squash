@@ -208,6 +208,20 @@ function Squash.Des.ArrayInt(bytes: number, y: string): { number }
 	return x
 end
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.BrickColor(x: BrickColor): string
+	return Squash.Ser.Uint(2, x.Number)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.BrickColor(y: string): BrickColor
+	return BrickColor.new(Squash.Des.Uint(2, y))
+end
+
 return Squash
 
 -- String Stuff
