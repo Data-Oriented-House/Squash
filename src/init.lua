@@ -381,6 +381,32 @@ Squash.Ser.Array.ColorSequence = serArrayInstance(Squash.Ser.ColorSequence)
 ]]
 Squash.Des.Array.ColorSequence = desArrayInstance(4, Squash.Des.ColorSequence)
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.Faces(x: Faces): string
+	return Squash.Ser.Boolean(x.Top, x.Bottom, x.Left, x.Right, x.Back, x.Front) --This marty, is how we squash 6 booleans into 1 byte
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Faces(y: string): Faces
+	local faces = Faces.new()
+	faces.Top, faces.Bottom, faces.Left, faces.Right, faces.Back, faces.Front = Squash.Des.Boolean(y)
+	return faces
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Faces = serArrayInstance(Squash.Ser.Faces)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Faces = desArrayInstance(1, Squash.Des.Faces)
+
 return Squash
 
 -- String Stuff
