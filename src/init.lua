@@ -428,6 +428,50 @@ Squash.Ser.Array.RbxAssetId = serArrayInstance(Squash.Ser.RbxAssetId)
 ]]
 Squash.Des.Array.RbxAssetId = desArrayInstance(6, Squash.Des.RbxAssetId)
 
+local fileExtensions = {
+	'png',
+	'jpg',
+	'tga',
+	'bmp',
+	'fbx',
+	'obj',
+	'mp3',
+	'ogg',
+	'webm',
+}
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.RbxAsset(x: string): string
+	local path, extension = string.match(x, '^(.+)%.(.+)$')
+	assert(path and extension, 'Invalid RbxAsset string. Expected format: "path.extension" got "' .. x .. '" instead.')
+
+	local extensionId = table.find(fileExtensions, extension)
+	assert(extensionId, 'Invalid extension "' .. extension .. '"')
+
+	return Squash.Ser.Uint(1, extensionId) .. path --TODO: Implement string compression and use it here
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.RbxAsset(y: string): string
+	local extensionId = Squash.Des.Uint(1, string.sub(y, 1))
+	local path = string.sub(y, 2, -1) --TODO: Implement string decompression and use it here
+	return path .. '.' .. fileExtensions[extensionId]
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.RbxAsset = serArrayInstance(Squash.Ser.RbxAsset)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.RbxAsset = desArrayInstance(-1, Squash.Des.RbxAsset) --TODO: This method doesn't work for variable sized elements, we need to implement one that takes a delimiter
+
 return Squash
 
 -- String Stuff
