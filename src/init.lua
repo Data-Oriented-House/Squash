@@ -443,6 +443,7 @@ local fileExtensions = {
 	'mp4',
 	'rbxm',
 	'rbxmx',
+	'mesh',
 }
 
 --[[
