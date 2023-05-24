@@ -200,31 +200,18 @@ Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Axes(axes: Axes) 
-	return Squash.Ser.Array.Boolean {
-		axes.X,
-		axes.Y,
-		axes.Z,
-		axes.Top,
-		axes.Bottom,
-		axes.Left,
-		axes.Right,
-	}
+function Squash.Ser.Axes(axes: Axes)
+	return Squash.Ser.Boolean(axes.X, axes.Y, axes.Z)
+		.. Squash.Ser.Boolean(axes.Top, axes.Bottom, axes.Left, axes.Right, axes.Back, axes.Front)
 end
 
 --[[
 	@within Squash
 ]]
 function Squash.Des.Axes(y: string): Axes
-	local x = Squash.Des.Array.Boolean(y)
 	local axes = Axes.new()
-	axes.X = x[1]
-	axes.Y = x[2]
-	axes.Z = x[3]
-	axes.Top = x[4]
-	axes.Bottom = x[5]
-	axes.Left = x[6]
-	axes.Right = x[7]
+	axes.X, axes.Y, axes.Z = Squash.Des.Boolean(string.sub(y, 1))
+	axes.Top, axes.Bottom, axes.Left, axes.Right, axes.Back, axes.Front = Squash.Des.Boolean(string.sub(y, 2))
 	return axes
 end
 
