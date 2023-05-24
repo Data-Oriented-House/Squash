@@ -44,8 +44,6 @@ local function serArrayInstance<T>(ser: (T) -> string)
 end
 
 local function desArrayInstance<T>(bytes: number, des: (string) -> T)
-	bytesAssert(bytes)
-
 	return function(y: string): { T }
 		local x = {}
 		for i = 1, #y / bytes do
@@ -201,8 +199,7 @@ Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 	@within Squash
 ]]
 function Squash.Ser.Axes(x: Axes)
-	return Squash.Ser.Boolean(x.X, x.Y, x.Z)
-		.. Squash.Ser.Boolean(x.Top, x.Bottom, x.Left, x.Right, x.Back, x.Front)
+	return Squash.Ser.Boolean(x.X, x.Y, x.Z) .. Squash.Ser.Boolean(x.Top, x.Bottom, x.Left, x.Right, x.Back, x.Front)
 end
 
 --[[
@@ -406,6 +403,30 @@ Squash.Ser.Array.Faces = serArrayInstance(Squash.Ser.Faces)
 	@within Squash
 ]]
 Squash.Des.Array.Faces = desArrayInstance(1, Squash.Des.Faces)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.RbxAssetId(x: number): string
+	return Squash.Ser.Uint(6, x)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.RbxAssetId(y: string): number
+	return Squash.Des.Uint(6, y)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.RbxAssetId = serArrayInstance(Squash.Ser.RbxAssetId)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.RbxAssetId = desArrayInstance(6, Squash.Des.RbxAssetId)
 
 return Squash
 
