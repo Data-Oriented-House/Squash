@@ -472,6 +472,77 @@ Squash.Ser.Array.RbxAsset = serArrayInstance(Squash.Ser.RbxAsset)
 ]]
 Squash.Des.Array.RbxAsset = desArrayInstance(-1, Squash.Des.RbxAsset) --TODO: This method doesn't work for variable sized elements, we need to implement one that takes a delimiter
 
+local thumbTypes = {
+	'Asset',
+	'Avatar',
+	'AvatarHeadShot',
+	'BadgeIcon',
+	'BundleThumbnail',
+	'FontFamily',
+	'GameIcon',
+	'GamePass',
+	'GroupIcon',
+	'Outfit',
+}
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.RbxThumb(x: string): string
+	local thumbType, id, w, h = string.match(x, '^type=(.+)&id=([0-9]+)&w=([0-9]+)&h=([0-9]+)')
+	local filters = string.match(x, '&filters=(circular)$')
+
+	assert(
+		thumbType and id and w and h,
+		'Invalid RbxThumb string. Expected format: "type=type&id=id&w=w&h=h" or "type=type&id=id&w=w&h=h&filters=circular" got "'
+			.. x
+			.. '" instead.'
+	)
+	local a, b, c = tonumber(id), tonumber(w), tonumber(h)
+	assert(a and b and c, 'id, w, and h must be numbers')
+
+	local thumbTypeId = table.find(thumbTypes, thumbType)
+	assert(thumbTypeId, 'Invalid thumb type "' .. thumbType .. '"')
+
+	return table.concat {
+		string.char(2 * thumbTypeId + if filters == 'circular' then 1 else 0),
+		Squash.Ser.Uint(5, a),
+		Squash.Ser.Uint(2, b),
+		Squash.Ser.Uint(2, c),
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.RbxThumb(y: string): string
+	local id = Squash.Des.Uint(5, string.sub(y, 2, 6))
+	local w = Squash.Des.Uint(2, string.sub(y, 7, 8))
+	local h = Squash.Des.Uint(2, string.sub(y, 9, 10))
+	local typeIdAndFilters = Squash.Des.Uint(1, string.sub(y, 1))
+	local filters = typeIdAndFilters % 2 == 1 and 'circular' or nil
+	local thumbType = thumbTypes[math.floor(typeIdAndFilters / 2)]
+	return 'type='
+		.. thumbType
+		.. '&id='
+		.. id
+		.. '&w='
+		.. w
+		.. '&h='
+		.. h
+		.. (if filters then '&filters=' .. filters else '')
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.RbxThumb = serArrayInstance(Squash.Ser.RbxThumb)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.RbxThumb = desArrayInstance(10, Squash.Des.RbxThumb)
+
 return Squash
 
 -- String Stuff
