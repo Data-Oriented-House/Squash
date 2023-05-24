@@ -71,7 +71,7 @@ Squash.Des = { Array = {} }
 	@within Squash
 ]]
 function Squash.Ser.Boolean(
-	x1: boolean,
+	x1: boolean?,
 	x2: boolean?,
 	x3: boolean?,
 	x4: boolean?,
