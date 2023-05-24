@@ -3,7 +3,7 @@
 local function bytesAssert(bytes: number)
 	assert(
 		bytes == 1 or bytes == 2 or bytes == 3 or bytes == 4 or bytes == 5 or bytes == 6 or bytes == 7 or bytes == 8,
-		"bytes must be 1, 2, 3, 4, 5, 6, 7, or 8"
+		'bytes must be 1, 2, 3, 4, 5, 6, 7, or 8'
 	)
 end
 
@@ -197,7 +197,7 @@ Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 	@within Squash
 ]]
 function Squash.Ser.Axes(axes: Axes)
-	return Squash.Ser.Array.Boolean({
+	return Squash.Ser.Array.Boolean {
 		axes.X,
 		axes.Y,
 		axes.Z,
@@ -205,7 +205,7 @@ function Squash.Ser.Axes(axes: Axes)
 		axes.Bottom,
 		axes.Left,
 		axes.Right,
-	})
+	}
 end
 
 --[[
