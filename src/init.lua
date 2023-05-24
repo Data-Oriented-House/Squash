@@ -431,6 +431,7 @@ Squash.Des.Array.RbxAssetId = desArrayInstance(6, Squash.Des.RbxAssetId)
 local fileExtensions = {
 	'png',
 	'jpg',
+	'jpeg',
 	'tga',
 	'bmp',
 	'fbx',
@@ -438,6 +439,10 @@ local fileExtensions = {
 	'mp3',
 	'ogg',
 	'webm',
+	'wav',
+	'mp4',
+	'rbxm',
+	'rbxmx',
 }
 
 --[[
@@ -542,6 +547,53 @@ Squash.Ser.Array.RbxThumb = serArrayInstance(Squash.Ser.RbxThumb)
 	@within Squash
 ]]
 Squash.Des.Array.RbxThumb = desArrayInstance(10, Squash.Des.RbxThumb)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.RbxHttp(x: string): string
+	local path = string.match(x, '^(.+)%.ashx')
+	local xb, yb, format = string.match(x, 'x=([0-9]+)&y=([0-9]+)&format=(.+)$')
+	assert(
+		path and xb and yb and format,
+		'Invalid RbxHttp string. Expected format: "path.ashx?x=x&y=y&format=format" got "' .. x .. '" instead.'
+	)
+
+	local xn, yn = tonumber(xb), tonumber(yb)
+	assert(xn and yn, 'x and y must be numbers')
+
+	local formatId = table.find(fileExtensions, format)
+	assert(formatId, 'Invalid format "' .. format .. '"')
+
+	return table.concat {
+		Squash.Ser.Uint(1, formatId),
+		Squash.Ser.Uint(2, xn),
+		Squash.Ser.Uint(2, yn),
+		path,
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.RbxHttp(y: string): string
+	local formatId = Squash.Des.Uint(1, string.sub(y, 1))
+	local xn = Squash.Des.Uint(2, string.sub(y, 2, 3))
+	local yn = Squash.Des.Uint(2, string.sub(y, 4, 5))
+	local path = string.sub(y, 6, -1)
+	local format = fileExtensions[formatId]
+	return path .. '.ashx?x=' .. xn .. '&y=' .. yn .. '&format=' .. format
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.RbxHttp = serArrayInstance(Squash.Ser.RbxHttp)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.RbxHttp = desArrayInstance(-1, Squash.Des.RbxHttp) --TODO: This method doesn't work for variable sized elements, we need to implement one that takes a delimiter
 
 return Squash
 
