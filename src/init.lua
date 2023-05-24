@@ -208,6 +208,46 @@ function Squash.Des.ArrayInt(bytes: number, y: string): { number }
 	return x
 end
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.DateTime(x: DateTime): string
+	return Squash.Ser.Uint(5, x.UnixTimestamp)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.DateTime(y: string): DateTime
+	return DateTime.fromUnixTimestamp(
+		Squash.Des.Uint(5, y)
+	)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.ArrayDateTime(x: { DateTime }): string
+	local y = {}
+	for i, v in x do
+		y[i] = Squash.Ser.DateTime(v)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.ArrayDateTime(y: string): { DateTime }
+	local x = {}
+	for i = 1, #y / 5 do
+		local a = 5 * (i - 1) + 1
+		local b = 5 * i
+		x[i] = Squash.Des.DateTime(string.sub(y, a, b))
+	end
+	return x
+end
+
 return Squash
 
 -- String Stuff
