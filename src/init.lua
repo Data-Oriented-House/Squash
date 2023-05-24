@@ -208,6 +208,37 @@ function Squash.Des.ArrayInt(bytes: number, y: string): { number }
 	return x
 end
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.Axes(axes: Axes)
+	return Squash.Ser.ArrayBoolean {
+		axes.X,
+		axes.Y,
+		axes.Z,
+		axes.Top,
+		axes.Bottom,
+		axes.Left,
+		axes.Right,
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Axes(y: string): Axes
+	local x = Squash.Des.ArrayBoolean(y)
+	local axes = Axes.new()
+	axes.X = x[1]
+	axes.Y = x[2]
+	axes.Z = x[3]
+	axes.Top = x[4]
+	axes.Bottom = x[5]
+	axes.Left = x[6]
+	axes.Right = x[7]
+	return axes
+end
+
 return Squash
 
 -- String Stuff
