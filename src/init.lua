@@ -208,6 +208,52 @@ function Squash.Des.ArrayInt(bytes: number, y: string): { number }
 	return x
 end
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.Color3(x: Color3): string
+	return string.char(
+		x.R * 255,
+		x.G * 255,
+		x.B * 255
+	)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Color3(y: string): Color3
+	return Color3.new(
+		string.byte(y, 1) / 255,
+		string.byte(y, 2) / 255,
+		string.byte(y, 3) / 255
+	)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.ArrayColor3(x: { Color3 }): string
+	local y = {}
+	for i, v in x do
+		y[i] = Squash.Ser.Color3(v)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.ArrayColor3(y: string): { Color3 }
+	local x = {}
+	for i = 1, #y / 3 do
+		local a = 3 * (i - 1) + 1
+		local b = 3 * i
+		x[i] = Squash.Des.Color3(string.sub(y, a, b))
+	end
+	return x
+end
+
 return Squash
 
 -- String Stuff
