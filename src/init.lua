@@ -38,16 +38,7 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Boolean(y: string): (
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean
-)
+function Squash.Des.Boolean(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = string.byte(y)
 	return (x * 2 ^ -0) % 2 >= 1,
 		(x * 2 ^ -1) % 2 >= 1,
@@ -65,16 +56,7 @@ end
 function Squash.Ser.ArrayBoolean(x: { boolean }): string
 	local y = {}
 	for i = 1, math.ceil(#x / 8) do
-		y[i] = Squash.Ser.Boolean(
-			x[i + 0],
-			x[i + 1],
-			x[i + 2],
-			x[i + 3],
-			x[i + 4],
-			x[i + 5],
-			x[i + 6],
-			x[i + 7]
-		)
+		y[i] = Squash.Ser.Boolean(x[i + 0], x[i + 1], x[i + 2], x[i + 3], x[i + 4], x[i + 5], x[i + 6], x[i + 7])
 	end
 	return table.concat(y)
 end
@@ -94,14 +76,7 @@ end
 
 local function bytesAssert(bytes: number)
 	assert(
-		bytes == 1
-			or bytes == 2
-			or bytes == 3
-			or bytes == 4
-			or bytes == 5
-			or bytes == 6
-			or bytes == 7
-			or bytes == 8,
+		bytes == 1 or bytes == 2 or bytes == 3 or bytes == 4 or bytes == 5 or bytes == 6 or bytes == 7 or bytes == 8,
 		"bytes must be 1, 2, 3, 4, 5, 6, 7, or 8"
 	)
 end
@@ -212,22 +187,14 @@ end
 	@within Squash
 ]]
 function Squash.Ser.Color3(x: Color3): string
-return string.char(
-		x.R * 255,
-		x.G * 255,
-		x.B * 255
-	)
+	return string.char(x.R * 255, x.G * 255, x.B * 255)
 end
 
 --[[
 	@within Squash
 ]]
 function Squash.Des.Color3(y: string): Color3
-	return Color3.fromRGB(
-		string.byte(y, 1), --optimization moment
-		string.byte(y, 2),
-		string.byte(y, 3)
-	)
+	return Color3.fromRGB(string.byte(y, 1), string.byte(y, 2), string.byte(y, 3))
 end
 
 --[[
@@ -325,8 +292,6 @@ return Squash
 
 -- Array Stuff
 
-
-
 -- local function printarray(arr: { number })
 -- 	return "[" .. table.concat(arr, ", ") .. "]"
 -- end
@@ -352,4 +317,3 @@ return Squash
 -- for i = 1, 8 do
 -- 	test("ArrayUint", i, numbers)
 -- end
-
