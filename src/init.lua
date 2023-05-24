@@ -222,6 +222,17 @@ function Squash.Des.BrickColor(y: string): BrickColor
 	return BrickColor.new(Squash.Des.Uint(2, y))
 end
 
+--[[
+	@within Squash
+--]]
+function Squash.Ser.ArrayBrickColor(x: { BrickColor }): string
+	local y = {}
+	for i, v in x do
+		y[i] = Squash.Ser.BrickColor(v)
+	end
+	return table.concat(y)
+end
+
 return Squash
 
 -- String Stuff
