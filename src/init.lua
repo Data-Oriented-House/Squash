@@ -200,9 +200,9 @@ Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Axes(axes: Axes)
-	return Squash.Ser.Boolean(axes.X, axes.Y, axes.Z)
-		.. Squash.Ser.Boolean(axes.Top, axes.Bottom, axes.Left, axes.Right, axes.Back, axes.Front)
+function Squash.Ser.Axes(x: Axes)
+	return Squash.Ser.Boolean(x.X, x.Y, x.Z)
+		.. Squash.Ser.Boolean(x.Top, x.Bottom, x.Left, x.Right, x.Back, x.Front)
 end
 
 --[[
