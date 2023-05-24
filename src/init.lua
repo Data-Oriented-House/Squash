@@ -260,9 +260,7 @@ end
 	@within Squash
 ]]
 function Squash.Des.DateTime(y: string): DateTime
-	return DateTime.fromUnixTimestamp(
-		Squash.Des.Uint(5, y) - 17_987_443_200
-	)
+	return DateTime.fromUnixTimestamp(Squash.Des.Uint(5, y) - 17_987_443_200)
 end
 
 --[[
@@ -279,13 +277,13 @@ Squash.Des.ArrayDateTime = desArrayInstance(5, Squash.Des.DateTime)
 	@within Squash
 ]]
 function Squash.Ser.DockWidgetPluginGuiInfo(x: DockWidgetPluginGuiInfo): string
-	return table.concat({
+	return table.concat {
 		Squash.Ser.Boolean(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore),
 		Squash.Ser.Int(2, x.FloatingXSize),
 		Squash.Ser.Int(2, x.FloatingYSize),
 		Squash.Ser.Int(2, x.MinWidth),
 		Squash.Ser.Int(2, x.MinHeight),
-	})
+	}
 end
 
 --[[
@@ -304,26 +302,12 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Ser.ArrayDockWidgetPluginGuiInfo(x: { DockWidgetPluginGuiInfo }): string
-	local y = {}
-	for i, v in x do
-		y[i] = Squash.Ser.DockWidgetPluginGuiInfo(v)
-	end
-	return table.concat(y)
-end
+Squash.Ser.ArrayDockWidgetPluginGuiInfo = serArrayInstance(Squash.Ser.DockWidgetPluginGuiInfo)
 
 --[[
 	@within Squash
 ]]
-function Squash.Des.ArrayDockWidgetPluginGuiInfo(y: string): { DockWidgetPluginGuiInfo }
-	local x = {}
-	for i = 1, #y / 9 do
-		local a = 9 * (i - 1) + 1
-		local b = 9 * i
-		x[i] = Squash.Des.DockWidgetPluginGuiInfo(string.sub(y, a, b))
-	end
-	return x
-end
+Squash.Des.ArrayDockWidgetPluginGuiInfo = desArrayInstance(9, Squash.Des.DockWidgetPluginGuiInfo)
 
 return Squash
 
