@@ -333,6 +333,33 @@ Squash.Ser.ArrayDockWidgetPluginGuiInfo = serArrayInstance(Squash.Ser.DockWidget
 ]]
 Squash.Des.ArrayDockWidgetPluginGuiInfo = desArrayInstance(9, Squash.Des.DockWidgetPluginGuiInfo)
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.ColorSequenceKeypoint(x: ColorSequenceKeypoint): string
+	return string.char(x.Time * 255) .. Squash.Ser.Color3(x.Value)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.ColorSequenceKeypoint(y: string): ColorSequenceKeypoint
+	return ColorSequenceKeypoint.new(
+		string.byte(y, 1) / 255,
+		Squash.Des.Color3(string.sub(y, 2, 4))
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.ColorSequenceKeypoint = serArrayInstance(Squash.Ser.ColorSequenceKeypoint)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.ColorSequenceKeypoint = desArrayInstance(4, Squash.Des.ColorSequenceKeypoint)
+
 return Squash
 
 -- String Stuff
