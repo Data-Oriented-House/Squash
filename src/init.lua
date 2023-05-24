@@ -249,6 +249,32 @@ Squash.Ser.Array.BrickColor = serArrayInstance(Squash.Ser.BrickColor)
 ]]
 Squash.Des.Array.BrickColor = desArrayInstance(2, Squash.Des.BrickColor)
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.DateTime(x: DateTime): string
+	return Squash.Ser.Uint(5, x.UnixTimestamp + 17_987_443_200)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.DateTime(y: string): DateTime
+	return DateTime.fromUnixTimestamp(
+		Squash.Des.Uint(5, y) - 17_987_443_200
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.ArrayDateTime = serArrayInstance(Squash.Ser.DateTime)
+
+--[[
+	@within Squash
+]]
+Squash.Des.ArrayDateTime = desArrayInstance(5, Squash.Des.DateTime)
+
 return Squash
 
 -- String Stuff
