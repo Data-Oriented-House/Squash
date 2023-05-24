@@ -201,7 +201,7 @@ end
 ]]
 function Squash.Des.DockWidgetPluginGuiInfo(y: string): DockWidgetPluginGuiInfo
 	local x = DockWidgetPluginGuiInfo.new()
-	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.Des.Boolean(string.sub(y, 1, 1))
+	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.Des.Boolean(string.sub(y, 1))
 	x.FloatingXSize = Squash.Des.Int(2, string.sub(y, 2, 3))
 	x.FloatingYSize = Squash.Des.Int(2, string.sub(y, 4, 5))
 	x.MinWidth = Squash.Des.Int(2, string.sub(y, 6, 7))
