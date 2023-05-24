@@ -344,10 +344,7 @@ end
 	@within Squash
 ]]
 function Squash.Des.ColorSequenceKeypoint(y: string): ColorSequenceKeypoint
-	return ColorSequenceKeypoint.new(
-		string.byte(y, 1) / 255,
-		Squash.Des.Color3(string.sub(y, 2, 4))
-	)
+	return ColorSequenceKeypoint.new(string.byte(y, 1) / 255, Squash.Des.Color3(string.sub(y, 2, 4)))
 end
 
 --[[
@@ -359,6 +356,30 @@ Squash.Ser.Array.ColorSequenceKeypoint = serArrayInstance(Squash.Ser.ColorSequen
 	@within Squash
 ]]
 Squash.Des.Array.ColorSequenceKeypoint = desArrayInstance(4, Squash.Des.ColorSequenceKeypoint)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.ColorSequence(x: ColorSequence): string
+	return Squash.Ser.Array.ColorSequenceKeypoint(x.Keypoints)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.ColorSequence(y: string): ColorSequence
+	return ColorSequence.new(Squash.Des.Array.ColorSequenceKeypoint(y))
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.ColorSequence = serArrayInstance(Squash.Ser.ColorSequence)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.ColorSequence = desArrayInstance(4, Squash.Des.ColorSequence)
 
 return Squash
 
