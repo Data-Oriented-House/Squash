@@ -194,7 +194,7 @@ end
 	@within Squash
 ]]
 function Squash.Des.Color3(y: string): Color3
-	return Color3.new(string.byte(y, 1) / 255, string.byte(y, 2) / 255, string.byte(y, 3) / 255)
+	return Color3.fromRGB(string.byte(y, 1), string.byte(y, 2), string.byte(y, 3))
 end
 
 --[[
