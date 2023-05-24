@@ -1,5 +1,62 @@
 --!strict
 
+local function bytesAssert(bytes: number)
+	assert(
+		bytes == 1 or bytes == 2 or bytes == 3 or bytes == 4 or bytes == 5 or bytes == 6 or bytes == 7 or bytes == 8,
+		'bytes must be 1, 2, 3, 4, 5, 6, 7, or 8'
+	)
+end
+
+local function serArrayNumber<T>(ser: (number, T) -> string)
+	return function(bytes: number, x: { T }): string
+		bytesAssert(bytes)
+
+		local y = {}
+		for i, v in x do
+			y[i] = ser(bytes, v)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayNumber<T>(des: (number, string) -> T)
+	return function(bytes: number, y: string): { T }
+		bytesAssert(bytes)
+
+		local x = {}
+		for i = 1, #y / bytes do
+			local a = bytes * (i - 1) + 1
+			local b = bytes * i
+			x[i] = des(bytes, string.sub(y, a, b))
+		end
+		return x
+	end
+end
+
+local function serArrayInstance<T>(ser: (T) -> string)
+	return function(x: { T }): string
+		local y = {}
+		for i, v in x do
+			y[i] = ser(v)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayInstance<T>(bytes: number, des: (string) -> T)
+	bytesAssert(bytes)
+
+	return function(y: string): { T }
+		local x = {}
+		for i = 1, #y / bytes do
+			local a = bytes * (i - 1) + 1
+			local b = bytes * i
+			x[i] = des(string.sub(y, a, b))
+		end
+		return x
+	end
+end
+
 --[[
 	@class Squash
 
@@ -7,8 +64,8 @@
 ]]
 local Squash = {}
 
-Squash.Ser = {}
-Squash.Des = {}
+Squash.Ser = { Array = {} }
+Squash.Des = { Array = {} }
 
 --[[
 	@within Squash
@@ -38,16 +95,7 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Boolean(y: string): (
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean,
-	boolean
-)
+function Squash.Des.Boolean(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = string.byte(y)
 	return (x * 2 ^ -0) % 2 >= 1,
 		(x * 2 ^ -1) % 2 >= 1,
@@ -62,19 +110,10 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Ser.ArrayBoolean(x: { boolean }): string
+function Squash.Ser.Array.Boolean(x: { boolean }): string
 	local y = {}
 	for i = 1, math.ceil(#x / 8) do
-		y[i] = Squash.Ser.Boolean(
-			x[i + 0],
-			x[i + 1],
-			x[i + 2],
-			x[i + 3],
-			x[i + 4],
-			x[i + 5],
-			x[i + 6],
-			x[i + 7]
-		)
+		y[i] = Squash.Ser.Boolean(x[i + 0], x[i + 1], x[i + 2], x[i + 3], x[i + 4], x[i + 5], x[i + 6], x[i + 7])
 	end
 	return table.concat(y)
 end
@@ -82,7 +121,7 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Des.ArrayBoolean(y: string): { boolean }
+function Squash.Des.Array.Boolean(y: string): { boolean }
 	local x = {}
 	for i = 1, #y do
 		local j = 8 * i
@@ -90,20 +129,6 @@ function Squash.Des.ArrayBoolean(y: string): { boolean }
 			Squash.Des.Boolean(string.sub(y, i, i))
 	end
 	return x
-end
-
-local function bytesAssert(bytes: number)
-	assert(
-		bytes == 1
-			or bytes == 2
-			or bytes == 3
-			or bytes == 4
-			or bytes == 5
-			or bytes == 6
-			or bytes == 7
-			or bytes == 8,
-		"bytes must be 1, 2, 3, 4, 5, 6, 7, or 8"
-	)
 end
 
 --[[
@@ -135,30 +160,12 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Ser.ArrayUint(bytes: number, x: { number }): string
-	bytesAssert(bytes)
-
-	local y = {}
-	for i, v in x do
-		y[i] = Squash.Ser.Uint(bytes, v)
-	end
-	return table.concat(y)
-end
+Squash.Ser.Array.Uint = serArrayNumber(Squash.Ser.Uint)
 
 --[[
 	@within Squash
 --]]
-function Squash.Des.ArrayUint(bytes: number, y: string): { number }
-	bytesAssert(bytes)
-
-	local x = {}
-	for i = 1, #y / bytes do
-		local a = bytes * (i - 1) + 1
-		local b = bytes * i
-		x[i] = Squash.Des.Uint(bytes, string.sub(y, a, b))
-	end
-	return x
-end
+Squash.Des.Array.Uint = desArrayNumber(Squash.Des.Uint)
 
 --[[
 	@within Squash
@@ -183,76 +190,148 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Ser.ArrayInt(bytes: number, x: { number }): string
-	bytesAssert(bytes)
-
-	local y = {}
-	for i, v in x do
-		y[i] = Squash.Ser.Int(bytes, v)
-	end
-	return table.concat(y)
-end
+Squash.Ser.Array.Int = serArrayNumber(Squash.Ser.Int)
 
 --[[
 	@within Squash
 --]]
-function Squash.Des.ArrayInt(bytes: number, y: string): { number }
-	bytesAssert(bytes)
+Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 
-	local x = {}
-	for i = 1, #y / bytes do
-		local a = bytes * (i - 1) + 1
-		local b = bytes * i
-		x[i] = Squash.Des.Int(bytes, string.sub(y, a, b))
-	end
-	return x
+--[[
+	@within Squash
+]]
+function Squash.Ser.Axes(axes: Axes)
+	return Squash.Ser.Boolean(axes.X, axes.Y, axes.Z)
+		.. Squash.Ser.Boolean(axes.Top, axes.Bottom, axes.Left, axes.Right, axes.Back, axes.Front)
 end
 
 --[[
 	@within Squash
 ]]
+function Squash.Des.Axes(y: string): Axes
+	local axes = Axes.new()
+	axes.X, axes.Y, axes.Z = Squash.Des.Boolean(string.sub(y, 1))
+	axes.Top, axes.Bottom, axes.Left, axes.Right, axes.Back, axes.Front = Squash.Des.Boolean(string.sub(y, 2))
+	return axes
+end
+
+--[[
+	@within Squash
+--]]
+Squash.Ser.Array.Axes = serArrayInstance(Squash.Ser.Axes)
+
+--[[
+	@within Squash
+--]]
+Squash.Des.Array.Axes = desArrayInstance(8, Squash.Des.Axes)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.BrickColor(x: BrickColor): string
+	return Squash.Ser.Uint(2, x.Number)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.BrickColor(y: string): BrickColor
+	return BrickColor.new(Squash.Des.Uint(2, y))
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.BrickColor = serArrayInstance(Squash.Ser.BrickColor)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.BrickColor = desArrayInstance(2, Squash.Des.BrickColor)
+
+--[[
+	@within Squash
+]]
 function Squash.Ser.Color3(x: Color3): string
-	return string.char(
-		x.R * 255,
-		x.G * 255,
-		x.B * 255
-	)
+	return string.char(x.R * 255, x.G * 255, x.B * 255)
 end
 
 --[[
 	@within Squash
 ]]
 function Squash.Des.Color3(y: string): Color3
-	return Color3.new(
-		string.byte(y, 1) / 255,
-		string.byte(y, 2) / 255,
-		string.byte(y, 3) / 255
-	)
+	return Color3.fromRGB(string.byte(y, 1), string.byte(y, 2), string.byte(y, 3))
 end
 
 --[[
 	@within Squash
 ]]
-function Squash.Ser.ArrayColor3(x: { Color3 }): string
-	local y = {}
-	for i, v in x do
-		y[i] = Squash.Ser.Color3(v)
-	end
-	return table.concat(y)
+Squash.Ser.Array.Color3 = serArrayInstance(Squash.Ser.Color3)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Color3 = desArrayInstance(3, Squash.Des.Color3)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.DateTime(x: DateTime): string
+	return Squash.Ser.Uint(5, x.UnixTimestamp + 17_987_443_200)
 end
 
 --[[
 	@within Squash
 ]]
-function Squash.Des.ArrayColor3(y: string): { Color3 }
-	local x = {}
-	for i = 1, #y / 3 do
-		local a = 3 * (i - 1) + 1
-		local b = 3 * i
-		x[i] = Squash.Des.Color3(string.sub(y, a, b))
-	end
+function Squash.Des.DateTime(y: string): DateTime
+	return DateTime.fromUnixTimestamp(Squash.Des.Uint(5, y) - 17_987_443_200)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.ArrayDateTime = serArrayInstance(Squash.Ser.DateTime)
+
+--[[
+	@within Squash
+]]
+Squash.Des.ArrayDateTime = desArrayInstance(5, Squash.Des.DateTime)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.DockWidgetPluginGuiInfo(x: DockWidgetPluginGuiInfo): string
+	return table.concat {
+		Squash.Ser.Boolean(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore),
+		Squash.Ser.Int(2, x.FloatingXSize),
+		Squash.Ser.Int(2, x.FloatingYSize),
+		Squash.Ser.Int(2, x.MinWidth),
+		Squash.Ser.Int(2, x.MinHeight),
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.DockWidgetPluginGuiInfo(y: string): DockWidgetPluginGuiInfo
+	local x = DockWidgetPluginGuiInfo.new()
+	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.Des.Boolean(string.sub(y, 1))
+	x.FloatingXSize = Squash.Des.Int(2, string.sub(y, 2, 3))
+	x.FloatingYSize = Squash.Des.Int(2, string.sub(y, 4, 5))
+	x.MinWidth = Squash.Des.Int(2, string.sub(y, 6, 7))
+	x.MinHeight = Squash.Des.Int(2, string.sub(y, 8, 9))
 	return x
 end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.ArrayDockWidgetPluginGuiInfo = serArrayInstance(Squash.Ser.DockWidgetPluginGuiInfo)
+
+--[[
+	@within Squash
+]]
+Squash.Des.ArrayDockWidgetPluginGuiInfo = desArrayInstance(9, Squash.Des.DockWidgetPluginGuiInfo)
 
 --[[
 	@within Squash
@@ -274,26 +353,12 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Ser.ArrayColorSequenceKeypoint(x: { ColorSequenceKeypoint }): string
-	local y = {}
-	for i, v in x do
-		y[i] = Squash.Ser.ColorSequenceKeypoint(v)
-	end
-	return table.concat(y)
-end
+Squash.Ser.Array.ColorSequenceKeypoint = serArrayInstance(Squash.Ser.ColorSequenceKeypoint)
 
 --[[
 	@within Squash
 ]]
-function Squash.Des.ArrayColorSequenceKeypoint(y: string): { ColorSequenceKeypoint }
-	local x = {}
-	for i = 1, #y / 4 do
-		local a = 4 * (i - 1) + 1
-		local b = 4 * i
-		x[i] = Squash.Des.ColorSequenceKeypoint(string.sub(y, a, b))
-	end
-	return x
-end
+Squash.Des.Array.ColorSequenceKeypoint = desArrayInstance(4, Squash.Des.ColorSequenceKeypoint)
 
 return Squash
 
@@ -366,8 +431,6 @@ return Squash
 
 -- Array Stuff
 
-
-
 -- local function printarray(arr: { number })
 -- 	return "[" .. table.concat(arr, ", ") .. "]"
 -- end
@@ -393,4 +456,3 @@ return Squash
 -- for i = 1, 8 do
 -- 	test("ArrayUint", i, numbers)
 -- end
-
