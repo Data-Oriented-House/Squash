@@ -233,6 +233,19 @@ function Squash.Ser.ArrayBrickColor(x: { BrickColor }): string
 	return table.concat(y)
 end
 
+--[[
+	@within Squash
+--]]
+function Squash.Des.ArrayBrickColor(y: string): { BrickColor }
+	local x = {}
+	for i = 1, #y / 2 do
+		local a = 2 * (i - 1) + 1
+		local b = 2 * i
+		x[i] = Squash.Des.BrickColor(string.sub(y, a, b))
+	end
+	return x
+end
+
 return Squash
 
 -- String Stuff
