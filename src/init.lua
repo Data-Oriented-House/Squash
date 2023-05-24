@@ -252,6 +252,30 @@ Squash.Des.Array.BrickColor = desArrayInstance(2, Squash.Des.BrickColor)
 --[[
 	@within Squash
 ]]
+function Squash.Ser.Color3(x: Color3): string
+	return string.char(x.R * 255, x.G * 255, x.B * 255)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Color3(y: string): Color3
+	return Color3.fromRGB(string.byte(y, 1), string.byte(y, 2), string.byte(y, 3))
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Color3 = serArrayInstance(Squash.Ser.Color3)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Color3 = desArrayInstance(3, Squash.Des.Color3)
+
+--[[
+	@within Squash
+]]
 function Squash.Ser.DateTime(x: DateTime): string
 	return Squash.Ser.Uint(5, x.UnixTimestamp + 17_987_443_200)
 end
