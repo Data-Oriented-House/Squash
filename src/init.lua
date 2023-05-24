@@ -241,7 +241,7 @@ end
 
 --[[
 	@within Squash
-]]
+--]]
 function Squash.Ser.ArrayAxes(x: { Axes }): string
 	local y = {}
 	for i, v in x do
@@ -252,13 +252,51 @@ end
 
 --[[
 	@within Squash
-]]
+--]]
 function Squash.Des.ArrayAxes(y: string): { Axes }
 	local x = {}
 	for i = 1, #y / 8 do
 		local a = 8 * (i - 1) + 1
 		local b = 8 * i
 		x[i] = Squash.Des.Axes(string.sub(y, a, b))
+	end
+	return x
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.BrickColor(x: BrickColor): string
+	return Squash.Ser.Uint(2, x.Number)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.BrickColor(y: string): BrickColor
+	return BrickColor.new(Squash.Des.Uint(2, y))
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.ArrayBrickColor(x: { BrickColor }): string
+	local y = {}
+	for i, v in x do
+		y[i] = Squash.Ser.BrickColor(v)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.ArrayBrickColor(y: string): { BrickColor }
+	local x = {}
+	for i = 1, #y / 2 do
+		local a = 2 * (i - 1) + 1
+		local b = 2 * i
+		x[i] = Squash.Des.BrickColor(string.sub(y, a, b))
 	end
 	return x
 end
