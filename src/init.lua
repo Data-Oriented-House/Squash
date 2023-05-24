@@ -9,6 +9,8 @@ end
 
 local function serArrayNumber<T>(ser: (number, T) -> string)
 	return function(bytes: number, x: { T }): string
+		bytesAssert(bytes)
+
 		local y = {}
 		for i, v in x do
 			y[i] = ser(bytes, v)
@@ -42,6 +44,8 @@ local function serArrayInstance<T>(ser: (T) -> string)
 end
 
 local function desArrayInstance<T>(bytes: number, des: (string) -> T)
+	bytesAssert(bytes)
+
 	return function(y: string): { T }
 		local x = {}
 		for i = 1, #y / bytes do
@@ -196,7 +200,7 @@ Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Axes(axes: Axes)
+function Squash.Ser.Axes(axes: Axes) 
 	return Squash.Ser.Array.Boolean {
 		axes.X,
 		axes.Y,
