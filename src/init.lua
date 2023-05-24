@@ -212,7 +212,7 @@ end
 	@within Squash
 ]]
 function Squash.Ser.DateTime(x: DateTime): string
-	return Squash.Ser.Uint(5, x.UnixTimestamp)
+	return Squash.Ser.Uint(5, x.UnixTimestamp + 17_987_443_200)
 end
 
 --[[
@@ -220,7 +220,7 @@ end
 ]]
 function Squash.Des.DateTime(y: string): DateTime
 	return DateTime.fromUnixTimestamp(
-		Squash.Des.Uint(5, y)
+		Squash.Des.Uint(5, y) - 17_987_443_200
 	)
 end
 
