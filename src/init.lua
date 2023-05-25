@@ -380,13 +380,12 @@ function Squash.Ser.CFrame(posBytes: number, x: CFrame, ser: NumberSer?): string
 	local rx, ry, rz = x:ToOrientation()
 	local px, py, pz = x.Position.X, x.Position.Y, x.Position.Z
 
-	return
-		serAngle(rx) ..
-		serAngle(ry) ..
-		serAngle(rz) ..
-		encoding(posBytes, px) ..
-		encoding(posBytes, py) ..
-		encoding(posBytes, pz)
+	return serAngle(rx)
+		.. serAngle(ry)
+		.. serAngle(rz)
+		.. encoding(posBytes, px)
+		.. encoding(posBytes, py)
+		.. encoding(posBytes, pz)
 end
 
 --[[
@@ -501,6 +500,76 @@ Squash.Ser.Array.Color3 = serArrayFixed(Squash.Ser.Color3)
 	@within Squash
 ]]
 Squash.Des.Array.Color3 = desArrayFixed(3, Squash.Des.Color3)
+
+local function getBitSize(x: number): number
+	return math.ceil(math.log(x, 2 ^ 1))
+end
+
+local function getByteSize(x: number): number
+	return math.ceil(math.log(x, 2 ^ 8))
+end
+
+local function getEnumData(enum: Enum): ({ EnumItem }, number)
+	local enumItems = enum:GetEnumItems()
+	local enumSize = getBitSize(#enumItems)
+	return enumItems, enumSize
+end
+
+local bundleTypes, bundleTypeSize = getEnumData(Enum.BundleType)
+local avatarAssetTypes, avatarAssetSize = getEnumData(Enum.AvatarAssetType)
+local salesTypeFilters, salesTypeFilterSize = getEnumData(Enum.SalesTypeFilter)
+local catalogCategoryFilters, catalogCategoryFilterSize = getEnumData(Enum.CatalogCategoryFilter)
+local catalogSortAggregations, catalogSortAggregationSize = getEnumData(Enum.CatalogSortAggregation)
+local catalogSortTypes, catalogSortSize = getEnumData(Enum.CatalogSortType)
+
+--! Only works for up to 52 elements
+local function packBits(bits: number | { number }, x: { number }): string
+	local size = getByteSize(#x)
+
+	if typeof(bits) == 'number' then
+		local y = 0
+		for i, v in x do
+			y += v * 2 ^ (size * (i - 1))
+		end
+		return Squash.Ser.Uint(math.ceil(size / 8), y)
+	else
+		local y = 0
+		for i, v in x do
+			y += v * 2 ^ (bits[i] * (i - 1))
+		end
+		return Squash.Ser.Uint(size, y)
+	end
+end
+
+--! Only works for up to 52 elements
+local function unpackBits(bits: number | { number }, y: string): { number }
+	local size = getBitSize(#y * 8)
+
+	local x = {}
+	if typeof(bits) == 'number' then
+		local z = Squash.Des.Uint(bits, y)
+		for i = 1, size do
+			x[i] = z % 2 ^ bits
+			z = math.floor(z * 2 ^ -bits)
+		end
+	else
+		local z = Squash.Des.Uint(bits[1], y)
+		for i = 1, size do
+			x[i] = z % 2 ^ bits[i]
+			z = math.floor(z * 2 ^ -bits[i])
+		end
+	end
+	return x
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.CatalogSearchParams(x: CatalogSearchParams): string
+	local sortTypeId = table.find(catalogSortTypes, x.SortType) :: number
+	local includeOffSaleAndSortType = 2 * sortTypeId + if x.IncludeOffSale then 1 else 0
+	return string.char(includeOffSaleAndSortType) ..
+end
 
 --[[
 	@within Squash
@@ -634,11 +703,7 @@ Squash.Ser.Array.Faces = serArrayFixed(Squash.Ser.Faces)
 ]]
 Squash.Des.Array.Faces = desArrayFixed(1, Squash.Des.Faces)
 
-local fontWeights = {} :: { [number]: Enum.FontWeight }
-
-for _, weight in Enum.FontWeight:GetEnumItems() do
-	fontWeights[weight.Value] = weight
-end
+local fontWeights, _ = getEnumData(Enum.FontWeight)
 
 --[[
 	@within Squash
@@ -647,7 +712,8 @@ function Squash.Ser.Font(x: Font): string
 	local family = string.match(x.Family, '(.+)%..+$')
 	assert(family, 'Font Family must be a Roblox font')
 
-	local styleAndWeight = string.char(x.Weight.Value / 50 + if x.Style == Enum.FontStyle.Normal then 1 else 0) -- Weight.Value is 100, 200, 300, etc. We want 2, 4, 6, etc. so that we can fit it into a byte without overriding the style bit
+	local weightId = table.find(fontWeights, x.Weight) :: number
+	local styleAndWeight = string.char(2 * weightId + if x.Style == Enum.FontStyle.Normal then 1 else 0) -- Weight.Value is 100, 200, 300, etc. We want 2, 4, 6, etc. so that we can fit it into a byte without overriding the style bit
 
 	return styleAndWeight .. family -- TODO: This needs a way to be serialized still
 end
@@ -660,9 +726,10 @@ function Squash.Des.Font(y: string): Font
 	local family = string.sub(y, 2)
 
 	local style = if styleAndWeight % 2 == 1 then Enum.FontStyle.Normal else Enum.FontStyle.Italic
-	local weight = fontWeights[math.floor(styleAndWeight / 2)]
+	local weightId = math.floor(styleAndWeight / 2)
+	local fontWeight = fontWeights[weightId] :: Enum.FontWeight
 
-	return Font.new(family, weight, style)
+	return Font.new(family, fontWeight, style)
 end
 
 --[[
@@ -755,7 +822,10 @@ end
 	@within Squash
 ]]
 function Squash.Des.Region3(bytes: number, y: string, des: NumberDes?): Region3
-	return Region3.new(Squash.Des.Vector3(bytes, string.sub(y, 1, 12), des), Squash.Des.Vector3(bytes, string.sub(y, 13, 24), des))
+	return Region3.new(
+		Squash.Des.Vector3(bytes, string.sub(y, 1, 12), des),
+		Squash.Des.Vector3(bytes, string.sub(y, 13, 24), des)
+	)
 end
 
 --[[
