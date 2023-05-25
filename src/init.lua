@@ -177,7 +177,7 @@ Squash.Ser.Array.Int = serArrayNumber(Squash.Ser.Int)
 Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 
 local function floatAssert(bytes: number)
-	assert(bytes == 4 or bytes == 8, 'Expected bytes are 4 or 8. Invalid number of bytes for floating point: ' .. bytes)
+	assert(bytes == 4 or bytes == 8, 'Expected 4 or 8 bytes. Invalid number of bytes for floating point: ' .. bytes)
 end
 
 --[[
@@ -209,6 +209,30 @@ Squash.Des.Array.Float = desArrayNumber(Squash.Des.Float)
 type NumberSer = typeof(Squash.Ser.Int)
 type NumberDes = typeof(Squash.Des.Int)
 
+local function serArrayVector<T>(serializer: (number, T, NumberSer?) -> string)
+	return function(bytes: number, x: { T }, ser: NumberSer?): string
+		local encoding = ser or Squash.Ser.Int
+		local y = {}
+		for i, v in x do
+			y[i] = serializer(bytes, v, encoding)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayVector<T>(elements: number, deserializer: (number, string, NumberDes?) -> T)
+	return function(bytes: number, y: string, des: NumberDes?): { T }
+		local decoding = des or Squash.Des.Int
+		local x = {}
+		for i = 1, #y / (elements * bytes) do
+			local a = elements * bytes * (i - 1) + 1
+			local b = elements * bytes * i
+			x[i] = deserializer(bytes, string.sub(y, a, b), decoding)
+		end
+		return x
+	end
+end
+
 --[[
 	@within Squash
 ]]
@@ -231,36 +255,17 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Ser.Array.Vector2(bytes: number, x: { Vector2 }, ser: NumberSer?): string
-	local encoding = ser or Squash.Ser.Int
-	local y = {}
-	for i, v in x do
-		y[i] = encoding(bytes, v.X) .. encoding(bytes, v.Y)
-	end
-	return table.concat(y)
-end
+Squash.Ser.Array.Vector2 = serArrayVector(Squash.Ser.Vector2)
 
 --[[
 	@within Squash
 --]]
-function Squash.Des.Array.Vector2(bytes: number, y: string, des: NumberDes?): { Vector2 }
-	local decoding = des or Squash.Des.Int
-	local x = {}
-	for i = 1, #y / (2 * bytes) do
-		local a = 2 * bytes * (i - 1) + 1
-		local b = 2 * bytes * i
-		x[i] = Vector2.new(
-			decoding(bytes, string.sub(y, a, a + bytes)),
-			decoding(bytes, string.sub(y, a + bytes, b))
-		)
-	end
-	return x
-end
+Squash.Des.Array.Vector2 = desArrayVector(2, Squash.Des.Vector2)
 
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Vector3(bytes: number, x: Vector3, ser: NumberSer): string
+function Squash.Ser.Vector3(bytes: number, x: Vector3, ser: NumberSer?): string
 	local encoding = ser or Squash.Ser.Int
 	return encoding(bytes, x.X) .. encoding(bytes, x.Y) .. encoding(bytes, x.Z)
 end
@@ -280,32 +285,12 @@ end
 --[[
 	@within Squash
 --]]
-function Squash.Ser.Array.Vector3(bytes: number, x: { Vector3 }, ser: NumberSer?): string
-	local encoding = ser or Squash.Ser.Int
-	local y = {}
-	for i, v in x do
-		y[i] = encoding(bytes, v.X) .. encoding(bytes, v.Y) .. encoding(bytes, v.Z)
-	end
-	return table.concat(y)
-end
+Squash.Ser.Array.Vector3 = serArrayVector(Squash.Ser.Vector3)
 
 --[[
 	@within Squash
 --]]
-function Squash.Des.Array.Vector3(bytes: number, y: string, des: NumberDes?): { Vector3 }
-	local decoding = des or Squash.Des.Int
-	local x = {}
-	for i = 1, #y / (3 * bytes) do
-		local a = 3 * bytes * (i - 1) + 1
-		local b = 3 * bytes * i
-		x[i] = Vector3.new(
-			decoding(bytes, string.sub(y, a, a + bytes)),
-			decoding(bytes, string.sub(y, a + bytes, a + 2 * bytes)),
-			decoding(bytes, string.sub(y, a + 2 * bytes, b))
-		)
-	end
-	return x
-end
+Squash.Des.Array.Vector3 = desArrayVector(3, Squash.Des.Vector3)
 
 local function serArrayFixed<T>(ser: (T) -> string)
 	return function(x: { T }): string
@@ -328,6 +313,33 @@ local function desArrayFixed<T>(bytes: number, des: (string) -> T)
 		return x
 	end
 end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Vector2int16(x: Vector2int16)
+	return table.concat {
+		Squash.Ser.Int(2, x.X),
+		Squash.Ser.Int(2, x.Y),
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Vector2int16(y: string): Vector2int16
+	return Vector2int16.new(Squash.Des.Int(2, string.sub(y, 1, 2)), Squash.Des.Int(2, string.sub(y, 3, 4)))
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Vector2int16 = serArrayFixed(Squash.Ser.Vector2int16)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Vector2int16 = desArrayFixed(4, Squash.Des.Vector2int16)
 
 --[[
 	@within Squash
@@ -688,33 +700,6 @@ Squash.Ser.Array.RaycastParams = serArrayFixed(Squash.Ser.RaycastParams) --TODO:
 	@within Squash
 ]]
 Squash.Des.Array.RaycastParams = desArrayFixed(-1, Squash.Des.RaycastParams) --TODO: Same story
-
---[[
-	@within Squash
-]]
-function Squash.Ser.Vector2int16(x: Vector2int16)
-	return table.concat {
-		Squash.Ser.Int(2, x.X),
-		Squash.Ser.Int(2, x.Y),
-	}
-end
-
---[[
-	@within Squash
-]]
-function Squash.Des.Vector2int16(y: string): Vector2int16
-	return Vector2int16.new(Squash.Des.Int(2, string.sub(y, 1, 2)), Squash.Des.Int(2, string.sub(y, 3, 4)))
-end
-
---[[
-	@within Squash
-]]
-Squash.Ser.Array.Vector2int16 = serArrayFixed(Squash.Ser.Vector2int16)
-
---[[
-	@within Squash
-]]
-Squash.Des.Array.Vector2int16 = desArrayFixed(4, Squash.Des.Vector2int16)
 
 --[[
 	@within Squash
