@@ -404,16 +404,11 @@ Squash.Ser.Array.Faces = serArrayInstance(Squash.Ser.Faces)
 ]]
 Squash.Des.Array.Faces = desArrayInstance(1, Squash.Des.Faces)
 
-local fontWeights = {} :: {[number]: Enum.FontWeight}
+local fontWeights = {} :: { [number]: Enum.FontWeight }
 
 for _, weight in Enum.FontWeight:GetEnumItems() do
 	fontWeights[weight.Value] = weight
 end
-
-local fontStyle = {
-	[Enum.FontStyle.Normal.Value] = Enum.FontStyle.Normal,
-	[Enum.FontStyle.Italic.Value] = Enum.FontStyle.Italic,
-}
 
 --[[
 	@within Squash
@@ -422,12 +417,7 @@ function Squash.Ser.Font(x: Font): string
 	local family = string.match(x.Family, '(.+)%..+$')
 	assert(family, 'Font Family must be a Roblox font')
 
-	local weight = x.Weight.Value / 100
-	local style = if x.Style == Enum.FontStyle.Normal then 0 else 1
-
-	local styleAndWeight = string.char(
-		style + 2 * weight
-	)
+	local styleAndWeight = string.char(x.Weight.Value / 50 + if x.Style == Enum.FontStyle.Normal then 1 else 0) -- Weight.Value is 100, 200, 300, etc. We want 2, 4, 6, etc. so that we can fit it into a byte without overriding the style bit
 
 	return table.concat {
 		styleAndWeight,
@@ -442,7 +432,7 @@ function Squash.Des.Font(y: string): Font
 	local styleAndWeight = string.byte(y, 1, 1)
 	local family = string.sub(y, 2)
 
-	local style = fontStyle[styleAndWeight % 2]
+	local style = if styleAndWeight % 2 == 1 then Enum.FontStyle.Normal else Enum.FontStyle.Italic
 	local weight = fontWeights[math.floor(styleAndWeight / 2)]
 
 	return Font.new(family, weight, style)
@@ -456,7 +446,47 @@ Squash.Ser.Array.Font = serArrayInstance(Squash.Ser.Font) -- TODO: This needs a 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Font = desArrayInstance(1, Squash.Des.Font) --TODO: Same story ^^^^
+Squash.Des.Array.Font = desArrayInstance(1, Squash.Des.Font) --TODO: Same story
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.OverlapParams(x: OverlapParams): string
+	return table.concat {
+		string.char(
+			(if x.FilterType == Enum.RaycastFilterType.Include then 1 else 0) + (if x.RespectCanCollide then 2 else 0)
+		),
+		Squash.Ser.Uint(2, x.MaxParts),
+		x.CollisionGroup, -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated. --TODO: Same story
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.OverlapParams(y: string): OverlapParams
+	local filterTypeAndRespectCanCollide = string.byte(y, 1)
+
+	local x = OverlapParams.new()
+	x.CollisionGroup = string.sub(y, 4) --TODO: Same story
+	x.MaxParts = Squash.Des.Uint(2, string.sub(y, 2, 3))
+	x.RespectCanCollide = filterTypeAndRespectCanCollide >= 2
+	x.FilterType = if filterTypeAndRespectCanCollide % 2 == 0
+		then Enum.RaycastFilterType.Include
+		else Enum.RaycastFilterType.Exclude
+
+	return x
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.OverlapParams = serArrayInstance(Squash.Ser.OverlapParams) --TODO: Same story
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.OverlapParams = desArrayInstance(-1, Squash.Des.OverlapParams) --TODO: Same story
 
 return Squash
 
