@@ -488,6 +488,41 @@ Squash.Ser.Array.OverlapParams = serArrayInstance(Squash.Ser.OverlapParams) --TO
 ]]
 Squash.Des.Array.OverlapParams = desArrayInstance(-1, Squash.Des.OverlapParams) --TODO: Same story
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.RaycastParams(x: RaycastParams): string
+	return table.concat {
+		Squash.Ser.Boolean(x.FilterType == Enum.RaycastFilterType.Include, x.IgnoreWater, x.RespectCanCollide),
+		x.CollisionGroup, --TODO: Same story
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.RaycastParams(y: string): RaycastParams
+	local isInclude, ignoreWater, respectCanCollide = Squash.Des.Boolean(string.sub(y, 1, 1))
+
+	local x = RaycastParams.new()
+	x.CollisionGroup = string.sub(y, 2) --TODO: Same story
+	x.RespectCanCollide = respectCanCollide
+	x.IgnoreWater = ignoreWater
+	x.FilterType = if isInclude then Enum.RaycastFilterType.Include else Enum.RaycastFilterType.Exclude
+
+	return x
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.RaycastParams = serArrayInstance(Squash.Ser.RaycastParams) --TODO: Same story
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.RaycastParams = desArrayInstance(-1, Squash.Des.RaycastParams) --TODO: Same story
+
 return Squash
 
 -- Squash.Ser.Rbx = {}
