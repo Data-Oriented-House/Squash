@@ -455,12 +455,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.ArrayDateTime = serArrayFixed(Squash.Ser.DateTime)
+Squash.Ser.Array.DateTime = serArrayFixed(Squash.Ser.DateTime)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.ArrayDateTime = desArrayFixed(5, Squash.Des.DateTime)
+Squash.Des.Array.DateTime = desArrayFixed(5, Squash.Des.DateTime)
 
 --[[
 	@within Squash
