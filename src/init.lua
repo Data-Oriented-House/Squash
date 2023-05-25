@@ -555,6 +555,33 @@ Squash.Ser.Array.Vector3int16 = serArrayInstance(Squash.Ser.Vector3int16)
 ]]
 Squash.Des.Array.Vector3int16 = desArrayInstance(6, Squash.Des.Vector3int16)
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.Region3int16(x: Region3int16): string
+	return Squash.Ser.Vector3int16(x.Min) .. Squash.Ser.Vector3int16(x.Max)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Region3int16(y: string): Region3int16
+	return Region3int16.new(
+		Squash.Des.Vector3int16(string.sub(y, 1, 6)),
+		Squash.Des.Vector3int16(string.sub(y, 7, 12))
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Region3int16 = serArrayInstance(Squash.Ser.Region3int16)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Region3int16 = desArrayInstance(12, Squash.Des.Region3int16)
+
 return Squash
 
 -- Squash.Ser.Rbx = {}
