@@ -209,7 +209,7 @@ Squash.Des.Array.Float = desArrayNumber(Squash.Des.Float)
 type NumberSer = typeof(Squash.Ser.Int)
 type NumberDes = typeof(Squash.Des.Int)
 
-local function serArrayVector<T>(serializer: (number, T, NumberSer?) -> string)
+local function serArrayVector<T>(serializer: (bytes: number, vector: T, ser: NumberSer?) -> string)
 	return function(bytes: number, x: { T }, ser: NumberSer?): string
 		local encoding = ser or Squash.Ser.Int
 		local y = {}
@@ -220,7 +220,7 @@ local function serArrayVector<T>(serializer: (number, T, NumberSer?) -> string)
 	end
 end
 
-local function desArrayVector<T>(elements: number, deserializer: (number, string, NumberDes?) -> T)
+local function desArrayVector<T>(elements: number, deserializer: (bytes: number, y: string, des: NumberDes?) -> T)
 	return function(bytes: number, y: string, des: NumberDes?): { T }
 		local decoding = des or Squash.Des.Int
 		local x = {}
@@ -246,10 +246,7 @@ end
 ]]
 function Squash.Des.Vector2(bytes: number, y: string, des: NumberDes?): Vector2
 	local decoding = des or Squash.Des.Int
-	return Vector2.new(
-		decoding(bytes, string.sub(y, 1, bytes)),
-		decoding(bytes, string.sub(y, bytes + 1, 2 * bytes))
-	)
+	return Vector2.new(decoding(bytes, string.sub(y, 1, bytes)), decoding(bytes, string.sub(y, bytes + 1, 2 * bytes)))
 end
 
 --[[
@@ -318,10 +315,7 @@ end
 	@within Squash
 ]]
 function Squash.Ser.Vector2int16(x: Vector2int16)
-	return table.concat {
-		Squash.Ser.Int(2, x.X),
-		Squash.Ser.Int(2, x.Y),
-	}
+	return Squash.Ser.Int(2, x.X) .. Squash.Ser.Int(2, x.Y)
 end
 
 --[[
@@ -345,11 +339,7 @@ Squash.Des.Array.Vector2int16 = desArrayFixed(4, Squash.Des.Vector2int16)
 	@within Squash
 ]]
 function Squash.Ser.Vector3int16(x: Vector3int16)
-	return table.concat {
-		Squash.Ser.Int(2, x.X),
-		Squash.Ser.Int(2, x.Y),
-		Squash.Ser.Int(2, x.Z),
-	}
+	return Squash.Ser.Int(2, x.X) .. Squash.Ser.Int(2, x.Y) .. Squash.Ser.Int(2, x.Z)
 end
 
 --[[
@@ -476,13 +466,11 @@ Squash.Des.ArrayDateTime = desArrayFixed(5, Squash.Des.DateTime)
 	@within Squash
 ]]
 function Squash.Ser.DockWidgetPluginGuiInfo(x: DockWidgetPluginGuiInfo): string
-	return table.concat {
-		Squash.Ser.Boolean(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore),
-		Squash.Ser.Int(2, x.FloatingXSize),
-		Squash.Ser.Int(2, x.FloatingYSize),
-		Squash.Ser.Int(2, x.MinWidth),
-		Squash.Ser.Int(2, x.MinHeight),
-	}
+	return Squash.Ser.Boolean(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore)
+		.. Squash.Ser.Int(2, x.FloatingXSize)
+		.. Squash.Ser.Int(2, x.FloatingYSize)
+		.. Squash.Ser.Int(2, x.MinWidth)
+		.. Squash.Ser.Int(2, x.MinHeight)
 end
 
 --[[
@@ -597,10 +585,7 @@ function Squash.Ser.Font(x: Font): string
 
 	local styleAndWeight = string.char(x.Weight.Value / 50 + if x.Style == Enum.FontStyle.Normal then 1 else 0) -- Weight.Value is 100, 200, 300, etc. We want 2, 4, 6, etc. so that we can fit it into a byte without overriding the style bit
 
-	return table.concat {
-		styleAndWeight,
-		family, -- TODO: This needs a way to be serialized still
-	}
+	return styleAndWeight .. family -- TODO: This needs a way to be serialized still
 end
 
 --[[
@@ -630,13 +615,9 @@ Squash.Des.Array.Font = desArrayFixed(1, Squash.Des.Font) --TODO: Same story
 	@within Squash
 ]]
 function Squash.Ser.OverlapParams(x: OverlapParams): string
-	return table.concat {
-		string.char(
-			(if x.FilterType == Enum.RaycastFilterType.Include then 1 else 0) + (if x.RespectCanCollide then 2 else 0)
-		),
-		Squash.Ser.Uint(2, x.MaxParts),
-		x.CollisionGroup, -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated. --TODO: Same story
-	}
+	return string.char(
+		(if x.FilterType == Enum.RaycastFilterType.Include then 1 else 0) + (if x.RespectCanCollide then 2 else 0)
+	) .. Squash.Ser.Uint(2, x.MaxParts) .. x.CollisionGroup -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated. --TODO: Same story
 end
 
 --[[
@@ -670,10 +651,8 @@ Squash.Des.Array.OverlapParams = desArrayFixed(-1, Squash.Des.OverlapParams) --T
 	@within Squash
 ]]
 function Squash.Ser.RaycastParams(x: RaycastParams): string
-	return table.concat {
-		Squash.Ser.Boolean(x.FilterType == Enum.RaycastFilterType.Include, x.IgnoreWater, x.RespectCanCollide),
-		x.CollisionGroup, --TODO: Same story
-	}
+	return Squash.Ser.Boolean(x.FilterType == Enum.RaycastFilterType.Include, x.IgnoreWater, x.RespectCanCollide)
+		.. x.CollisionGroup --TODO: Same story
 end
 
 --[[
