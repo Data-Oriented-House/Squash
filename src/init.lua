@@ -363,6 +363,70 @@ Squash.Ser.Array.Vector3int16 = serArrayFixed(Squash.Ser.Vector3int16)
 ]]
 Squash.Des.Array.Vector3int16 = desArrayFixed(6, Squash.Des.Vector3int16)
 
+local function serAngle(x: number): string
+	return Squash.Ser.Uint(2, (x + math.pi) % (2 * math.pi) * 65535)
+end
+
+local function desAngle(y: string): number
+	return Squash.Des.Uint(2, y) / 65535 - math.pi
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.CFrame(posBytes: number, x: CFrame, ser: NumberSer?): string
+	local encoding = ser or Squash.Ser.Int
+
+	local rx, ry, rz = x:ToOrientation()
+	local px, py, pz = x.Position.X, x.Position.Y, x.Position.Z
+
+	return
+		serAngle(rx) ..
+		serAngle(ry) ..
+		serAngle(rz) ..
+		encoding(posBytes, px) ..
+		encoding(posBytes, py) ..
+		encoding(posBytes, pz)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.CFrame(posBytes: number, y: string, des: NumberDes?): CFrame
+	local decoding = des or Squash.Des.Int
+
+	local rx = desAngle(string.sub(y, 1, 2))
+	local ry = desAngle(string.sub(y, 3, 4))
+	local rz = desAngle(string.sub(y, 5, 6))
+
+	local px = decoding(posBytes, string.sub(y, 7, 7 + posBytes - 1))
+	local py = decoding(posBytes, string.sub(y, 7 + posBytes, 7 + 2 * posBytes - 1))
+	local pz = decoding(posBytes, string.sub(y, 7 + 2 * posBytes, 7 + 3 * posBytes - 1))
+
+	return CFrame.Angles(rx, ry, rz) + Vector3.new(px, py, pz)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.CFrame = serArrayVector(Squash.Ser.CFrame)
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Array.CFrame(posBytes: number, y: string, des: NumberDes?): { CFrame }
+	local decoding = des or Squash.Des.Int
+	local bytes = 7 + 3 * posBytes
+
+	local x = {}
+	for i = 1, #y / bytes do
+		local a = bytes * (i - 1) + 1
+		local b = bytes * i
+		x[i] = Squash.Des.CFrame(posBytes, string.sub(y, a, b), decoding)
+	end
+	return x
+end
+
 --[[
 	@within Squash
 ]]
@@ -679,6 +743,13 @@ Squash.Ser.Array.RaycastParams = serArrayFixed(Squash.Ser.RaycastParams) --TODO:
 	@within Squash
 ]]
 Squash.Des.Array.RaycastParams = desArrayFixed(-1, Squash.Des.RaycastParams) --TODO: Same story
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Region3(bytes: number, x: Region3, ser: NumberSer?): string
+	return Squash.Ser.Vector3(bytes, x.Min, ser) .. Squash.Ser.Vector3(bytes, x.Max, ser)
+end
 
 --[[
 	@within Squash
