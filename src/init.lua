@@ -177,7 +177,7 @@ Squash.Ser.Array.Int = serArrayNumber(Squash.Ser.Int)
 Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 
 local function floatAssert(bytes: number)
-	assert(bytes == 4 or bytes == 8, 'Expected bytes are 4 or 8. Invalid number of bytes for floating: ' .. bytes)
+	assert(bytes == 4 or bytes == 8, 'Expected bytes are 4 or 8. Invalid number of bytes for floating point: ' .. bytes)
 end
 
 --[[
@@ -206,6 +206,59 @@ Squash.Ser.Array.Float = serArrayNumber(Squash.Ser.Float)
 --]]
 Squash.Des.Array.Float = desArrayNumber(Squash.Des.Float)
 
+type NumberSer = typeof(Squash.Ser.Int)
+type NumberDes = typeof(Squash.Des.Int)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Vector3(bytes: number, x: Vector3, ser: NumberSer): string
+	local encoding = ser or Squash.Ser.Int
+	return encoding(bytes, x.X) .. encoding(bytes, x.Y) .. encoding(bytes, x.Z)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Vector3(bytes: number, y: string, des: NumberDes?): Vector3
+	local decoding = des or Squash.Des.Int
+	return Vector3.new(
+		decoding(bytes, string.sub(y, 1, bytes)),
+		decoding(bytes, string.sub(y, bytes + 1, 2 * bytes)),
+		decoding(bytes, string.sub(y, 2 * bytes + 1, 3 * bytes))
+	)
+end
+
+--[[
+	@within Squash
+--]]
+function Squash.Ser.Array.Vector3(bytes: number, x: { Vector3 }, ser: NumberSer?): string
+	local encoding = ser or Squash.Ser.Int
+	local y = {}
+	for i, v in x do
+		y[i] = encoding(bytes, v.X) .. encoding(bytes, v.Y) .. encoding(bytes, v.Z)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+--]]
+function Squash.Des.Array.Vector3(bytes: number, y: string, des: NumberDes?): { Vector3 }
+	local decoding = des or Squash.Des.Int
+	local x = {}
+	for i = 1, #y / (3 * bytes) do
+		local a = 3 * bytes * (i - 1) + 1
+		local b = 3 * bytes * i
+		x[i] = Vector3.new(
+			decoding(bytes, string.sub(y, a, a + bytes)),
+			decoding(bytes, string.sub(y, a + bytes, a + 2 * bytes)),
+			decoding(bytes, string.sub(y, a + 2 * bytes, b))
+		)
+	end
+	return x
+end
+
 local function serArrayInstance<T>(ser: (T) -> string)
 	return function(x: { T }): string
 		local y = {}
@@ -227,6 +280,38 @@ local function desArrayInstance<T>(bytes: number, des: (string) -> T)
 		return x
 	end
 end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Vector3int16(x: Vector3int16)
+	return table.concat {
+		Squash.Ser.Int(2, x.X),
+		Squash.Ser.Int(2, x.Y),
+		Squash.Ser.Int(2, x.Z),
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Vector3int16(y: string): Vector3int16
+	return Vector3int16.new(
+		Squash.Des.Int(2, string.sub(y, 1, 2)),
+		Squash.Des.Int(2, string.sub(y, 3, 4)),
+		Squash.Des.Int(2, string.sub(y, 5, 6))
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Vector3int16 = serArrayInstance(Squash.Ser.Vector3int16)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Vector3int16 = desArrayInstance(6, Squash.Des.Vector3int16)
 
 --[[
 	@within Squash
@@ -582,38 +667,6 @@ Squash.Ser.Array.Vector2int16 = serArrayInstance(Squash.Ser.Vector2int16)
 	@within Squash
 ]]
 Squash.Des.Array.Vector2int16 = desArrayInstance(4, Squash.Des.Vector2int16)
-
---[[
-	@within Squash
-]]
-function Squash.Ser.Vector3int16(x: Vector3int16)
-	return table.concat {
-		Squash.Ser.Int(2, x.X),
-		Squash.Ser.Int(2, x.Y),
-		Squash.Ser.Int(2, x.Z),
-	}
-end
-
---[[
-	@within Squash
-]]
-function Squash.Des.Vector3int16(y: string): Vector3int16
-	return Vector3int16.new(
-		Squash.Des.Int(2, string.sub(y, 1, 2)),
-		Squash.Des.Int(2, string.sub(y, 3, 4)),
-		Squash.Des.Int(2, string.sub(y, 5, 6))
-	)
-end
-
---[[
-	@within Squash
-]]
-Squash.Ser.Array.Vector3int16 = serArrayInstance(Squash.Ser.Vector3int16)
-
---[[
-	@within Squash
-]]
-Squash.Des.Array.Vector3int16 = desArrayInstance(6, Squash.Des.Vector3int16)
 
 --[[
 	@within Squash
