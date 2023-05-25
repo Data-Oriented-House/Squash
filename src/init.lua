@@ -1,60 +1,5 @@
 --!strict
 
-local function bytesAssert(bytes: number)
-	assert(
-		bytes == 1 or bytes == 2 or bytes == 3 or bytes == 4 or bytes == 5 or bytes == 6 or bytes == 7 or bytes == 8,
-		'bytes must be 1, 2, 3, 4, 5, 6, 7, or 8'
-	)
-end
-
-local function serArrayNumber<T>(ser: (number, T) -> string)
-	return function(bytes: number, x: { T }): string
-		bytesAssert(bytes)
-
-		local y = {}
-		for i, v in x do
-			y[i] = ser(bytes, v)
-		end
-		return table.concat(y)
-	end
-end
-
-local function desArrayNumber<T>(des: (number, string) -> T)
-	return function(bytes: number, y: string): { T }
-		bytesAssert(bytes)
-
-		local x = {}
-		for i = 1, #y / bytes do
-			local a = bytes * (i - 1) + 1
-			local b = bytes * i
-			x[i] = des(bytes, string.sub(y, a, b))
-		end
-		return x
-	end
-end
-
-local function serArrayInstance<T>(ser: (T) -> string)
-	return function(x: { T }): string
-		local y = {}
-		for i, v in x do
-			y[i] = ser(v)
-		end
-		return table.concat(y)
-	end
-end
-
-local function desArrayInstance<T>(bytes: number, des: (string) -> T)
-	return function(y: string): { T }
-		local x = {}
-		for i = 1, #y / bytes do
-			local a = bytes * (i - 1) + 1
-			local b = bytes * i
-			x[i] = des(string.sub(y, a, b))
-		end
-		return x
-	end
-end
-
 --[[
 	@class Squash
 
@@ -129,10 +74,46 @@ function Squash.Des.Array.Boolean(y: string): { boolean }
 	return x
 end
 
+local function bytesAssert(bytes: number)
+	assert(
+		bytes == 1 or bytes == 2 or bytes == 3 or bytes == 4 or bytes == 5 or bytes == 6 or bytes == 7 or bytes == 8,
+		'bytes must be 1, 2, 3, 4, 5, 6, 7, or 8'
+	)
+end
+
+local function serArrayNumber<T>(ser: (number, T) -> string)
+	return function(bytes: number, x: { T }): string
+		bytesAssert(bytes)
+
+		local y = {}
+		for i, v in x do
+			y[i] = ser(bytes, v)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayNumber<T>(des: (number, string) -> T)
+	return function(bytes: number, y: string): { T }
+		bytesAssert(bytes)
+
+		local x = {}
+		for i = 1, #y / bytes do
+			local a = bytes * (i - 1) + 1
+			local b = bytes * i
+			x[i] = des(bytes, string.sub(y, a, b))
+		end
+		return x
+	end
+end
+
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Uint(bytes: number, x: number): string --TODO: Consider using string.pack and working around the 3, 5, 6, and 7 byte limitations
+function Squash.Ser.Uint(
+	bytes: number,
+	x: number
+): string --TODO: Consider using string.pack and working around the 3, 5, 6, and 7 byte limitations
 	bytesAssert(bytes)
 
 	local chars = {}
@@ -195,53 +176,57 @@ Squash.Ser.Array.Int = serArrayNumber(Squash.Ser.Int)
 --]]
 Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 
---[[
-	@within Squash
-]]
-function Squash.Ser.Float(x: number): string
-	return string.pack('f', x)
+local function floatAssert(bytes: number)
+	assert(bytes == 4 or bytes == 8, 'Expected bytes are 4 or 8. Invalid number of bytes for floating: ' .. bytes)
 end
 
 --[[
 	@within Squash
 ]]
-function Squash.Des.Float(y: string): number
-	return string.unpack('f', y)
-end
-
---[[
-	@within Squash
---]]
-Squash.Ser.Array.Float = serArrayInstance(Squash.Ser.Float)
-
---[[
-	@within Squash
---]]
-Squash.Des.Array.Float = desArrayInstance(4, Squash.Des.Float)
-
---[[
-	@within Squash
-]]
-function Squash.Ser.Double(x: number): string
-	return string.pack('d', x)
+function Squash.Ser.Float(bytes: number, x: number): string
+	floatAssert(bytes)
+	return string.pack(if bytes == 4 then 'f' else 'd', x)
 end
 
 --[[
 	@within Squash
 ]]
-function Squash.Des.Double(y: string): number
-	return string.unpack('d', y)
+function Squash.Des.Float(bytes: number, y: string): number
+	floatAssert(bytes)
+	return string.unpack(if bytes == 4 then 'f' else 'd', y)
 end
 
 --[[
 	@within Squash
 --]]
-Squash.Ser.Array.Double = serArrayInstance(Squash.Ser.Double)
+Squash.Ser.Array.Float = serArrayNumber(Squash.Ser.Float)
 
 --[[
 	@within Squash
 --]]
-Squash.Des.Array.Double = desArrayInstance(8, Squash.Des.Double)
+Squash.Des.Array.Float = desArrayNumber(Squash.Des.Float)
+
+local function serArrayInstance<T>(ser: (T) -> string)
+	return function(x: { T }): string
+		local y = {}
+		for i, v in x do
+			y[i] = ser(v)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayInstance<T>(bytes: number, des: (string) -> T)
+	return function(y: string): { T }
+		local x = {}
+		for i = 1, #y / bytes do
+			local a = bytes * (i - 1) + 1
+			local b = bytes * i
+			x[i] = des(string.sub(y, a, b))
+		end
+		return x
+	end
+end
 
 --[[
 	@within Squash
