@@ -748,7 +748,33 @@ Squash.Des.Array.RaycastParams = desArrayFixed(-1, Squash.Des.RaycastParams) --T
 	@within Squash
 ]]
 function Squash.Ser.Region3(bytes: number, x: Region3, ser: NumberSer?): string
-	return Squash.Ser.Vector3(bytes, x.Min, ser) .. Squash.Ser.Vector3(bytes, x.Max, ser)
+	return Squash.Ser.Vector3(bytes, x.Size, ser) .. Squash.Ser.CFrame(bytes, x.CFrame, ser)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Region3(bytes: number, y: string, des: NumberDes?): Region3
+	return Region3.new(Squash.Des.Vector3(bytes, string.sub(y, 1, 12), des), Squash.Des.Vector3(bytes, string.sub(y, 13, 24), des))
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Region3 = serArrayVector(Squash.Ser.Region3)
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Array.Region3(bytes: number, y: string, des: NumberDes?): { Region3 }
+	local decode = des or Squash.Des.Int
+	local size = 6 + 9 * bytes
+
+	local x = {}
+	for i = 1, #y / size do
+		x[i] = Squash.Des.Region3(bytes, string.sub(y, (i - 1) * size + 1, i * size), decode)
+	end
+	return x
 end
 
 --[[
