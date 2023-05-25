@@ -132,7 +132,7 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Uint(bytes: number, x: number): string
+function Squash.Ser.Uint(bytes: number, x: number): string --TODO: Consider using string.pack and working around the 3, 5, 6, and 7 byte limitations
 	bytesAssert(bytes)
 
 	local chars = {}
@@ -194,6 +194,54 @@ Squash.Ser.Array.Int = serArrayNumber(Squash.Ser.Int)
 	@within Squash
 --]]
 Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Float(x: number): string
+	return string.pack('f', x)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Float(y: string): number
+	return string.unpack('f', y)
+end
+
+--[[
+	@within Squash
+--]]
+Squash.Ser.Array.Float = serArrayInstance(Squash.Ser.Float)
+
+--[[
+	@within Squash
+--]]
+Squash.Des.Array.Float = desArrayInstance(4, Squash.Des.Float)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Double(x: number): string
+	return string.pack('d', x)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Double(y: string): number
+	return string.unpack('d', y)
+end
+
+--[[
+	@within Squash
+--]]
+Squash.Ser.Array.Double = serArrayInstance(Squash.Ser.Double)
+
+--[[
+	@within Squash
+--]]
+Squash.Des.Array.Double = desArrayInstance(8, Squash.Des.Double)
 
 --[[
 	@within Squash
@@ -537,10 +585,7 @@ end
 	@within Squash
 ]]
 function Squash.Des.Vector2int16(y: string): Vector2int16
-	return Vector2int16.new(
-		Squash.Des.Int(2, string.sub(y, 1, 2)),
-		Squash.Des.Int(2, string.sub(y, 3, 4))
-	)
+	return Vector2int16.new(Squash.Des.Int(2, string.sub(y, 1, 2)), Squash.Des.Int(2, string.sub(y, 3, 4)))
 end
 
 --[[
@@ -596,10 +641,7 @@ end
 	@within Squash
 ]]
 function Squash.Des.Region3int16(y: string): Region3int16
-	return Region3int16.new(
-		Squash.Des.Vector3int16(string.sub(y, 1, 6)),
-		Squash.Des.Vector3int16(string.sub(y, 7, 12))
-	)
+	return Region3int16.new(Squash.Des.Vector3int16(string.sub(y, 1, 6)), Squash.Des.Vector3int16(string.sub(y, 7, 12)))
 end
 
 --[[
