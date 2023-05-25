@@ -312,7 +312,7 @@ end
 ]]
 function Squash.Des.DockWidgetPluginGuiInfo(y: string): DockWidgetPluginGuiInfo
 	local x = DockWidgetPluginGuiInfo.new()
-	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.Des.Boolean(string.sub(y, 1))
+	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.Des.Boolean(string.sub(y, 1, 1))
 	x.FloatingXSize = Squash.Des.Int(2, string.sub(y, 2, 3))
 	x.FloatingYSize = Squash.Des.Int(2, string.sub(y, 4, 5))
 	x.MinWidth = Squash.Des.Int(2, string.sub(y, 6, 7))
@@ -403,6 +403,60 @@ Squash.Ser.Array.Faces = serArrayInstance(Squash.Ser.Faces)
 	@within Squash
 ]]
 Squash.Des.Array.Faces = desArrayInstance(1, Squash.Des.Faces)
+
+local fontWeights = {} :: {[number]: Enum.FontWeight}
+
+for _, weight in Enum.FontWeight:GetEnumItems() do
+	fontWeights[weight.Value] = weight
+end
+
+local fontStyle = {
+	[Enum.FontStyle.Normal.Value] = Enum.FontStyle.Normal,
+	[Enum.FontStyle.Italic.Value] = Enum.FontStyle.Italic,
+}
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Font(x: Font): string
+	local family = string.match(x.Family, '(.+)%..+$')
+	assert(family, 'Font Family must be a Roblox font')
+
+	local weight = x.Weight.Value / 100
+	local style = if x.Style == Enum.FontStyle.Normal then 0 else 1
+
+	local styleAndWeight = string.char(
+		style + 2 * weight
+	)
+
+	return table.concat {
+		styleAndWeight,
+		family, -- TODO: This needs a way to be serialized still
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Font(y: string): Font
+	local styleAndWeight = string.byte(y, 1, 1)
+	local family = string.sub(y, 2)
+
+	local style = fontStyle[styleAndWeight % 2]
+	local weight = fontWeights[math.floor(styleAndWeight / 2)]
+
+	return Font.new(family, weight, style)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Font = serArrayInstance(Squash.Ser.Font) -- TODO: This needs a way to be serialized still, we have nothing to serialize variable sized strings. It requires a delimiter, C-style.
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Font = desArrayInstance(1, Squash.Des.Font) --TODO: Same story ^^^^
 
 return Squash
 
