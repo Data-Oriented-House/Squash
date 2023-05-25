@@ -58,7 +58,7 @@ end
 --[[
 	@class Squash
 
-	Provides a set of functions for serializing and deserializing data.
+	Provides a set of functions for serializing and deserializing data in both single and array forms.
 ]]
 local Squash = {}
 
@@ -522,6 +522,38 @@ Squash.Ser.Array.RaycastParams = serArrayInstance(Squash.Ser.RaycastParams) --TO
 	@within Squash
 ]]
 Squash.Des.Array.RaycastParams = desArrayInstance(-1, Squash.Des.RaycastParams) --TODO: Same story
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Vector3int16(x: Vector3int16)
+	return table.concat {
+		Squash.Ser.Int(2, x.X),
+		Squash.Ser.Int(2, x.Y),
+		Squash.Ser.Int(2, x.Z),
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Vector3int16(y: string): Vector3int16
+	return Vector3int16.new(
+		Squash.Des.Int(2, string.sub(y, 1, 2)),
+		Squash.Des.Int(2, string.sub(y, 3, 4)),
+		Squash.Des.Int(2, string.sub(y, 5, 6))
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Vector3int16 = serArrayInstance(Squash.Ser.Vector3int16)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Vector3int16 = desArrayInstance(6, Squash.Des.Vector3int16)
 
 return Squash
 
