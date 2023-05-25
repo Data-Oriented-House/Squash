@@ -404,164 +404,162 @@ Squash.Ser.Array.Faces = serArrayInstance(Squash.Ser.Faces)
 ]]
 Squash.Des.Array.Faces = desArrayInstance(1, Squash.Des.Faces)
 
-Squash.Ser.Rbx = {}
-Squash.Des.Rbx = {}
-
-local fileExtensions = {
-	'png',
-	'gif',
-	'jpg',
-	'jpeg',
-	'tga',
-	'bmp',
-	'fbx',
-	'obj',
-	'mp3',
-	'ogg',
-	'webm',
-	'wav',
-	'mp4',
-	'rbxm',
-	'rbxmx',
-	'rbxl',
-	'rbxlx',
-	'mesh',
-	'midi',
-	'txt',
-}
-
-local thumbTypes = {
-	'Asset',
-	'Avatar',
-	'AvatarHeadShot',
-	'BadgeIcon',
-	'BundleThumbnail',
-	'FontFamily',
-	'GameIcon',
-	'GamePass',
-	'GroupIcon',
-	'Outfit',
-}
-
---[[
-	@within Squash
-]]
-function Squash.Ser.Rbx.AssetId(id: number): string
-	return Squash.Ser.Uint(6, id)
-end
-
---[[
-	@within Squash
-]]
-function Squash.Des.Rbx.AssetId(y: string): number
-	return Squash.Des.Uint(6, y)
-end
-
---[[
-	@within Squash
-]]
-function Squash.Ser.Rbx.AssetPath(path: string, extension: string): string
-	local extensionId = table.find(fileExtensions, extension)
-	assert(extensionId, 'Invalid extension "' .. extension .. '"')
-
-	return Squash.Ser.Uint(1, extensionId) .. path --TODO: Implement string compression and use it here
-end
-
---[[
-	@within Squash
-]]
-function Squash.Des.Rbx.AssetPath(y: string): (string, string)
-	local extensionId = Squash.Des.Uint(1, string.sub(y, 1))
-	local path = string.sub(y, 2, -1) --TODO: Implement variable sized string decompression and use it here
-	return path, fileExtensions[extensionId]
-end
-
---[[
-https/http
-	Asset: https://www.roblox.com/asset/?id=9723979220
-	UserAvatar: https://www.roblox.com/Thumbs/Avatar.ashx?x=352&y=352&userId=1
-	AssetThumbnail: https://www.roblox.com/asset-thumbnail/image?assetId=1818&width=420&height=420&format=png
-	UserProfile: https://www.roblox.com/users/1/profile
-	Game: https://www.roblox.com/games/1818/
-	Group: https://www.roblox.com/groups/1/My-Group
-
-rbxasset
-	rbxasset://<relative_file_path>
-		relative_file_path: <string/string.string>.<extension>
-
-rbxthumb
-	rbxthumb://type=<type>&id=<id>&w=<width>&h=<height>[&filters=circular]
-		type: Asset, Avatar, AvatarHeadShot, BadgeIcon, BundleThumbnail, FontFamily, GameIcon, GamePass, GroupIcon, Outfit
-		id: <number>
-		width: <number>
-		height: <number>
-		filters: circular
-
-rbxhttp
-	rbxhttp://<relative_url_path>
-		relative_url_path: <string>
-
-		rbxhttp://Thumbs/Avatar.ashx?x=100&y=100&format=png
-]]
-
---[[
-	@within Squash
-]]
-function Squash.Ser.Rbx.Thumb(thumbType: string, id: number, width: number, height: number, filters: string?): string
-	local thumbTypeId = table.find(thumbTypes, thumbType)
-	assert(thumbTypeId, 'Invalid thumb type "' .. thumbType .. '"')
-
-	return table.concat {
-		string.char(2 * thumbTypeId + if filters == 'circular' then 1 else 0),
-		Squash.Ser.Uint(5, id),
-		Squash.Ser.Uint(2, width),
-		Squash.Ser.Uint(2, height),
-	}
-end
-
---[[
-	@within Squash
-]]
-function Squash.Des.Rbx.Thumb(y: string): (string, number, number, number, string?)
-	local thumbTypeIdAndFilters = Squash.Des.Uint(1, string.sub(y, 1))
-	local thumbType = thumbTypes[math.floor(thumbTypeIdAndFilters / 2)]
-	local filters = thumbTypeIdAndFilters % 2 == 1 and 'circular' or nil
-
-	local id = Squash.Des.Uint(5, string.sub(y, 2, 6))
-	local width = Squash.Des.Uint(2, string.sub(y, 7, 8))
-	local height = Squash.Des.Uint(2, string.sub(y, 9, 10))
-
-	return thumbType, id, width, height, filters
-end
-
---[[
-	@within Squash
-]]
-function Squash.Ser.Rbx.Http(path: string, posx: number, posy: number, format: string): string
-	local formatId = table.find(fileExtensions, format)
-	assert(formatId, 'Invalid format "' .. format .. '"')
-
-	return table.concat {
-		Squash.Ser.Uint(1, formatId),
-		Squash.Ser.Uint(2, posx),
-		Squash.Ser.Uint(2, posy),
-		path,
-	}
-end
-
---[[
-	@within Squash
-]]
-function Squash.Des.Rbx.Http(y: string): (string, number, number, string)
-	local formatId = Squash.Des.Uint(1, string.sub(y, 1))
-	local posx = Squash.Des.Uint(2, string.sub(y, 2, 3))
-	local posy = Squash.Des.Uint(2, string.sub(y, 4, 5))
-	local path = string.sub(y, 6, -1)
-	local format = fileExtensions[formatId]
-	return path, posx, posy, format
-end
-
 return Squash
+
+-- Squash.Ser.Rbx = {}
+-- Squash.Des.Rbx = {}
+
+-- local fileExtensions = {
+-- 	'png',
+-- 	'gif',
+-- 	'jpg',
+-- 	'jpeg',
+-- 	'tga',
+-- 	'bmp',
+-- 	'fbx',
+-- 	'obj',
+-- 	'mp3',
+-- 	'ogg',
+-- 	'webm',
+-- 	'wav',
+-- 	'mp4',
+-- 	'rbxm',
+-- 	'rbxmx',
+-- 	'rbxl',
+-- 	'rbxlx',
+-- 	'mesh',
+-- 	'midi',
+-- 	'txt',
+-- }
+
+-- local thumbTypes = {
+-- 	'Asset',
+-- 	'Avatar',
+-- 	'AvatarHeadShot',
+-- 	'BadgeIcon',
+-- 	'BundleThumbnail',
+-- 	'FontFamily',
+-- 	'GameIcon',
+-- 	'GamePass',
+-- 	'GroupIcon',
+-- 	'Outfit',
+-- }
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Ser.Rbx.Asset(id: number): string
+-- 	return Squash.Ser.Uint(6, id)
+-- end
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Des.Rbx.Asset(y: string): number
+-- 	return Squash.Des.Uint(6, y)
+-- end
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Ser.Rbx.AssetPath(path: string, extension: string): string
+-- 	local extensionId = table.find(fileExtensions, extension)
+-- 	assert(extensionId, 'Invalid extension "' .. extension .. '"')
+
+-- 	return Squash.Ser.Uint(1, extensionId) .. path --TODO: Implement string compression and use it here
+-- end
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Des.Rbx.AssetPath(y: string): (string, string)
+-- 	local extensionId = Squash.Des.Uint(1, string.sub(y, 1))
+-- 	local path = string.sub(y, 2, -1) --TODO: Implement variable sized string decompression and use it here
+-- 	return path, fileExtensions[extensionId]
+-- end
+
+-- --[[
+-- rbxasset
+-- 	rbxasset://<relative_file_path>
+-- 		relative_file_path: <string/string.string>.<extension>
+
+-- rbxthumb
+-- 	rbxthumb://type=<type>&id=<id>&w=<width>&h=<height>[&filters=circular]
+-- 		type: Asset, Avatar, AvatarHeadShot, BadgeIcon, BundleThumbnail, FontFamily, GameIcon, GamePass, GroupIcon, Outfit
+-- 		id: <number>
+-- 		width: <number>
+-- 		height: <number>
+-- 		filters: circular
+
+-- rbxhttp
+-- 	rbxhttp://<relative_url_path>
+-- 		relative_url_path: <string>
+
+-- 		rbxhttp://Thumbs/Avatar.ashx?x=100&y=100&format=png
+
+-- https/http
+-- 	This goes on for a very long time, so
+
+-- 	http://www.roblox.com/<string>
+-- 	https://www.roblox.com/<string>
+-- ]]
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Ser.Rbx.Thumb(thumbType: string, id: number, width: number, height: number, filters: string?): string
+-- 	local thumbTypeId = table.find(thumbTypes, thumbType)
+-- 	assert(thumbTypeId, 'Invalid thumb type "' .. thumbType .. '"')
+
+-- 	return table.concat {
+-- 		string.char(2 * thumbTypeId + if filters == 'circular' then 1 else 0),
+-- 		Squash.Ser.Uint(5, id),
+-- 		Squash.Ser.Uint(2, width),
+-- 		Squash.Ser.Uint(2, height),
+-- 	}
+-- end
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Des.Rbx.Thumb(y: string): (string, number, number, number, string?)
+-- 	local thumbTypeIdAndFilters = Squash.Des.Uint(1, string.sub(y, 1))
+-- 	local thumbType = thumbTypes[math.floor(thumbTypeIdAndFilters / 2)]
+-- 	local filters = thumbTypeIdAndFilters % 2 == 1 and 'circular' or nil
+
+-- 	local id = Squash.Des.Uint(5, string.sub(y, 2, 6))
+-- 	local width = Squash.Des.Uint(2, string.sub(y, 7, 8))
+-- 	local height = Squash.Des.Uint(2, string.sub(y, 9, 10))
+
+-- 	return thumbType, id, width, height, filters
+-- end
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Ser.Rbx.Http(path: string, posx: number, posy: number, format: string): string
+-- 	local formatId = table.find(fileExtensions, format)
+-- 	assert(formatId, 'Invalid format "' .. format .. '"')
+
+-- 	return table.concat {
+-- 		Squash.Ser.Uint(1, formatId),
+-- 		Squash.Ser.Uint(2, posx),
+-- 		Squash.Ser.Uint(2, posy),
+-- 		path,
+-- 	}
+-- end
+
+-- --[[
+-- 	@within Squash
+-- ]]
+-- function Squash.Des.Rbx.Http(y: string): (string, number, number, string)
+-- 	local formatId = Squash.Des.Uint(1, string.sub(y, 1))
+-- 	local posx = Squash.Des.Uint(2, string.sub(y, 2, 3))
+-- 	local posy = Squash.Des.Uint(2, string.sub(y, 4, 5))
+-- 	local path = string.sub(y, 6, -1)
+-- 	local format = fileExtensions[formatId]
+-- 	return path, posx, posy, format
+-- end
 
 -- String Stuff
 
