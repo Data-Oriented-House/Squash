@@ -526,6 +526,36 @@ Squash.Des.Array.RaycastParams = desArrayInstance(-1, Squash.Des.RaycastParams) 
 --[[
 	@within Squash
 ]]
+function Squash.Ser.Vector2int16(x: Vector2int16)
+	return table.concat {
+		Squash.Ser.Int(2, x.X),
+		Squash.Ser.Int(2, x.Y),
+	}
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Vector2int16(y: string): Vector2int16
+	return Vector2int16.new(
+		Squash.Des.Int(2, string.sub(y, 1, 2)),
+		Squash.Des.Int(2, string.sub(y, 3, 4))
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Vector2int16 = serArrayInstance(Squash.Ser.Vector2int16)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Vector2int16 = desArrayInstance(4, Squash.Des.Vector2int16)
+
+--[[
+	@within Squash
+]]
 function Squash.Ser.Vector3int16(x: Vector3int16)
 	return table.concat {
 		Squash.Ser.Int(2, x.X),
