@@ -489,12 +489,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.ArrayDockWidgetPluginGuiInfo = serArrayFixed(Squash.Ser.DockWidgetPluginGuiInfo)
+Squash.Ser.Array.DockWidgetPluginGuiInfo = serArrayFixed(Squash.Ser.DockWidgetPluginGuiInfo)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.ArrayDockWidgetPluginGuiInfo = desArrayFixed(9, Squash.Des.DockWidgetPluginGuiInfo)
+Squash.Des.Array.DockWidgetPluginGuiInfo = desArrayFixed(9, Squash.Des.DockWidgetPluginGuiInfo)
 
 --[[
 	@within Squash
