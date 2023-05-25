@@ -307,7 +307,7 @@ function Squash.Des.Array.Vector3(bytes: number, y: string, des: NumberDes?): { 
 	return x
 end
 
-local function serArrayInstance<T>(ser: (T) -> string)
+local function serArrayFixed<T>(ser: (T) -> string)
 	return function(x: { T }): string
 		local y = {}
 		for i, v in x do
@@ -317,7 +317,7 @@ local function serArrayInstance<T>(ser: (T) -> string)
 	end
 end
 
-local function desArrayInstance<T>(bytes: number, des: (string) -> T)
+local function desArrayFixed<T>(bytes: number, des: (string) -> T)
 	return function(y: string): { T }
 		local x = {}
 		for i = 1, #y / bytes do
@@ -354,12 +354,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.Vector3int16 = serArrayInstance(Squash.Ser.Vector3int16)
+Squash.Ser.Array.Vector3int16 = serArrayFixed(Squash.Ser.Vector3int16)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Vector3int16 = desArrayInstance(6, Squash.Des.Vector3int16)
+Squash.Des.Array.Vector3int16 = desArrayFixed(6, Squash.Des.Vector3int16)
 
 --[[
 	@within Squash
@@ -381,12 +381,12 @@ end
 --[[
 	@within Squash
 --]]
-Squash.Ser.Array.Axes = serArrayInstance(Squash.Ser.Axes)
+Squash.Ser.Array.Axes = serArrayFixed(Squash.Ser.Axes)
 
 --[[
 	@within Squash
 --]]
-Squash.Des.Array.Axes = desArrayInstance(8, Squash.Des.Axes)
+Squash.Des.Array.Axes = desArrayFixed(8, Squash.Des.Axes)
 
 --[[
 	@within Squash
@@ -405,12 +405,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.BrickColor = serArrayInstance(Squash.Ser.BrickColor)
+Squash.Ser.Array.BrickColor = serArrayFixed(Squash.Ser.BrickColor)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.BrickColor = desArrayInstance(2, Squash.Des.BrickColor)
+Squash.Des.Array.BrickColor = desArrayFixed(2, Squash.Des.BrickColor)
 
 --[[
 	@within Squash
@@ -429,12 +429,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.Color3 = serArrayInstance(Squash.Ser.Color3)
+Squash.Ser.Array.Color3 = serArrayFixed(Squash.Ser.Color3)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Color3 = desArrayInstance(3, Squash.Des.Color3)
+Squash.Des.Array.Color3 = desArrayFixed(3, Squash.Des.Color3)
 
 --[[
 	@within Squash
@@ -453,12 +453,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.ArrayDateTime = serArrayInstance(Squash.Ser.DateTime)
+Squash.Ser.ArrayDateTime = serArrayFixed(Squash.Ser.DateTime)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.ArrayDateTime = desArrayInstance(5, Squash.Des.DateTime)
+Squash.Des.ArrayDateTime = desArrayFixed(5, Squash.Des.DateTime)
 
 --[[
 	@within Squash
@@ -489,12 +489,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.ArrayDockWidgetPluginGuiInfo = serArrayInstance(Squash.Ser.DockWidgetPluginGuiInfo)
+Squash.Ser.ArrayDockWidgetPluginGuiInfo = serArrayFixed(Squash.Ser.DockWidgetPluginGuiInfo)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.ArrayDockWidgetPluginGuiInfo = desArrayInstance(9, Squash.Des.DockWidgetPluginGuiInfo)
+Squash.Des.ArrayDockWidgetPluginGuiInfo = desArrayFixed(9, Squash.Des.DockWidgetPluginGuiInfo)
 
 --[[
 	@within Squash
@@ -513,12 +513,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.ColorSequenceKeypoint = serArrayInstance(Squash.Ser.ColorSequenceKeypoint)
+Squash.Ser.Array.ColorSequenceKeypoint = serArrayFixed(Squash.Ser.ColorSequenceKeypoint)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.ColorSequenceKeypoint = desArrayInstance(4, Squash.Des.ColorSequenceKeypoint)
+Squash.Des.Array.ColorSequenceKeypoint = desArrayFixed(4, Squash.Des.ColorSequenceKeypoint)
 
 --[[
 	@within Squash
@@ -537,12 +537,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.ColorSequence = serArrayInstance(Squash.Ser.ColorSequence)
+Squash.Ser.Array.ColorSequence = serArrayFixed(Squash.Ser.ColorSequence)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.ColorSequence = desArrayInstance(4, Squash.Des.ColorSequence)
+Squash.Des.Array.ColorSequence = desArrayFixed(4, Squash.Des.ColorSequence)
 
 --[[
 	@within Squash
@@ -563,12 +563,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.Faces = serArrayInstance(Squash.Ser.Faces)
+Squash.Ser.Array.Faces = serArrayFixed(Squash.Ser.Faces)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Faces = desArrayInstance(1, Squash.Des.Faces)
+Squash.Des.Array.Faces = desArrayFixed(1, Squash.Des.Faces)
 
 local fontWeights = {} :: { [number]: Enum.FontWeight }
 
@@ -607,12 +607,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.Font = serArrayInstance(Squash.Ser.Font) -- TODO: This needs a way to be serialized still, we have nothing to serialize variable sized strings. It requires a delimiter, C-style.
+Squash.Ser.Array.Font = serArrayFixed(Squash.Ser.Font) -- TODO: This needs a way to be serialized still, we have nothing to serialize variable sized strings. It requires a delimiter, C-style.
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Font = desArrayInstance(1, Squash.Des.Font) --TODO: Same story
+Squash.Des.Array.Font = desArrayFixed(1, Squash.Des.Font) --TODO: Same story
 
 --[[
 	@within Squash
@@ -647,12 +647,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.OverlapParams = serArrayInstance(Squash.Ser.OverlapParams) --TODO: Same story
+Squash.Ser.Array.OverlapParams = serArrayFixed(Squash.Ser.OverlapParams) --TODO: Same story
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.OverlapParams = desArrayInstance(-1, Squash.Des.OverlapParams) --TODO: Same story
+Squash.Des.Array.OverlapParams = desArrayFixed(-1, Squash.Des.OverlapParams) --TODO: Same story
 
 --[[
 	@within Squash
@@ -682,12 +682,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.RaycastParams = serArrayInstance(Squash.Ser.RaycastParams) --TODO: Same story
+Squash.Ser.Array.RaycastParams = serArrayFixed(Squash.Ser.RaycastParams) --TODO: Same story
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.RaycastParams = desArrayInstance(-1, Squash.Des.RaycastParams) --TODO: Same story
+Squash.Des.Array.RaycastParams = desArrayFixed(-1, Squash.Des.RaycastParams) --TODO: Same story
 
 --[[
 	@within Squash
@@ -709,12 +709,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.Vector2int16 = serArrayInstance(Squash.Ser.Vector2int16)
+Squash.Ser.Array.Vector2int16 = serArrayFixed(Squash.Ser.Vector2int16)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Vector2int16 = desArrayInstance(4, Squash.Des.Vector2int16)
+Squash.Des.Array.Vector2int16 = desArrayFixed(4, Squash.Des.Vector2int16)
 
 --[[
 	@within Squash
@@ -733,12 +733,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.Region3int16 = serArrayInstance(Squash.Ser.Region3int16)
+Squash.Ser.Array.Region3int16 = serArrayFixed(Squash.Ser.Region3int16)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Region3int16 = desArrayInstance(12, Squash.Des.Region3int16)
+Squash.Des.Array.Region3int16 = desArrayFixed(12, Squash.Des.Region3int16)
 
 return Squash
 
