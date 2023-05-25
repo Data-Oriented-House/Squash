@@ -212,6 +212,54 @@ type NumberDes = typeof(Squash.Des.Int)
 --[[
 	@within Squash
 ]]
+function Squash.Ser.Vector2(bytes: number, x: Vector2, ser: NumberSer?): string
+	local encoding = ser or Squash.Ser.Int
+	return encoding(bytes, x.X) .. encoding(bytes, x.Y)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Vector2(bytes: number, y: string, des: NumberDes?): Vector2
+	local decoding = des or Squash.Des.Int
+	return Vector2.new(
+		decoding(bytes, string.sub(y, 1, bytes)),
+		decoding(bytes, string.sub(y, bytes + 1, 2 * bytes))
+	)
+end
+
+--[[
+	@within Squash
+--]]
+function Squash.Ser.Array.Vector2(bytes: number, x: { Vector2 }, ser: NumberSer?): string
+	local encoding = ser or Squash.Ser.Int
+	local y = {}
+	for i, v in x do
+		y[i] = encoding(bytes, v.X) .. encoding(bytes, v.Y)
+	end
+	return table.concat(y)
+end
+
+--[[
+	@within Squash
+--]]
+function Squash.Des.Array.Vector2(bytes: number, y: string, des: NumberDes?): { Vector2 }
+	local decoding = des or Squash.Des.Int
+	local x = {}
+	for i = 1, #y / (2 * bytes) do
+		local a = 2 * bytes * (i - 1) + 1
+		local b = 2 * bytes * i
+		x[i] = Vector2.new(
+			decoding(bytes, string.sub(y, a, a + bytes)),
+			decoding(bytes, string.sub(y, a + bytes, b))
+		)
+	end
+	return x
+end
+
+--[[
+	@within Squash
+]]
 function Squash.Ser.Vector3(bytes: number, x: Vector3, ser: NumberSer): string
 	local encoding = ser or Squash.Ser.Int
 	return encoding(bytes, x.X) .. encoding(bytes, x.Y) .. encoding(bytes, x.Z)
