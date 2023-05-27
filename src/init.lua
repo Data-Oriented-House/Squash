@@ -75,10 +75,9 @@ function Squash.Des.Array.Boolean(y: string): { boolean }
 end
 
 local function bytesAssert(bytes: number)
-	assert(
-		bytes == 1 or bytes == 2 or bytes == 3 or bytes == 4 or bytes == 5 or bytes == 6 or bytes == 7 or bytes == 8,
-		'bytes must be 1, 2, 3, 4, 5, 6, 7, or 8'
-	)
+	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 8 then 
+		error("bytes must be 1, 2, 3, 4, 5, 6, 7, or 8") 
+	end
 end
 
 local function serArrayNumber<T>(ser: (number, T) -> string)
@@ -177,7 +176,9 @@ Squash.Ser.Array.Int = serArrayNumber(Squash.Ser.Int)
 Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 
 local function floatAssert(bytes: number)
-	assert(bytes == 4 or bytes == 8, 'Expected 4 or 8 bytes. Invalid number of bytes for floating point: ' .. bytes)
+	if not (bytes == 4 or bytes == 8) then
+		error(`Expected 4 or 8 bytes. Invalid number of bytes for floating point: {bytes}`)
+	end
 end
 
 --[[
@@ -710,7 +711,9 @@ local fontWeights, _ = getEnumData(Enum.FontWeight)
 ]]
 function Squash.Ser.Font(x: Font): string
 	local family = string.match(x.Family, '(.+)%..+$')
-	assert(family, 'Font Family must be a Roblox font')
+	if not family then
+		error('Font Family must be a Roblox font')
+	end
 
 	local weightId = table.find(fontWeights, x.Weight) :: number
 	local styleAndWeight = string.char(2 * weightId + if x.Style == Enum.FontStyle.Normal then 1 else 0) -- Weight.Value is 100, 200, 300, etc. We want 2, 4, 6, etc. so that we can fit it into a byte without overriding the style bit
