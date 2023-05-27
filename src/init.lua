@@ -81,7 +81,8 @@ local function bytesAssert(bytes: number)
 end
 
 local function serArrayNumber<T>(ser: (number, T) -> string)
-	return function(bytes: number, x: { T }): string
+	return function( x: { T }, bytes: number?): string
+		bytes = bytes or 4
 		bytesAssert(bytes)
 
 		local y = {}
@@ -93,7 +94,8 @@ local function serArrayNumber<T>(ser: (number, T) -> string)
 end
 
 local function desArrayNumber<T>(des: (number, string) -> T)
-	return function(bytes: number, y: string): { T }
+	return function(y: string, bytes: number?): { T }
+		bytes = bytes or 4
 		bytesAssert(bytes)
 
 		local x = {}
@@ -110,9 +112,9 @@ end
 	@within Squash
 ]]
 function Squash.Ser.Uint(
-	bytes: number,
-	x: number
+	x: number, bytes: number?
 ): string --TODO: Consider using string.pack and working around the 3, 5, 6, and 7 byte limitations
+	bytes = bytes or 4
 	bytesAssert(bytes)
 
 	local chars = {}
@@ -125,7 +127,8 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Uint(bytes: number, y: string): number
+function Squash.Des.Uint(y: string, bytes: number?): number
+	bytes = bytes or 4
 	bytesAssert(bytes)
 
 	local sum = 0
@@ -148,7 +151,8 @@ Squash.Des.Array.Uint = desArrayNumber(Squash.Des.Uint)
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Int(bytes: number, x: number): string
+function Squash.Ser.Int(x: number, bytes: number?): string
+	bytes = bytes or 4
 	bytesAssert(bytes)
 
 	local sx = if x < 0 then x + 256 ^ bytes else x
@@ -158,7 +162,8 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Int(bytes: number, y: string): number
+function Squash.Des.Int(y: string, bytes: number?): number
+	bytes = bytes or 4
 	bytesAssert(bytes)
 
 	local x = Squash.Des.Uint(bytes, y)
@@ -184,7 +189,8 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Float(bytes: number, x: number): string
+function Squash.Ser.Float(x: number, bytes: number?): string
+	bytes = bytes or 4
 	floatAssert(bytes)
 	return string.pack(if bytes == 4 then 'f' else 'd', x)
 end
@@ -192,7 +198,8 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Float(bytes: number, y: string): number
+function Squash.Des.Float(y: string, bytes: number?): number
+	bytes = bytes or 4
 	floatAssert(bytes)
 	return string.unpack(if bytes == 4 then 'f' else 'd', y)
 end
@@ -210,8 +217,9 @@ Squash.Des.Array.Float = desArrayNumber(Squash.Des.Float)
 type NumberSer = typeof(Squash.Ser.Int)
 type NumberDes = typeof(Squash.Des.Int)
 
-local function serArrayVector<T>(serializer: (bytes: number, vector: T, ser: NumberSer?) -> string)
-	return function(bytes: number, x: { T }, ser: NumberSer?): string
+local function serArrayVector<T>(serializer: ( vector: T, ser: NumberSer?) -> string)
+	return function(x: { T }, ser: NumberSer?, bytes: number?): string
+		bytes = bytes or 4
 		local encoding = ser or Squash.Ser.Int
 		local y = {}
 		for i, v in x do
@@ -221,8 +229,9 @@ local function serArrayVector<T>(serializer: (bytes: number, vector: T, ser: Num
 	end
 end
 
-local function desArrayVector<T>(elements: number, deserializer: (bytes: number, y: string, des: NumberDes?) -> T)
-	return function(bytes: number, y: string, des: NumberDes?): { T }
+local function desArrayVector<T>(elements: number, deserializer: ( y: string, des: NumberDes?) -> T)
+	return function(y: string, des: NumberDes?, bytes: number?): { T }
+		bytes = bytes or 4
 		local decoding = des or Squash.Des.Int
 		local x = {}
 		for i = 1, #y / (elements * bytes) do
@@ -237,7 +246,8 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Vector2(bytes: number, x: Vector2, ser: NumberSer?): string
+function Squash.Ser.Vector2( x: Vector2, ser: NumberSer?, bytes: number?): string
+	bytes = bytes or 4
 	local encoding = ser or Squash.Ser.Int
 	return encoding(bytes, x.X) .. encoding(bytes, x.Y)
 end
@@ -245,7 +255,8 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Vector2(bytes: number, y: string, des: NumberDes?): Vector2
+function Squash.Des.Vector2( y: string, des: NumberDes?, bytes: number?): Vector2
+	bytes = bytes or 4
 	local decoding = des or Squash.Des.Int
 	return Vector2.new(decoding(bytes, string.sub(y, 1, bytes)), decoding(bytes, string.sub(y, bytes + 1, 2 * bytes)))
 end
@@ -263,7 +274,8 @@ Squash.Des.Array.Vector2 = desArrayVector(2, Squash.Des.Vector2)
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Vector3(bytes: number, x: Vector3, ser: NumberSer?): string
+function Squash.Ser.Vector3( x: Vector3, ser: NumberSer?, bytes: number?): string
+	bytes = bytes or 4
 	local encoding = ser or Squash.Ser.Int
 	return encoding(bytes, x.X) .. encoding(bytes, x.Y) .. encoding(bytes, x.Z)
 end
@@ -271,7 +283,8 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.Vector3(bytes: number, y: string, des: NumberDes?): Vector3
+function Squash.Des.Vector3( y: string, des: NumberDes?, bytes: number?): Vector3
+	bytes = bytes or 4
 	local decoding = des or Squash.Des.Int
 	return Vector3.new(
 		decoding(bytes, string.sub(y, 1, bytes)),
@@ -300,7 +313,8 @@ local function serArrayFixed<T>(ser: (T) -> string)
 	end
 end
 
-local function desArrayFixed<T>(bytes: number, des: (string) -> T)
+local function desArrayFixed<T>( des: (string) -> T, bytes: number?)
+	bytes = bytes or 4
 	return function(y: string): { T }
 		local x = {}
 		for i = 1, #y / bytes do
@@ -817,14 +831,16 @@ Squash.Des.Array.RaycastParams = desArrayFixed(-1, Squash.Des.RaycastParams) --T
 --[[
 	@within Squash
 ]]
-function Squash.Ser.Region3(bytes: number, x: Region3, ser: NumberSer?): string
+function Squash.Ser.Region3( x: Region3, ser: NumberSer?, bytes: number?): string
+	bytes = bytes or 4
 	return Squash.Ser.Vector3(bytes, x.Size, ser) .. Squash.Ser.CFrame(bytes, x.CFrame, ser)
 end
 
 --[[
 	@within Squash
 ]]
-function Squash.Des.Region3(bytes: number, y: string, des: NumberDes?): Region3
+function Squash.Des.Region3( y: string, des: NumberDes?, bytes: number?): Region3
+	bytes = bytes or 4
 	return Region3.new(
 		Squash.Des.Vector3(bytes, string.sub(y, 1, 12), des),
 		Squash.Des.Vector3(bytes, string.sub(y, 13, 24), des)
@@ -839,7 +855,8 @@ Squash.Ser.Array.Region3 = serArrayVector(Squash.Ser.Region3)
 --[[
 	@within Squash
 ]]
-function Squash.Des.Array.Region3(bytes: number, y: string, des: NumberDes?): { Region3 }
+function Squash.Des.Array.Region3( y: string, des: NumberDes?, bytes: number?): { Region3 }
+	bytes = bytes or 4
 	local decode = des or Squash.Des.Int
 	local size = 6 + 9 * bytes
 
