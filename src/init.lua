@@ -1108,8 +1108,8 @@ function Squash.Des.Ray(y: string, des: NumberDes?, bytes: number?): Ray
 	local des = des or Squash.Des.Int
 	local bytes = bytes or 4
 	return Ray.new(
-		Squash.Des.Vector3(string.sub(y, 1, 12), des, bytes),
-		Squash.Des.Vector3(string.sub(y, 13, 24), des, bytes)
+		Squash.Des.Vector3(string.sub(y, 1, bytes), des, bytes),
+		Squash.Des.Vector3(string.sub(y, bytes + 1, 2 * bytes), des, bytes)
 	)
 end
 
