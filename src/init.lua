@@ -521,9 +521,9 @@ local function getBitSize(x: number): number
 	return math.ceil(math.log(x, 2 ^ 1))
 end
 
-local function getByteSize(x: number): number
-	return math.ceil(math.log(x, 2 ^ 8))
-end
+-- local function getByteSize(x: number): number
+-- 	return math.ceil(math.log(x, 2 ^ 8))
+-- end
 
 local function getEnumData(enum: Enum): ({ EnumItem }, number)
 	local enumItems = enum:GetEnumItems()
@@ -538,41 +538,42 @@ local catalogCategoryFilters, catalogCategoryFilterSize = getEnumData(Enum.Catal
 local catalogSortAggregations, catalogSortAggregationSize = getEnumData(Enum.CatalogSortAggregation)
 local catalogSortTypes, catalogSortSize = getEnumData(Enum.CatalogSortType)
 
---! Only works for up to 52 elements
-local function packBits(bits: number | { number }, x: { number }): string
-	local size = getByteSize(#x)
-
-	if typeof(bits) == 'number' then
-		local y = 0
-		for i, v in x do
-			y += v * 2 ^ (size * (i - 1))
+local function packBits(x: { number }, bits: number): string
+	local packed = {}
+	local byte = 0
+	local count = 0
+	for i = 1, #x do
+		for b = bits - 1, 0, -1 do
+			byte = byte * 2 + math.floor(x[i] / 2 ^ b) % 2
+			count = count + 1
+			if count == 8 then
+				table.insert(packed, string.char(byte))
+				byte = 0
+				count = 0
+			end
 		end
-		return Squash.Ser.Uint(math.ceil(size / 8), y)
-	else
-		local y = 0
-		for i, v in x do
-			y += v * 2 ^ (bits[i] * (i - 1))
-		end
-		return Squash.Ser.Uint(size, y)
 	end
+	if count > 0 then
+		byte = byte * 2 ^ (8 - count)
+		table.insert(packed, string.char(byte))
+	end
+	return table.concat(packed)
 end
 
---! Only works for up to 52 elements
-local function unpackBits(bits: number | { number }, y: string): { number }
-	local size = getBitSize(#y * 8)
-
+local function unpackBits(y: string, bits: number): { number }
 	local x = {}
-	if typeof(bits) == 'number' then
-		local z = Squash.Des.Uint(bits, y)
-		for i = 1, size do
-			x[i] = z % 2 ^ bits
-			z = math.floor(z * 2 ^ -bits)
-		end
-	else
-		local z = Squash.Des.Uint(bits[1], y)
-		for i = 1, size do
-			x[i] = z % 2 ^ bits[i]
-			z = math.floor(z * 2 ^ -bits[i])
+	local value = 0
+	local count = 0
+	for i = 1, #y do
+		local byte = string.byte(y, i)
+		for b = 7, 0, -1 do
+			value = value * 2 + math.floor(byte / 2 ^ b) % 2
+			count = count + 1
+			if count == bits then
+				table.insert(x, value)
+				value = 0
+				count = 0
+			end
 		end
 	end
 	return x
@@ -582,9 +583,74 @@ end
 	@within Squash
 ]]
 function Squash.Ser.CatalogSearchParams(x: CatalogSearchParams): string
-	local sortTypeId = table.find(catalogSortTypes, x.SortType) :: number
-	local includeOffSaleAndSortType = 2 * sortTypeId + if x.IncludeOffSale then 1 else 0
-	return string.char(includeOffSaleAndSortType) ..
+	local assetIndices = {}
+	for i, v in x.AssetTypes do
+		assetIndices[i] = table.find(avatarAssetTypes, v) :: number
+	end
+
+	local bundleIndices = {}
+	for i, v in x.BundleTypes do
+		bundleIndices[i] = table.find(bundleTypes, v) :: number
+	end
+
+	return Squash.Ser.Boolean(x.IncludeOffSale)
+		.. Squash.Ser.Uint(x.MinPrice, 4)
+		.. Squash.Ser.Uint(x.MaxPrice, 4)
+		.. Squash.Ser.Uint(table.find(salesTypeFilters, x.SalesTypeFilter) :: number, salesTypeFilterSize)
+		.. Squash.Ser.Uint(table.find(catalogCategoryFilters, x.CategoryFilter) :: number, catalogCategoryFilterSize)
+		.. Squash.Ser.Uint(table.find(catalogSortAggregations, x.SortAggregation) :: number, catalogSortAggregationSize)
+		.. Squash.Ser.Uint(table.find(catalogSortTypes, x.SortType) :: number, catalogSortSize)
+		.. packBits(assetIndices, avatarAssetSize)
+		.. packBits(bundleIndices, bundleTypeSize)
+		.. x.Keyword -- TODO: Squash.Ser.String(x.Keyword)
+		.. '\0'
+		.. x.Creator -- TODO: Squash.Ser.String(x.Creator)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.CatalogSearchParams(y: string): CatalogSearchParams
+	local x = CatalogSearchParams.new()
+	x.IncludeOffSale = Squash.Des.Boolean(string.sub(y, 1, 1))
+	x.MinPrice = Squash.Des.Uint(string.sub(y, 2, 5), 4)
+	x.MaxPrice = Squash.Des.Uint(string.sub(y, 6, 9), 4)
+	local offset = 10
+
+	x.SalesTypeFilter =
+		salesTypeFilters[Squash.Des.Uint(string.sub(y, offset, offset + salesTypeFilterSize - 1), salesTypeFilterSize)]
+	offset += salesTypeFilterSize
+
+	x.CategoryFilter = catalogCategoryFilters[Squash.Des.Uint(
+		string.sub(y, offset, offset + catalogCategoryFilterSize - 1),
+		catalogCategoryFilterSize
+	)] :: Enum.CatalogCategoryFilter
+	offset += catalogCategoryFilterSize
+
+	x.SortAggregation = catalogSortAggregations[Squash.Des.Uint(
+		string.sub(y, offset, offset + catalogSortAggregationSize - 1),
+		catalogSortAggregationSize
+	)] :: Enum.CatalogSortAggregation
+	offset += catalogSortAggregationSize
+
+	x.SortType =
+		catalogSortTypes[Squash.Des.Uint(string.sub(y, offset, offset + catalogSortSize - 1), catalogSortSize)] :: Enum.CatalogSortType
+	offset += catalogSortSize
+
+	for i, v in unpackBits(string.sub(y, offset, offset + avatarAssetSize - 1), avatarAssetSize) do
+		x.AssetTypes[i] = avatarAssetTypes[v] :: Enum.AssetType
+	end
+	offset += avatarAssetSize
+
+	for i, v in unpackBits(string.sub(y, offset, offset + bundleTypeSize - 1), bundleTypeSize) do
+		x.BundleTypes[i] = bundleTypes[v] :: Enum.BundleType
+	end
+	offset += bundleTypeSize
+
+	local keywordEnd = string.find(sub, '\0')
+	x.Keyword = string.sub(sub, offset, keywordEnd - 1)
+	x.Creator = string.sub(sub, keywordEnd + 1)
+	return x
 end
 
 --[[
