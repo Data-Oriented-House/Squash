@@ -1279,6 +1279,68 @@ Squash.Ser.Array.Region3int16 = serArrayFixed(Squash.Ser.Region3int16)
 ]]
 Squash.Des.Array.Region3int16 = desArrayFixed(Squash.Des.Region3int16, 12)
 
+local easingStyles, easingStyleSize = getEnumData(Enum.EasingStyle)
+local easingDirections, easingDirectionSize = getEnumData(Enum.EasingDirection)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.TweenInfo(x: TweenInfo, ser: NumberSer?, bytes: number?): string
+	local ser = ser or Squash.Ser.Int
+	local bytes = bytes or 4
+	return Squash.Ser.Boolean(x.Reverses)
+		.. Squash.Ser.Uint(table.find(easingStyles, x.EasingStyle) :: number, easingStyleSize)
+		.. Squash.Ser.Uint(table.find(easingDirections, x.EasingDirection) :: number, easingDirectionSize)
+		.. Squash.Ser.Int(x.RepeatCount, bytes)
+		.. Squash.Ser.Float(x.Time, bytes)
+		.. Squash.Ser.Float(x.DelayTime, bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.TweenInfo(y: string, des: NumberDes?, bytes: number?): TweenInfo
+	local des = des or Squash.Des.Int
+	local bytes = bytes or 4
+
+	local offset = 0
+	local reverses = Squash.Des.Boolean(string.sub(y, offset + 1, offset + 1))
+	offset += 1
+
+	local easingStyleId = Squash.Des.Uint(string.sub(y, offset + 1, offset + easingStyleSize), easingStyleSize)
+	offset += easingStyleSize
+
+	local easingDirectionId = Squash.Des.Uint(string.sub(y, offset + 1, offset + easingDirectionSize), easingDirectionSize)
+	offset += easingDirectionSize
+
+	local repeatCount = Squash.Des.Int(string.sub(y, offset + 1, offset + bytes), bytes)
+	offset += bytes
+
+	local tweenTime = Squash.Des.Float(string.sub(y, offset + 1, offset + bytes), bytes)
+	offset += bytes
+
+	local delayTime = Squash.Des.Float(string.sub(y, offset + 1, offset + bytes), bytes)
+
+	return TweenInfo.new(
+		tweenTime,
+		easingStyles[easingStyleId] :: Enum.EasingStyle,
+		easingDirections[easingDirectionId] :: Enum.EasingDirection,
+		repeatCount,
+		reverses,
+		delayTime
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.TweenInfo = serArrayVector(Squash.Ser.TweenInfo)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.TweenInfo = desArrayVector(-1, Squash.Des.TweenInfo) --TODO: Same story
+
 return Squash
 
 -- Squash.Ser.Rbx = {}
