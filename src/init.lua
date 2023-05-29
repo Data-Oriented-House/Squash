@@ -1160,8 +1160,6 @@ Squash.Ser.Array.Ray = serArrayVector(Squash.Ser.Ray)
 ]]
 Squash.Des.Array.Ray = desArrayVector(2, Squash.Des.Ray)
 
-local materials, materialSize = getEnumData(Enum.Material)
-
 --[[
 	@within Squash
 ]]
