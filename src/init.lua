@@ -1054,8 +1054,6 @@ Squash.Ser.Array.RaycastParams = serArrayFixed(Squash.Ser.RaycastParams) --TODO:
 ]]
 Squash.Des.Array.RaycastParams = desArrayFixed(Squash.Des.RaycastParams, -1) --TODO: Same story
 
-local pathWaypointActions, pathWaypointActionSize = getEnumData(Enum.PathWaypointAction)
-
 --[[
 	@within Squash
 ]]
