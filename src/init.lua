@@ -1061,6 +1061,71 @@ Squash.Des.Array.PathWaypoint = desArrayFixed(Squash.Des.PathWaypoint, pathWaypo
 --[[
 	@within Squash
 ]]
+function Squash.Ser.PhysicalProperties(x: PhysicalProperties, ser: NumberSer?, bytes: number?): string
+	local ser = ser or Squash.Ser.Int
+	local bytes = bytes or 4
+	return ser(x.Density, bytes) .. ser(x.Friction, bytes) .. ser(x.Elasticity, bytes) .. ser(x.FrictionWeight, bytes) .. ser(x.ElasticityWeight, bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.PhysicalProperties(y: string, des: NumberDes?, bytes: number?): PhysicalProperties
+	local des = des or Squash.Des.Int
+	local bytes = bytes or 4
+	return PhysicalProperties.new(
+		des(string.sub(y, 1, bytes), bytes),
+		des(string.sub(y, bytes + 1, 2 * bytes), bytes),
+		des(string.sub(y, 2 * bytes + 1, 3 * bytes), bytes),
+		des(string.sub(y, 3 * bytes + 1, 4 * bytes), bytes),
+		des(string.sub(y, 4 * bytes + 1, 5 * bytes), bytes)
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.PhysicalProperties = serArrayVector(Squash.Ser.PhysicalProperties)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.PhysicalProperties = desArrayVector(5, Squash.Des.PhysicalProperties)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Ray(x: Ray, ser: NumberSer?, bytes: number?): string
+	local ser = ser or Squash.Ser.Int
+	local bytes = bytes or 4
+	return Squash.Ser.Vector3(x.Origin, ser, bytes) .. Squash.Ser.Vector3(x.Direction, ser, bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Ray(y: string, des: NumberDes?, bytes: number?): Ray
+	local des = des or Squash.Des.Int
+	local bytes = bytes or 4
+	return Ray.new(
+		Squash.Des.Vector3(string.sub(y, 1, 12), des, bytes),
+		Squash.Des.Vector3(string.sub(y, 13, 24), des, bytes)
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Ray = serArrayVector(Squash.Ser.Ray)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Ray = desArrayVector(2, Squash.Des.Ray)
+
+--[[
+	@within Squash
+]]
 function Squash.Ser.Region3(x: Region3, ser: NumberSer?, bytes: number?): string
 	local bytes = bytes or 4
 	return Squash.Ser.Vector3(x.Size, ser, bytes) .. Squash.Ser.CFrame(x.CFrame, ser, bytes)
