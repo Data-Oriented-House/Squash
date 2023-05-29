@@ -1369,6 +1369,37 @@ Squash.Ser.Array.UDim = serArrayVector(Squash.Ser.UDim)
 ]]
 Squash.Des.Array.UDim = desArrayVector(2, Squash.Des.UDim)
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.UDim2(x: UDim2, ser: NumberSer?, bytes: number?): string
+	local ser = ser or Squash.Ser.Int
+	local bytes = bytes or 4
+	return Squash.Ser.UDim(x.X, ser, bytes) .. Squash.Ser.UDim(x.Y, ser, bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.UDim2(y: string, des: NumberDes?, bytes: number?): UDim2
+	local des = des or Squash.Des.Int
+	local bytes = bytes or 4
+	return UDim2.new(
+		Squash.Des.UDim(string.sub(y, 1, 2 * bytes), des, bytes),
+		Squash.Des.UDim(string.sub(y, 2 * bytes + 1, 4 * bytes), des, bytes)
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.UDim2 = serArrayVector(Squash.Ser.UDim2)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.UDim2 = desArrayVector(4, Squash.Des.UDim2)
+
 return Squash
 
 -- Squash.Ser.Rbx = {}
