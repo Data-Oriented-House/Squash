@@ -442,6 +442,63 @@ function Squash.Des.Array.CFrame(posBytes: number, y: string, des: NumberDes?): 
 	return x
 end
 
+local function getBitSize(x: number): number
+	return math.ceil(math.log(x, 2 ^ 1))
+end
+
+local function getByteSize(x: number): number
+	return math.ceil(math.log(x, 2 ^ 8))
+end
+
+local function getItemData<T>(array: { T }): { items: { T }, bits: number, bytes: number }
+	return {
+		items = array,
+		bits = getBitSize(#array),
+		bytes = getByteSize(#array),
+	}
+end
+
+local enumData = getItemData(Enum:GetEnums())
+local enumItemData = {}
+for _, enum in enumData.items do
+	enumItemData[enum] = getItemData(enum:GetEnumItems())
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.Enum(enum: Enum): string
+	local enumData = enumItemData[enum]
+	local enumId = table.find(enumData.items, enum) :: number
+	return Squash.Ser.Uint(enumId, enumData.bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Enum(y: string): Enum
+	local enumId = Squash.Des.Uint(y, enumData.bytes)
+	return enumData.items[enumId]
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.EnumItem(enumItem: EnumItem): string
+	local enumData = enumItemData[enumItem.EnumType]
+	local enumItemId = table.find(enumData.items, enumItem) :: number
+	return Squash.Ser.Uint(enumItemId, enumData.bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.EnumItem(y: string, enum: Enum): EnumItem
+	local enumData = enumItemData[enum]
+	local enumItemId = Squash.Des.Uint(y, enumData.bytes)
+	return enumData.items[enumItemId]
+end
+
 --[[
 	@within Squash
 ]]
@@ -517,27 +574,6 @@ Squash.Ser.Array.Color3 = serArrayFixed(Squash.Ser.Color3)
 ]]
 Squash.Des.Array.Color3 = desArrayFixed(Squash.Des.Color3, 3)
 
-local function getBitSize(x: number): number
-	return math.ceil(math.log(x, 2 ^ 1))
-end
-
--- local function getByteSize(x: number): number
--- 	return math.ceil(math.log(x, 2 ^ 8))
--- end
-
-local function getEnumData(enum: Enum): ({ EnumItem }, number)
-	local enumItems = enum:GetEnumItems()
-	local enumSize = getBitSize(#enumItems)
-	return enumItems, enumSize
-end
-
-local bundleTypes, bundleTypeSize = getEnumData(Enum.BundleType)
-local avatarAssetTypes, avatarAssetSize = getEnumData(Enum.AvatarAssetType)
-local salesTypeFilters, salesTypeFilterSize = getEnumData(Enum.SalesTypeFilter)
-local catalogCategoryFilters, catalogCategoryFilterSize = getEnumData(Enum.CatalogCategoryFilter)
-local catalogSortAggregations, catalogSortAggregationSize = getEnumData(Enum.CatalogSortAggregation)
-local catalogSortTypes, catalogSortSize = getEnumData(Enum.CatalogSortType)
-
 local function packBits(x: { number }, bits: number): string
 	local packed = {}
 	local byte = 0
@@ -585,26 +621,32 @@ end
 function Squash.Ser.CatalogSearchParams(x: CatalogSearchParams): string
 	local assetIndices = {}
 	for i, v in x.AssetTypes do
-		assetIndices[i] = table.find(avatarAssetTypes, v) :: number
+		assetIndices[i] = table.find(enumItemData[Enum.AssetType].items, v) :: number
 	end
 
 	local bundleIndices = {}
 	for i, v in x.BundleTypes do
-		bundleIndices[i] = table.find(bundleTypes, v) :: number
+		bundleIndices[i] = table.find(enumItemData[Enum.BundleType].items, v) :: number
 	end
 
 	return Squash.Ser.Boolean(x.IncludeOffSale)
 		.. Squash.Ser.Uint(x.MinPrice, 4)
 		.. Squash.Ser.Uint(x.MaxPrice, 4)
-		.. Squash.Ser.Uint(table.find(salesTypeFilters, x.SalesTypeFilter) :: number, salesTypeFilterSize)
-		.. Squash.Ser.Uint(table.find(catalogCategoryFilters, x.CategoryFilter) :: number, catalogCategoryFilterSize)
-		.. Squash.Ser.Uint(table.find(catalogSortAggregations, x.SortAggregation) :: number, catalogSortAggregationSize)
-		.. Squash.Ser.Uint(table.find(catalogSortTypes, x.SortType) :: number, catalogSortSize)
-		.. packBits(assetIndices, avatarAssetSize)
-		.. packBits(bundleIndices, bundleTypeSize)
+		.. Squash.Ser.EnumItem(x.SalesTypeFilter)
+		.. Squash.Ser.EnumItem(x.CategoryFilter)
+		.. Squash.Ser.EnumItem(x.SortAggregation)
+		.. Squash.Ser.EnumItem(x.SortType)
+		.. packBits(assetIndices, enumItemData[Enum.AssetType].bits)
+		.. packBits(bundleIndices, enumItemData[Enum.BundleType].bits)
 		.. x.Keyword -- TODO: Squash.Ser.String(x.Keyword)
 		.. '\0'
 		.. x.Creator -- TODO: Squash.Ser.String(x.Creator)
+end
+
+local function desEnumItem<T>(y: string, offset: number, enum: T & Enum): (number, T & EnumItem)
+	local enumData = enumItemData[enum]
+	local enumItemId = Squash.Des.Uint(string.sub(y, offset, offset + enumData.bytes - 1), enumData.bytes)
+	return offset + enumData.bytes, enumData.items[enumItemId]
 end
 
 --[[
@@ -615,41 +657,28 @@ function Squash.Des.CatalogSearchParams(y: string): CatalogSearchParams
 	x.IncludeOffSale = Squash.Des.Boolean(string.sub(y, 1, 1))
 	x.MinPrice = Squash.Des.Uint(string.sub(y, 2, 5), 4)
 	x.MaxPrice = Squash.Des.Uint(string.sub(y, 6, 9), 4)
+
 	local offset = 10
+	offset, x.SalesTypeFilter = desEnumItem(y, offset, Enum.SalesTypeFilter)
+	offset, x.CategoryFilter = desEnumItem(y, offset, Enum.CatalogCategoryFilter)
+	offset, x.SortAggregation = desEnumItem(y, offset, Enum.CatalogSortAggregation)
+	offset, x.SortType = desEnumItem(y, offset, Enum.CatalogSortType)
 
-	x.SalesTypeFilter =
-		salesTypeFilters[Squash.Des.Uint(string.sub(y, offset, offset + salesTypeFilterSize - 1), salesTypeFilterSize)]
-	offset += salesTypeFilterSize
-
-	x.CategoryFilter = catalogCategoryFilters[Squash.Des.Uint(
-		string.sub(y, offset, offset + catalogCategoryFilterSize - 1),
-		catalogCategoryFilterSize
-	)] :: Enum.CatalogCategoryFilter
-	offset += catalogCategoryFilterSize
-
-	x.SortAggregation = catalogSortAggregations[Squash.Des.Uint(
-		string.sub(y, offset, offset + catalogSortAggregationSize - 1),
-		catalogSortAggregationSize
-	)] :: Enum.CatalogSortAggregation
-	offset += catalogSortAggregationSize
-
-	x.SortType =
-		catalogSortTypes[Squash.Des.Uint(string.sub(y, offset, offset + catalogSortSize - 1), catalogSortSize)] :: Enum.CatalogSortType
-	offset += catalogSortSize
-
-	for i, v in unpackBits(string.sub(y, offset, offset + avatarAssetSize - 1), avatarAssetSize) do
-		x.AssetTypes[i] = avatarAssetTypes[v] :: Enum.AssetType
+	local assetTypeData = enumItemData[Enum.AssetType]
+	for i, v in unpackBits(string.sub(y, offset, offset + assetTypeData.bytes - 1), assetTypeData.bits) do
+		x.AssetTypes[i] = assetTypeData[v]
 	end
-	offset += avatarAssetSize
+	offset += assetTypeData.bytes
 
-	for i, v in unpackBits(string.sub(y, offset, offset + bundleTypeSize - 1), bundleTypeSize) do
-		x.BundleTypes[i] = bundleTypes[v] :: Enum.BundleType
+	local bundleTypeData = enumItemData[Enum.BundleType]
+	for i, v in unpackBits(string.sub(y, offset, offset + bundleTypeData.bytes - 1), bundleTypeData.bits) do
+		x.BundleTypes[i] = bundleTypeData[v]
 	end
-	offset += bundleTypeSize
+	offset += bundleTypeData.bytes
 
-	local keywordEnd = string.find(sub, '\0')
-	x.Keyword = string.sub(sub, offset, keywordEnd - 1)
-	x.Creator = string.sub(sub, keywordEnd + 1)
+	local keywordEnd = string.find(y, '\0')
+	x.Keyword = string.sub(y, offset, keywordEnd - 1)
+	x.Creator = string.sub(y, keywordEnd + 1)
 	return x
 end
 
@@ -795,44 +824,49 @@ Squash.Ser.Array.Faces = serArrayFixed(Squash.Ser.Faces)
 ]]
 Squash.Des.Array.Faces = desArrayFixed(Squash.Des.Faces, 1)
 
-local keyInterpolationModes, keyInterpolationModeSize = getEnumData(Enum.KeyInterpolationMode)
-
 --[[
 	@within Squash
 ]]
-function Squash.Ser.FloatCurveKey(x: FloatCurveKey): string
-	return Squash.Ser.Uint(table.find(keyInterpolationModes, x.Interpolation) :: number, keyInterpolationModeSize)
-		.. Squash.Ser.Float(x.Time, 4)
-		.. Squash.Ser.Float(x.Value, 4)
-		.. Squash.Ser.Float(x.LeftTangent, 4)
-		.. Squash.Ser.Float(x.RightTangent, 4)
+function Squash.Ser.FloatCurveKey(x: FloatCurveKey, ser: NumberSer?, bytes: number?): string
+	local ser = ser or Squash.Ser.Float :: NumberSer
+	local bytes = bytes or 4
+
+	return Squash.Ser.EnumItem(x.Interpolation)
+		.. ser(x.Time, bytes)
+		.. ser(x.Value, bytes)
+		.. ser(x.LeftTangent, bytes)
+		.. ser(x.RightTangent, bytes)
 end
 
 --[[
 	@within Squash
 ]]
-function Squash.Des.FloatCurveKey(y: string): FloatCurveKey
+function Squash.Des.FloatCurveKey(y: string, des: NumberDes?, bytes: number?): FloatCurveKey
+	local des = des or Squash.Des.Float :: NumberDes
+	local bytes = bytes or 4
+
+	local offset = enumItemData[Enum.KeyInterpolationMode].bytes
 	local x = FloatCurveKey.new(
-		Squash.Des.Float(string.sub(y, keyInterpolationModeSize + 1, keyInterpolationModeSize + 4), 4),
-		Squash.Des.Float(string.sub(y, keyInterpolationModeSize + 5, keyInterpolationModeSize + 8), 4),
-		keyInterpolationModes[Squash.Des.Uint(string.sub(y, 1, keyInterpolationModeSize), keyInterpolationModeSize)] :: Enum.KeyInterpolationMode
+		des(string.sub(y, offset + 1, offset + bytes), bytes),
+		des(string.sub(y, offset + bytes + 1, offset + 2 * bytes), bytes),
+		Squash.Des.EnumItem(string.sub(y, 1, offset), Enum.KeyInterpolationMode) :: Enum.KeyInterpolationMode
 	)
-	x.LeftTangent = Squash.Des.Float(string.sub(y, keyInterpolationModeSize + 9, keyInterpolationModeSize + 12), 4)
-	x.RightTangent = Squash.Des.Float(string.sub(y, keyInterpolationModeSize + 13, keyInterpolationModeSize + 16), 4)
+	offset += 2 * bytes
+	x.LeftTangent = des(string.sub(y, offset + 1, offset + bytes), bytes)
+	offset += bytes
+	x.RightTangent = des(string.sub(y, offset + 1, offset + bytes), bytes)
 	return x
 end
 
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.FloatCurveKey = serArrayFixed(Squash.Ser.FloatCurveKey)
+Squash.Ser.Array.FloatCurveKey = serArrayVector(Squash.Ser.FloatCurveKey) --TODO: same story
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.FloatCurveKey = desArrayFixed(Squash.Des.FloatCurveKey, keyInterpolationModeSize)
-
-local fontWeights, _ = getEnumData(Enum.FontWeight)
+Squash.Des.Array.FloatCurveKey = desArrayVector(-1, Squash.Des.FloatCurveKey) --TODO: same story
 
 --[[
 	@within Squash
@@ -841,23 +875,19 @@ function Squash.Ser.Font(x: Font): string
 	local family = string.match(x.Family, '(.+)%..+$')
 	if not family then error 'Font Family must be a Roblox font' end
 
-	local weightId = table.find(fontWeights, x.Weight) :: number
-	local styleAndWeight = string.char(2 * weightId + if x.Style == Enum.FontStyle.Normal then 1 else 0) -- Weight.Value is 100, 200, 300, etc. We want 2, 4, 6, etc. so that we can fit it into a byte without overriding the style bit
-
-	return styleAndWeight .. family -- TODO: This needs a way to be serialized still
+	return Squash.Ser.EnumItem(x.Style) .. Squash.Ser.EnumItem(x.Weight) .. family -- TODO: This needs a way to be serialized still
 end
 
 --[[
 	@within Squash
 ]]
 function Squash.Des.Font(y: string): Font
-	local styleAndWeight = string.byte(y, 1, 1)
-	local family = string.sub(y, 2)
-
-	local style = if styleAndWeight % 2 == 1 then Enum.FontStyle.Normal else Enum.FontStyle.Italic
-	local weightId = math.floor(styleAndWeight / 2)
-	local fontWeight = fontWeights[weightId] :: Enum.FontWeight
-
+	local a, b = 1, enumItemData[Enum.FontStyle].bytes
+	local style = Squash.Des.EnumItem(string.sub(y, a, b), Enum.FontStyle) :: Enum.FontStyle
+	a += b
+	b += enumItemData[Enum.FontWeight].bytes
+	local fontWeight = Squash.Des.EnumItem(string.sub(y, a, b), Enum.FontWeight) :: Enum.FontWeight
+	local family = string.sub(y, b + 1) -- TODO: This needs a way to be serialized still
 	return Font.new(family, fontWeight, style)
 end
 
@@ -877,7 +907,7 @@ Squash.Des.Array.Font = desArrayFixed(Squash.Des.Font, -1) --TODO: Same story
 function Squash.Ser.NumberRange(x: NumberRange, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.Ser.Int
 	local bytes = bytes or 4
-	return ser(x.Min, 4) .. ser(x.Max, 4)
+	return ser(x.Min, bytes) .. ser(x.Max, bytes)
 end
 
 --[[
@@ -1032,8 +1062,8 @@ local pathWaypointActions, pathWaypointActionSize = getEnumData(Enum.PathWaypoin
 function Squash.Ser.PathWaypoint(x: PathWaypoint, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.Ser.Int
 	local bytes = bytes or 4
-	return Squash.Ser.Uint(table.find(pathWaypointActions, x.Action) :: number, pathWaypointActionSize)
-		.. Squash.Ser.Vector3(x.Position, ser, bytes)
+
+	return Squash.Ser.EnumItem(x.Action) .. Squash.Ser.Vector3(x.Position, ser, bytes)
 end
 
 --[[
@@ -1042,21 +1072,24 @@ end
 function Squash.Des.PathWaypoint(y: string, des: NumberDes?, bytes: number?): PathWaypoint
 	local des = des or Squash.Des.Int
 	local bytes = bytes or 4
+
+	local offset, action = 1, nil
+	offset, action = desEnumItem(y, offset, Enum.PathWaypointAction)
 	return PathWaypoint.new(
-		Squash.Des.Vector3(string.sub(y, pathWaypointActionSize + 1), des, bytes),
-		pathWaypointActions[Squash.Des.Uint(string.sub(y, 1, pathWaypointActionSize), pathWaypointActionSize)] :: Enum.PathWaypointAction
+		Squash.Des.Vector3(string.sub(y, offset + 1), des, bytes),
+		action
 	)
 end
 
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.PathWaypoint = serArrayFixed(Squash.Ser.PathWaypoint) --TODO: Same story
+Squash.Ser.Array.PathWaypoint = serArrayVector(Squash.Ser.PathWaypoint) --TODO: Same story
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.PathWaypoint = desArrayFixed(Squash.Des.PathWaypoint, pathWaypointActionSize) --TODO: Extend desArrayVector to include a constant bytes and per-element bytes
+Squash.Des.Array.PathWaypoint = desArrayVector(-1, Squash.Des.PathWaypoint) --TODO: Extend desArrayVector to include a constant bytes and per-element bytes
 
 --[[
 	@within Squash
@@ -1135,7 +1168,7 @@ local materials, materialSize = getEnumData(Enum.Material)
 function Squash.Ser.RaycastResult(x: RaycastResult, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.Ser.Int
 	local bytes = bytes or 4
-	return Squash.Ser.Uint(table.find(materials, x.Material) :: number, materialSize)
+	return Squash.Ser.EnumItem(x.Material)
 		.. Squash.Ser.Uint(x.Distance, bytes)
 		.. Squash.Ser.Vector3(x.Position, ser, bytes)
 		.. Squash.Ser.Vector3(x.Normal, ser, bytes)
@@ -1152,9 +1185,8 @@ function Squash.Des.RaycastResult(
 	local des = des or Squash.Des.Int
 	local bytes = bytes or 4
 
-	local offset = 0
-	local materialId = Squash.Des.Uint(string.sub(y, offset + 1, offset + materialSize), materialSize)
-	offset += materialSize
+	local offset, material = 0, nil
+	offset, material = desEnumItem(y, offset, Enum.Material)
 
 	local distance = Squash.Des.Uint(string.sub(y, offset + 1, offset + bytes), bytes)
 	offset += bytes
@@ -1165,7 +1197,7 @@ function Squash.Des.RaycastResult(
 	local normal = Squash.Des.Vector3(string.sub(y, offset + 1, offset + bytes), des, bytes)
 
 	return {
-		Material = materials[materialId] :: Enum.Material,
+		Material = material :: Enum.Material,
 		Distance = distance,
 		Position = position,
 		Normal = normal,
@@ -1279,52 +1311,49 @@ Squash.Ser.Array.Region3int16 = serArrayFixed(Squash.Ser.Region3int16)
 ]]
 Squash.Des.Array.Region3int16 = desArrayFixed(Squash.Des.Region3int16, 12)
 
-local easingStyles, easingStyleSize = getEnumData(Enum.EasingStyle)
-local easingDirections, easingDirectionSize = getEnumData(Enum.EasingDirection)
-
 --[[
 	@within Squash
 ]]
 function Squash.Ser.TweenInfo(x: TweenInfo, ser: NumberSer?, bytes: number?): string
-	local ser = ser or Squash.Ser.Int
+	local ser = ser or Squash.Ser.Float :: NumberSer
 	local bytes = bytes or 4
 	return Squash.Ser.Boolean(x.Reverses)
-		.. Squash.Ser.Uint(table.find(easingStyles, x.EasingStyle) :: number, easingStyleSize)
-		.. Squash.Ser.Uint(table.find(easingDirections, x.EasingDirection) :: number, easingDirectionSize)
+		.. Squash.Ser.EnumItem(x.EasingStyle)
+		.. Squash.Ser.EnumItem(x.EasingDirection)
 		.. Squash.Ser.Int(x.RepeatCount, bytes)
-		.. Squash.Ser.Float(x.Time, bytes)
-		.. Squash.Ser.Float(x.DelayTime, bytes)
+		.. ser(x.Time, bytes)
+		.. ser(x.DelayTime, bytes)
 end
 
 --[[
 	@within Squash
 ]]
 function Squash.Des.TweenInfo(y: string, des: NumberDes?, bytes: number?): TweenInfo
-	local des = des or Squash.Des.Int
+	local des = des or Squash.Des.Float :: NumberDes
 	local bytes = bytes or 4
 
 	local offset = 0
 	local reverses = Squash.Des.Boolean(string.sub(y, offset + 1, offset + 1))
 	offset += 1
 
-	local easingStyleId = Squash.Des.Uint(string.sub(y, offset + 1, offset + easingStyleSize), easingStyleSize)
-	offset += easingStyleSize
+	local easingStyle
+	offset, easingStyle = desEnumItem(y, offset, Enum.EasingStyle)
 
-	local easingDirectionId = Squash.Des.Uint(string.sub(y, offset + 1, offset + easingDirectionSize), easingDirectionSize)
-	offset += easingDirectionSize
+	local easingDirection
+	offset, easingDirection = desEnumItem(y, offset, Enum.EasingDirection)
 
 	local repeatCount = Squash.Des.Int(string.sub(y, offset + 1, offset + bytes), bytes)
 	offset += bytes
 
-	local tweenTime = Squash.Des.Float(string.sub(y, offset + 1, offset + bytes), bytes)
+	local tweenTime = des(string.sub(y, offset + 1, offset + bytes), bytes)
 	offset += bytes
 
-	local delayTime = Squash.Des.Float(string.sub(y, offset + 1, offset + bytes), bytes)
+	local delayTime = des(string.sub(y, offset + 1, offset + bytes), bytes)
 
 	return TweenInfo.new(
 		tweenTime,
-		easingStyles[easingStyleId] :: Enum.EasingStyle,
-		easingDirections[easingDirectionId] :: Enum.EasingDirection,
+		easingStyle,
+		easingDirection,
 		repeatCount,
 		reverses,
 		delayTime
