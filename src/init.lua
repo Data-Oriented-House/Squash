@@ -1064,7 +1064,11 @@ Squash.Des.Array.PathWaypoint = desArrayFixed(Squash.Des.PathWaypoint, pathWaypo
 function Squash.Ser.PhysicalProperties(x: PhysicalProperties, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.Ser.Int
 	local bytes = bytes or 4
-	return ser(x.Density, bytes) .. ser(x.Friction, bytes) .. ser(x.Elasticity, bytes) .. ser(x.FrictionWeight, bytes) .. ser(x.ElasticityWeight, bytes)
+	return ser(x.Density, bytes)
+		.. ser(x.Friction, bytes)
+		.. ser(x.Elasticity, bytes)
+		.. ser(x.FrictionWeight, bytes)
+		.. ser(x.ElasticityWeight, bytes)
 end
 
 --[[
@@ -1122,6 +1126,61 @@ Squash.Ser.Array.Ray = serArrayVector(Squash.Ser.Ray)
 	@within Squash
 ]]
 Squash.Des.Array.Ray = desArrayVector(2, Squash.Des.Ray)
+
+local materials, materialSize = getEnumData(Enum.Material)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.RaycastResult(x: RaycastResult, ser: NumberSer?, bytes: number?): string
+	local ser = ser or Squash.Ser.Int
+	local bytes = bytes or 4
+	return Squash.Ser.Uint(table.find(materials, x.Material) :: number, materialSize)
+		.. Squash.Ser.Uint(x.Distance, bytes)
+		.. Squash.Ser.Vector3(x.Position, ser, bytes)
+		.. Squash.Ser.Vector3(x.Normal, ser, bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.RaycastResult(
+	y: string,
+	des: NumberDes?,
+	bytes: number?
+): { Material: Enum.Material, Distance: number, Position: Vector3, Normal: Vector3 }
+	local des = des or Squash.Des.Int
+	local bytes = bytes or 4
+
+	local offset = 0
+	local materialId = Squash.Des.Uint(string.sub(y, offset + 1, offset + materialSize), materialSize)
+	offset += materialSize
+
+	local distance = Squash.Des.Uint(string.sub(y, offset + 1, offset + bytes), bytes)
+	offset += bytes
+
+	local position = Squash.Des.Vector3(string.sub(y, offset + 1, offset + bytes), des, bytes)
+	offset += bytes
+
+	local normal = Squash.Des.Vector3(string.sub(y, offset + 1, offset + bytes), des, bytes)
+
+	return {
+		Material = materials[materialId] :: Enum.Material,
+		Distance = distance,
+		Position = position,
+		Normal = normal,
+	}
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.RaycastResult = serArrayFixed(Squash.Ser.RaycastResult) --TODO: Same story
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.RaycastResult = desArrayVector(-1, Squash.Des.RaycastResult) --TODO: Same story
 
 --[[
 	@within Squash
