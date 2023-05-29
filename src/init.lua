@@ -934,6 +934,30 @@ Squash.Des.Array.NumberSequenceKeypoint = desArrayVector(3, Squash.Des.NumberSeq
 --[[
 	@within Squash
 ]]
+function Squash.Ser.NumberSequence(x: NumberSequence, ser: NumberSer?, bytes: number?): string
+	return Squash.Ser.Array.NumberSequenceKeypoint(x.Keypoints, ser, bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.NumberSequence(y: string, des: NumberDes?, bytes: number?): NumberSequence
+	return NumberSequence.new(Squash.Des.Array.NumberSequenceKeypoint(y, des, bytes))
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.NumberSequence = serArrayVector(Squash.Ser.NumberSequence) --TODO: Same story
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.NumberSequence = desArrayVector(-1, Squash.Des.NumberSequence) --TODO: Same story, delimited arrays
+
+--[[
+	@within Squash
+]]
 function Squash.Ser.OverlapParams(x: OverlapParams): string
 	return string.char(
 		(if x.FilterType == Enum.RaycastFilterType.Include then 1 else 0) + (if x.RespectCanCollide then 2 else 0)
