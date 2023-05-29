@@ -78,20 +78,20 @@ local function bytesAssert(bytes: number)
 	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 8 then error 'bytes must be 1, 2, 3, 4, 5, 6, 7, or 8' end
 end
 
-local function serArrayNumber<T>(ser: (number, T) -> string)
+local function serArrayNumber<T>(ser: (x: T, bytes: number?) -> string)
 	return function(x: { T }, bytes: number?): string
 		local bytes = bytes or 4
 		bytesAssert(bytes)
 
 		local y = {}
 		for i, v in x do
-			y[i] = ser(bytes, v)
+			y[i] = ser(v, bytes)
 		end
 		return table.concat(y)
 	end
 end
 
-local function desArrayNumber<T>(des: (number, string) -> T)
+local function desArrayNumber<T>(des: (y: string, bytes: number?) -> T)
 	return function(y: string, bytes: number?): { T }
 		local bytes = bytes or 4
 		bytesAssert(bytes)
@@ -100,7 +100,7 @@ local function desArrayNumber<T>(des: (number, string) -> T)
 		for i = 1, #y / bytes do
 			local a = bytes * (i - 1) + 1
 			local b = bytes * i
-			x[i] = des(bytes, string.sub(y, a, b))
+			x[i] = des(string.sub(y, a, b), bytes)
 		end
 		return x
 	end
@@ -165,7 +165,7 @@ function Squash.Des.Int(y: string, bytes: number?): number
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
-	local x = Squash.Des.Uint(bytes, y)
+	local x = Squash.Des.Uint(y, bytes)
 	return if x > 0.5 * 256 ^ bytes - 1 then x - 256 ^ bytes else x
 end
 
@@ -216,19 +216,19 @@ Squash.Des.Array.Float = desArrayNumber(Squash.Des.Float)
 type NumberSer = typeof(Squash.Ser.Int)
 type NumberDes = typeof(Squash.Des.Int)
 
-local function serArrayVector<T>(serializer: (vector: T, ser: NumberSer?) -> string)
+local function serArrayVector<T>(serializer: (vector: T, ser: NumberSer, bytes: number?) -> string)
 	return function(x: { T }, ser: NumberSer?, bytes: number?): string
 		local bytes = bytes or 4
 		local encoding = ser or Squash.Ser.Int
 		local y = {}
 		for i, v in x do
-			y[i] = serializer(bytes, v, encoding)
+			y[i] = serializer(v, encoding, bytes)
 		end
 		return table.concat(y)
 	end
 end
 
-local function desArrayVector<T>(elements: number, deserializer: (y: string, des: NumberDes?) -> T)
+local function desArrayVector<T>(elements: number, deserializer: (y: string, des: NumberDes?, bytes: number?) -> T)
 	return function(y: string, des: NumberDes?, bytes: number?): { T }
 		local bytes = bytes or 4
 		local decoding = des or Squash.Des.Int
@@ -236,7 +236,7 @@ local function desArrayVector<T>(elements: number, deserializer: (y: string, des
 		for i = 1, #y / (elements * bytes) do
 			local a = elements * bytes * (i - 1) + 1
 			local b = elements * bytes * i
-			x[i] = deserializer(bytes, string.sub(y, a, b), decoding)
+			x[i] = deserializer(string.sub(y, a, b), decoding, bytes)
 		end
 		return x
 	end
@@ -257,7 +257,7 @@ end
 function Squash.Des.Vector2(y: string, des: NumberDes?, bytes: number?): Vector2
 	local bytes = bytes or 4
 	local decoding = des or Squash.Des.Int
-	return Vector2.new(decoding(bytes, string.sub(y, 1, bytes)), decoding(bytes, string.sub(y, bytes + 1, 2 * bytes)))
+	return Vector2.new(decoding(string.sub(y, 1, bytes), bytes), decoding(string.sub(y, bytes + 1, 2 * bytes), bytes))
 end
 
 --[[
@@ -286,9 +286,9 @@ function Squash.Des.Vector3(y: string, des: NumberDes?, bytes: number?): Vector3
 	local bytes = bytes or 4
 	local decoding = des or Squash.Des.Int
 	return Vector3.new(
-		decoding(bytes, string.sub(y, 1, bytes)),
-		decoding(bytes, string.sub(y, bytes + 1, 2 * bytes)),
-		decoding(bytes, string.sub(y, 2 * bytes + 1, 3 * bytes))
+		decoding(string.sub(y, 1, bytes), bytes),
+		decoding(string.sub(y, bytes + 1, 2 * bytes), bytes),
+		decoding(string.sub(y, 2 * bytes + 1, 3 * bytes), bytes)
 	)
 end
 
@@ -336,7 +336,7 @@ end
 	@within Squash
 ]]
 function Squash.Des.Vector2int16(y: string): Vector2int16
-	return Vector2int16.new(Squash.Des.Int(2, string.sub(y, 1, 2)), Squash.Des.Int(2, string.sub(y, 3, 4)))
+	return Vector2int16.new(Squash.Des.Int(string.sub(y, 1, 2), 2), Squash.Des.Int(string.sub(y, 3, 4), 2))
 end
 
 --[[
@@ -347,7 +347,7 @@ Squash.Ser.Array.Vector2int16 = serArrayFixed(Squash.Ser.Vector2int16)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Vector2int16 = desArrayFixed(4, Squash.Des.Vector2int16)
+Squash.Des.Array.Vector2int16 = desArrayFixed(Squash.Des.Vector2int16, 4)
 
 --[[
 	@within Squash
@@ -361,9 +361,9 @@ end
 ]]
 function Squash.Des.Vector3int16(y: string): Vector3int16
 	return Vector3int16.new(
-		Squash.Des.Int(2, string.sub(y, 1, 2)),
-		Squash.Des.Int(2, string.sub(y, 3, 4)),
-		Squash.Des.Int(2, string.sub(y, 5, 6))
+		Squash.Des.Int(string.sub(y, 1, 2), 2),
+		Squash.Des.Int(string.sub(y, 3, 4), 2),
+		Squash.Des.Int(string.sub(y, 5, 6), 2)
 	)
 end
 
@@ -375,20 +375,21 @@ Squash.Ser.Array.Vector3int16 = serArrayFixed(Squash.Ser.Vector3int16)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Vector3int16 = desArrayFixed(6, Squash.Des.Vector3int16)
+Squash.Des.Array.Vector3int16 = desArrayFixed(Squash.Des.Vector3int16, 6)
 
 local function serAngle(x: number): string
 	return Squash.Ser.Uint(2, (x + math.pi) % (2 * math.pi) * 65535)
 end
 
 local function desAngle(y: string): number
-	return Squash.Des.Uint(2, y) / 65535 - math.pi
+	return Squash.Des.Uint(y, 2) / 65535 - math.pi
 end
 
 --[[
 	@within Squash
 ]]
-function Squash.Ser.CFrame(posBytes: number, x: CFrame, ser: NumberSer?): string
+function Squash.Ser.CFrame(x: CFrame, ser: NumberSer?, posBytes: number?): string
+	local posBytes = posBytes or 4
 	local encoding = ser or Squash.Ser.Int
 
 	local rx, ry, rz = x:ToOrientation()
@@ -405,16 +406,17 @@ end
 --[[
 	@within Squash
 ]]
-function Squash.Des.CFrame(posBytes: number, y: string, des: NumberDes?): CFrame
+function Squash.Des.CFrame(y: string, des: NumberDes?, posBytes: number?): CFrame
+	local posBytes = posBytes or 4
 	local decoding = des or Squash.Des.Int
 
 	local rx = desAngle(string.sub(y, 1, 2))
 	local ry = desAngle(string.sub(y, 3, 4))
 	local rz = desAngle(string.sub(y, 5, 6))
 
-	local px = decoding(posBytes, string.sub(y, 7, 7 + posBytes - 1))
-	local py = decoding(posBytes, string.sub(y, 7 + posBytes, 7 + 2 * posBytes - 1))
-	local pz = decoding(posBytes, string.sub(y, 7 + 2 * posBytes, 7 + 3 * posBytes - 1))
+	local px = decoding(string.sub(y, 7, 7 + posBytes - 1), posBytes)
+	local py = decoding(string.sub(y, 7 + posBytes, 7 + 2 * posBytes - 1), posBytes)
+	local pz = decoding(string.sub(y, 7 + 2 * posBytes, 7 + 3 * posBytes - 1), posBytes)
 
 	return CFrame.Angles(rx, ry, rz) + Vector3.new(px, py, pz)
 end
@@ -435,7 +437,7 @@ function Squash.Des.Array.CFrame(posBytes: number, y: string, des: NumberDes?): 
 	for i = 1, #y / bytes do
 		local a = bytes * (i - 1) + 1
 		local b = bytes * i
-		x[i] = Squash.Des.CFrame(posBytes, string.sub(y, a, b), decoding)
+		x[i] = Squash.Des.CFrame(string.sub(y, a, b), decoding, posBytes)
 	end
 	return x
 end
@@ -465,20 +467,20 @@ Squash.Ser.Array.Axes = serArrayFixed(Squash.Ser.Axes)
 --[[
 	@within Squash
 --]]
-Squash.Des.Array.Axes = desArrayFixed(8, Squash.Des.Axes)
+Squash.Des.Array.Axes = desArrayFixed(Squash.Des.Axes, 8)
 
 --[[
 	@within Squash
 ]]
 function Squash.Ser.BrickColor(x: BrickColor): string
-	return Squash.Ser.Uint(2, x.Number)
+	return Squash.Ser.Uint(x.Number, 2)
 end
 
 --[[
 	@within Squash
 ]]
 function Squash.Des.BrickColor(y: string): BrickColor
-	return BrickColor.new(Squash.Des.Uint(2, y))
+	return BrickColor.new(Squash.Des.Uint(y, 2))
 end
 
 --[[
@@ -489,7 +491,7 @@ Squash.Ser.Array.BrickColor = serArrayFixed(Squash.Ser.BrickColor)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.BrickColor = desArrayFixed(2, Squash.Des.BrickColor)
+Squash.Des.Array.BrickColor = desArrayFixed(Squash.Des.BrickColor, 2)
 
 --[[
 	@within Squash
@@ -513,7 +515,7 @@ Squash.Ser.Array.Color3 = serArrayFixed(Squash.Ser.Color3)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Color3 = desArrayFixed(3, Squash.Des.Color3)
+Squash.Des.Array.Color3 = desArrayFixed(Squash.Des.Color3, 3)
 
 local function getBitSize(x: number): number
 	return math.ceil(math.log(x, 2 ^ 1))
@@ -596,7 +598,7 @@ end
 	@within Squash
 ]]
 function Squash.Des.DateTime(y: string): DateTime
-	return DateTime.fromUnixTimestamp(Squash.Des.Uint(5, y) - 17_987_443_200)
+	return DateTime.fromUnixTimestamp(Squash.Des.Uint(y, 5) - 17_987_443_200)
 end
 
 --[[
@@ -607,7 +609,7 @@ Squash.Ser.Array.DateTime = serArrayFixed(Squash.Ser.DateTime)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.DateTime = desArrayFixed(5, Squash.Des.DateTime)
+Squash.Des.Array.DateTime = desArrayFixed(Squash.Des.DateTime, 5)
 
 --[[
 	@within Squash
@@ -626,10 +628,10 @@ end
 function Squash.Des.DockWidgetPluginGuiInfo(y: string): DockWidgetPluginGuiInfo
 	local x = DockWidgetPluginGuiInfo.new()
 	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.Des.Boolean(string.sub(y, 1, 1))
-	x.FloatingXSize = Squash.Des.Int(2, string.sub(y, 2, 3))
-	x.FloatingYSize = Squash.Des.Int(2, string.sub(y, 4, 5))
-	x.MinWidth = Squash.Des.Int(2, string.sub(y, 6, 7))
-	x.MinHeight = Squash.Des.Int(2, string.sub(y, 8, 9))
+	x.FloatingXSize = Squash.Des.Int(string.sub(y, 2, 3), 2)
+	x.FloatingYSize = Squash.Des.Int(string.sub(y, 4, 5), 2)
+	x.MinWidth = Squash.Des.Int(string.sub(y, 6, 7), 2)
+	x.MinHeight = Squash.Des.Int(string.sub(y, 8, 9), 2)
 	return x
 end
 
@@ -641,7 +643,7 @@ Squash.Ser.Array.DockWidgetPluginGuiInfo = serArrayFixed(Squash.Ser.DockWidgetPl
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.DockWidgetPluginGuiInfo = desArrayFixed(9, Squash.Des.DockWidgetPluginGuiInfo)
+Squash.Des.Array.DockWidgetPluginGuiInfo = desArrayFixed(Squash.Des.DockWidgetPluginGuiInfo, 9)
 
 --[[
 	@within Squash
@@ -665,7 +667,7 @@ Squash.Ser.Array.ColorSequenceKeypoint = serArrayFixed(Squash.Ser.ColorSequenceK
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.ColorSequenceKeypoint = desArrayFixed(4, Squash.Des.ColorSequenceKeypoint)
+Squash.Des.Array.ColorSequenceKeypoint = desArrayFixed(Squash.Des.ColorSequenceKeypoint, 4)
 
 --[[
 	@within Squash
@@ -689,7 +691,7 @@ Squash.Ser.Array.ColorSequence = serArrayFixed(Squash.Ser.ColorSequence)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.ColorSequence = desArrayFixed(4, Squash.Des.ColorSequence)
+Squash.Des.Array.ColorSequence = desArrayFixed(Squash.Des.ColorSequence, 4)
 
 --[[
 	@within Squash
@@ -715,7 +717,7 @@ Squash.Ser.Array.Faces = serArrayFixed(Squash.Ser.Faces)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Faces = desArrayFixed(1, Squash.Des.Faces)
+Squash.Des.Array.Faces = desArrayFixed(Squash.Des.Faces, 1)
 
 local fontWeights, _ = getEnumData(Enum.FontWeight)
 
@@ -754,7 +756,7 @@ Squash.Ser.Array.Font = serArrayFixed(Squash.Ser.Font) -- TODO: This needs a way
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Font = desArrayFixed(1, Squash.Des.Font) --TODO: Same story
+Squash.Des.Array.Font = desArrayFixed(Squash.Des.Font, -1) --TODO: Same story
 
 --[[
 	@within Squash
@@ -773,7 +775,7 @@ function Squash.Des.OverlapParams(y: string): OverlapParams
 
 	local x = OverlapParams.new()
 	x.CollisionGroup = string.sub(y, 4) --TODO: Same story
-	x.MaxParts = Squash.Des.Uint(2, string.sub(y, 2, 3))
+	x.MaxParts = Squash.Des.Uint(string.sub(y, 2, 3), 2)
 	x.RespectCanCollide = filterTypeAndRespectCanCollide >= 2
 	x.FilterType = if filterTypeAndRespectCanCollide % 2 == 0
 		then Enum.RaycastFilterType.Include
@@ -790,7 +792,7 @@ Squash.Ser.Array.OverlapParams = serArrayFixed(Squash.Ser.OverlapParams) --TODO:
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.OverlapParams = desArrayFixed(-1, Squash.Des.OverlapParams) --TODO: Same story
+Squash.Des.Array.OverlapParams = desArrayFixed(Squash.Des.OverlapParams, -1) --TODO: Same story
 
 --[[
 	@within Squash
@@ -823,14 +825,14 @@ Squash.Ser.Array.RaycastParams = serArrayFixed(Squash.Ser.RaycastParams) --TODO:
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.RaycastParams = desArrayFixed(-1, Squash.Des.RaycastParams) --TODO: Same story
+Squash.Des.Array.RaycastParams = desArrayFixed(Squash.Des.RaycastParams, -1) --TODO: Same story
 
 --[[
 	@within Squash
 ]]
 function Squash.Ser.Region3(x: Region3, ser: NumberSer?, bytes: number?): string
 	local bytes = bytes or 4
-	return Squash.Ser.Vector3(bytes, x.Size, ser) .. Squash.Ser.CFrame(bytes, x.CFrame, ser)
+	return Squash.Ser.Vector3(x.Size, ser, bytes) .. Squash.Ser.CFrame(x.CFrame, ser, bytes)
 end
 
 --[[
@@ -839,8 +841,8 @@ end
 function Squash.Des.Region3(y: string, des: NumberDes?, bytes: number?): Region3
 	local bytes = bytes or 4
 	return Region3.new(
-		Squash.Des.Vector3(bytes, string.sub(y, 1, 12), des),
-		Squash.Des.Vector3(bytes, string.sub(y, 13, 24), des)
+		Squash.Des.Vector3(string.sub(y, 1, 12), des, bytes),
+		Squash.Des.Vector3(string.sub(y, 13, 24), des, bytes)
 	)
 end
 
@@ -859,7 +861,7 @@ function Squash.Des.Array.Region3(y: string, des: NumberDes?, bytes: number?): {
 
 	local x = {}
 	for i = 1, #y / size do
-		x[i] = Squash.Des.Region3(bytes, string.sub(y, (i - 1) * size + 1, i * size), decode)
+		x[i] = Squash.Des.Region3(string.sub(y, (i - 1) * size + 1, i * size), decode, bytes)
 	end
 	return x
 end
@@ -886,7 +888,7 @@ Squash.Ser.Array.Region3int16 = serArrayFixed(Squash.Ser.Region3int16)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Region3int16 = desArrayFixed(12, Squash.Des.Region3int16)
+Squash.Des.Array.Region3int16 = desArrayFixed(Squash.Des.Region3int16, 12)
 
 return Squash
 
