@@ -785,6 +785,43 @@ Squash.Ser.Array.Faces = serArrayFixed(Squash.Ser.Faces)
 ]]
 Squash.Des.Array.Faces = desArrayFixed(Squash.Des.Faces, 1)
 
+local keyInterpolationModes, keyInterpolationModeSize = getEnumData(Enum.KeyInterpolationMode)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.FloatCurveKey(x: FloatCurveKey): string
+	return Squash.Ser.Uint(table.find(keyInterpolationModes, x.Interpolation) :: number, keyInterpolationModeSize)
+		.. Squash.Ser.Float(x.Time, 4)
+		.. Squash.Ser.Float(x.Value, 4)
+		.. Squash.Ser.Float(x.LeftTangent, 4)
+		.. Squash.Ser.Float(x.RightTangent, 4)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.FloatCurveKey(y: string): FloatCurveKey
+	local x = FloatCurveKey.new(
+		Squash.Des.Float(string.sub(y, keyInterpolationModeSize + 1, keyInterpolationModeSize + 4), 4),
+		Squash.Des.Float(string.sub(y, keyInterpolationModeSize + 5, keyInterpolationModeSize + 8), 4),
+		keyInterpolationModes[Squash.Des.Uint(string.sub(y, 1, keyInterpolationModeSize), keyInterpolationModeSize)] :: Enum.KeyInterpolationMode
+	)
+	x.LeftTangent = Squash.Des.Float(string.sub(y, keyInterpolationModeSize + 9, keyInterpolationModeSize + 12), 4)
+	x.RightTangent = Squash.Des.Float(string.sub(y, keyInterpolationModeSize + 13, keyInterpolationModeSize + 16), 4)
+	return x
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.FloatCurveKey = serArrayFixed(Squash.Ser.FloatCurveKey)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.FloatCurveKey = desArrayFixed(Squash.Des.FloatCurveKey, keyInterpolationModeSize)
+
 local fontWeights, _ = getEnumData(Enum.FontWeight)
 
 --[[
