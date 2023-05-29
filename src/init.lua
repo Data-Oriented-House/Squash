@@ -656,6 +656,16 @@ end
 --[[
 	@within Squash
 ]]
+Squash.Ser.Array.CatalogSearchParams = serArrayFixed(Squash.Ser.CatalogSearchParams)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.CatalogSearchParams = desArrayFixed(Squash.Des.CatalogSearchParams, -1) --TODO: same story
+
+--[[
+	@within Squash
+]]
 function Squash.Ser.DateTime(x: DateTime): string
 	return Squash.Ser.Uint(5, x.UnixTimestamp + 17_987_443_200)
 end
