@@ -1341,6 +1341,34 @@ Squash.Ser.Array.TweenInfo = serArrayVector(Squash.Ser.TweenInfo)
 ]]
 Squash.Des.Array.TweenInfo = desArrayVector(-1, Squash.Des.TweenInfo) --TODO: Same story
 
+--[[
+	@within Squash
+]]
+function Squash.Ser.UDim(x: UDim, ser: NumberSer?, bytes: number?): string
+	local ser = ser or Squash.Ser.Int
+	local bytes = bytes or 4
+	return ser(x.Scale, bytes) .. ser(x.Offset, bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.UDim(y: string, des: NumberDes?, bytes: number?): UDim
+	local des = des or Squash.Des.Int
+	local bytes = bytes or 4
+	return UDim.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.UDim = serArrayVector(Squash.Ser.UDim)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.UDim = desArrayVector(2, Squash.Des.UDim)
+
 return Squash
 
 -- Squash.Ser.Rbx = {}
