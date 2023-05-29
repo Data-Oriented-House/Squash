@@ -974,7 +974,7 @@ function Squash.Des.OverlapParams(y: string): OverlapParams
 	x.CollisionGroup = string.sub(y, 4) --TODO: Same story
 	x.MaxParts = Squash.Des.Uint(string.sub(y, 2, 3), 2)
 	x.RespectCanCollide = filterTypeAndRespectCanCollide >= 2
-	x.FilterType = if filterTypeAndRespectCanCollide % 2 == 0
+	x.FilterType = if filterTypeAndRespectCanCollide % 2 == 1
 		then Enum.RaycastFilterType.Include
 		else Enum.RaycastFilterType.Exclude
 
