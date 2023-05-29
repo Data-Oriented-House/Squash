@@ -1073,10 +1073,7 @@ function Squash.Des.PathWaypoint(y: string, des: NumberDes?, bytes: number?): Pa
 
 	local offset, action = 1, nil
 	offset, action = desEnumItem(y, offset, Enum.PathWaypointAction)
-	return PathWaypoint.new(
-		Squash.Des.Vector3(string.sub(y, offset + 1), des, bytes),
-		action
-	)
+	return PathWaypoint.new(Squash.Des.Vector3(string.sub(y, offset + 1), des, bytes), action)
 end
 
 --[[
@@ -1346,14 +1343,7 @@ function Squash.Des.TweenInfo(y: string, des: NumberDes?, bytes: number?): Tween
 
 	local delayTime = des(string.sub(y, offset + 1, offset + bytes), bytes)
 
-	return TweenInfo.new(
-		tweenTime,
-		easingStyle,
-		easingDirection,
-		repeatCount,
-		reverses,
-		delayTime
-	)
+	return TweenInfo.new(tweenTime, easingStyle, easingDirection, repeatCount, reverses, delayTime)
 end
 
 --[[
