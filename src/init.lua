@@ -840,10 +840,10 @@ end
 ]]
 function Squash.Des.Region3(y: string, des: NumberDes?, bytes: number?): Region3
 	local bytes = bytes or 4
-	return Region3.new(
-		Squash.Des.Vector3(string.sub(y, 1, 12), des, bytes),
-		Squash.Des.Vector3(string.sub(y, 13, 24), des, bytes)
-	)
+	local x = Region3.new(Vector3.zero, Vector3.zero)
+	x.Size = Squash.Des.Vector3(string.sub(y, 1, 12), des, bytes)
+	x.CFrame = Squash.Des.CFrame(string.sub(y, 13, 24), des, bytes)
+	return x
 end
 
 --[[
