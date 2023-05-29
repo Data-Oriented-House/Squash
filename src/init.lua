@@ -1024,6 +1024,40 @@ Squash.Ser.Array.RaycastParams = serArrayFixed(Squash.Ser.RaycastParams) --TODO:
 ]]
 Squash.Des.Array.RaycastParams = desArrayFixed(Squash.Des.RaycastParams, -1) --TODO: Same story
 
+local pathWaypointActions, pathWaypointActionSize = getEnumData(Enum.PathWaypointAction)
+
+--[[
+	@within Squash
+]]
+function Squash.Ser.PathWaypoint(x: PathWaypoint, ser: NumberSer?, bytes: number?): string
+	local ser = ser or Squash.Ser.Int
+	local bytes = bytes or 4
+	return Squash.Ser.Uint(table.find(pathWaypointActions, x.Action) :: number, pathWaypointActionSize)
+		.. Squash.Ser.Vector3(x.Position, ser, bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.PathWaypoint(y: string, des: NumberDes?, bytes: number?): PathWaypoint
+	local des = des or Squash.Des.Int
+	local bytes = bytes or 4
+	return PathWaypoint.new(
+		Squash.Des.Vector3(string.sub(y, pathWaypointActionSize + 1), des, bytes),
+		pathWaypointActions[Squash.Des.Uint(string.sub(y, 1, pathWaypointActionSize), pathWaypointActionSize)] :: Enum.PathWaypointAction
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.PathWaypoint = serArrayFixed(Squash.Ser.PathWaypoint) --TODO: Same story
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.PathWaypoint = desArrayFixed(Squash.Des.PathWaypoint, pathWaypointActionSize) --TODO: Extend desArrayVector to include a constant bytes and per-element bytes
+
 --[[
 	@within Squash
 ]]
