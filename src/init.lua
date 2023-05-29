@@ -1185,6 +1185,40 @@ Squash.Des.Array.RaycastResult = desArrayVector(-1, Squash.Des.RaycastResult) --
 --[[
 	@within Squash
 ]]
+function Squash.Ser.Rect(x: Rect, bytes: number?)
+	local bytes = bytes or 4
+	return Squash.Ser.Uint(x.Min.X, bytes)
+		.. Squash.Ser.Uint(x.Min.Y, bytes)
+		.. Squash.Ser.Uint(x.Max.X, bytes)
+		.. Squash.Ser.Uint(x.Max.Y, bytes)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.Rect(y: string, bytes: number?): Rect
+	local bytes = bytes or 4
+	return Rect.new(
+		Squash.Des.Uint(string.sub(y, 1, bytes), bytes),
+		Squash.Des.Uint(string.sub(y, bytes + 1, 2 * bytes), bytes),
+		Squash.Des.Uint(string.sub(y, 2 * bytes + 1, 3 * bytes), bytes),
+		Squash.Des.Uint(string.sub(y, 3 * bytes + 1, 4 * bytes), bytes)
+	)
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.Rect = serArrayVector(Squash.Ser.Rect) --HGHINOGFEID ior
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.Rect = desArrayVector(4, Squash.Des.Rect)
+
+--[[
+	@within Squash
+]]
 function Squash.Ser.Region3(x: Region3, ser: NumberSer?, bytes: number?): string
 	local bytes = bytes or 4
 	return Squash.Ser.Vector3(x.Size, ser, bytes) .. Squash.Ser.CFrame(x.CFrame, ser, bytes)
