@@ -874,6 +874,34 @@ Squash.Des.Array.Font = desArrayFixed(Squash.Des.Font, -1) --TODO: Same story
 --[[
 	@within Squash
 ]]
+function Squash.Ser.NumberRange(x: NumberRange, ser: NumberSer?, bytes: number?): string
+	local ser = ser or Squash.Ser.Int
+	local bytes = bytes or 4
+	return ser(x.Min, 4) .. ser(x.Max, 4)
+end
+
+--[[
+	@within Squash
+]]
+function Squash.Des.NumberRange(y: string, des: NumberDes?, bytes: number?): NumberRange
+	local des = des or Squash.Des.Int
+	local bytes = bytes or 4
+	return NumberRange.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
+end
+
+--[[
+	@within Squash
+]]
+Squash.Ser.Array.NumberRange = serArrayVector(Squash.Ser.NumberRange)
+
+--[[
+	@within Squash
+]]
+Squash.Des.Array.NumberRange = desArrayVector(2, Squash.Des.NumberRange)
+
+--[[
+	@within Squash
+]]
 function Squash.Ser.OverlapParams(x: OverlapParams): string
 	return string.char(
 		(if x.FilterType == Enum.RaycastFilterType.Include then 1 else 0) + (if x.RespectCanCollide then 2 else 0)
