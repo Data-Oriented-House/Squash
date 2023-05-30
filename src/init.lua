@@ -10,6 +10,210 @@ local Squash = {}
 Squash.Ser = { Array = {} }
 Squash.Des = { Array = {} }
 
+-- Duplication Reducers --
+
+type NumberSer = typeof(Squash.Ser.Int)
+type NumberDes = typeof(Squash.Des.Int)
+
+local function bytesAssert(bytes: number)
+	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 8 then
+		error 'bytes must be 1, 2, 3, 4, 5, 6, 7, or 8'
+	end
+end
+
+local function floatAssert(bytes: number)
+	if bytes ~= 4 and bytes ~= 8 then
+		error(`Expected 4 or 8 bytes. Invalid number of bytes for floating point: {bytes}`)
+	end
+end
+
+local function serArrayNumber<T>(ser: (x: T, bytes: number?) -> string)
+	return function(x: { T }, bytes: number?): string
+		local bytes = bytes or 4
+		bytesAssert(bytes)
+
+		local y = {}
+		for i, v in x do
+			y[i] = ser(v, bytes)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayNumber<T>(des: (y: string, bytes: number?) -> T)
+	return function(y: string, bytes: number?): { T }
+		local bytes = bytes or 4
+		bytesAssert(bytes)
+
+		local x = {}
+		for i = 1, #y / bytes do
+			local a = bytes * (i - 1) + 1
+			local b = bytes * i
+			x[i] = des(string.sub(y, a, b), bytes)
+		end
+		return x
+	end
+end
+
+local function serArrayFixed<T>(ser: (T) -> string)
+	return function(x: { T }): string
+		local y = {}
+		for i, v in x do
+			y[i] = ser(v)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayFixed<T>(des: (string) -> T, bytes: number)
+	return function(y: string): { T }
+		local x = {}
+		for i = 1, #y / bytes do
+			local a = bytes * (i - 1) + 1
+			local b = bytes * i
+			x[i] = des(string.sub(y, a, b))
+		end
+		return x
+	end
+end
+
+local function serArrayVector<T>(serializer: (vector: T, ser: NumberSer, bytes: number?) -> string)
+	return function(x: { T }, ser: NumberSer?, bytes: number?): string
+		local bytes = bytes or 4
+		local encoding = ser or Squash.Ser.Int
+
+		local y = {}
+		for i, v in x do
+			y[i] = serializer(v, encoding, bytes)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayVector<T>(
+	deserializer: (y: string, des: NumberDes?, bytes: number?) -> T,
+	elements: number,
+	offsetBytes: number
+)
+	return function(y: string, des: NumberDes?, bytes: number?): { T }
+		local bytes = bytes or 4
+		local decoding = des or Squash.Des.Int
+
+		local size = offsetBytes + elements * bytes
+		local x = {}
+		for i = 1, #y / size do
+			local a = size * (i - 1) + 1
+			local b = size * i
+			x[i] = deserializer(string.sub(y, a, b), decoding, bytes)
+		end
+		return x
+	end
+end
+
+local function serArrayVectorNoCoding<T>(serializer: (vector: T, bytes: number?) -> string)
+	return function(x: { T }, bytes: number?): string
+		local bytes = bytes or 4
+
+		local y = {}
+		for i, v in x do
+			y[i] = serializer(v, bytes)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayVectorNoCoding<T>(
+	deserializer: (y: string, bytes: number?) -> T,
+	elements: number,
+	offsetBytes: number
+)
+	return function(y: string, bytes: number?): { T }
+		local bytes = bytes or 4
+
+		local size = offsetBytes + elements * bytes
+		local x = {}
+		for i = 1, #y / size do
+			local a = size * (i - 1) + 1
+			local b = size * i
+			x[i] = deserializer(string.sub(y, a, b), bytes)
+		end
+		return x
+	end
+end
+
+local function serAngle(x: number): string
+	return Squash.Ser.Uint(2, (x + math.pi) % (2 * math.pi) * 65535)
+end
+
+local function desAngle(y: string): number
+	return Squash.Des.Uint(y, 2) / 65535 - math.pi
+end
+
+local function getBitSize(x: number): number
+	return math.ceil(math.log(x, 2 ^ 1))
+end
+
+local function getByteSize(x: number): number
+	return math.ceil(math.log(x, 2 ^ 8))
+end
+
+local function getItemData<T>(array: { T }): { items: { T }, bits: number, bytes: number }
+	return {
+		items = array,
+		bits = getBitSize(#array),
+		bytes = getByteSize(#array),
+	}
+end
+
+local enumData = getItemData(Enum:GetEnums())
+local enumItemData = {}
+for _, enum in enumData.items do
+	enumItemData[enum] = getItemData(enum:GetEnumItems())
+end
+
+local function packBits(x: { number }, bits: number): string
+	local packed = {}
+	local byte = 0
+	local count = 0
+	for i = 1, #x do
+		for b = bits - 1, 0, -1 do
+			byte = byte * 2 + math.floor(x[i] / 2 ^ b) % 2
+			count = count + 1
+			if count == 8 then
+				table.insert(packed, string.char(byte))
+				byte = 0
+				count = 0
+			end
+		end
+	end
+	if count > 0 then
+		byte = byte * 2 ^ (8 - count)
+		table.insert(packed, string.char(byte))
+	end
+	return table.concat(packed)
+end
+
+local function unpackBits(y: string, bits: number): { number }
+	local x = {}
+	local value = 0
+	local count = 0
+	for i = 1, #y do
+		local byte = string.byte(y, i)
+		for b = 7, 0, -1 do
+			value = value * 2 + math.floor(byte / 2 ^ b) % 2
+			count = count + 1
+			if count == bits then
+				table.insert(x, value)
+				value = 0
+				count = 0
+			end
+		end
+	end
+	return x
+end
+
+-- Actual API --
+
 --[[
 	@within Squash
 ]]
@@ -72,38 +276,6 @@ function Squash.Des.Array.Boolean(y: string): { boolean }
 			Squash.Des.Boolean(string.sub(y, i, i))
 	end
 	return x
-end
-
-local function bytesAssert(bytes: number)
-	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 8 then error 'bytes must be 1, 2, 3, 4, 5, 6, 7, or 8' end
-end
-
-local function serArrayNumber<T>(ser: (x: T, bytes: number?) -> string)
-	return function(x: { T }, bytes: number?): string
-		local bytes = bytes or 4
-		bytesAssert(bytes)
-
-		local y = {}
-		for i, v in x do
-			y[i] = ser(v, bytes)
-		end
-		return table.concat(y)
-	end
-end
-
-local function desArrayNumber<T>(des: (y: string, bytes: number?) -> T)
-	return function(y: string, bytes: number?): { T }
-		local bytes = bytes or 4
-		bytesAssert(bytes)
-
-		local x = {}
-		for i = 1, #y / bytes do
-			local a = bytes * (i - 1) + 1
-			local b = bytes * i
-			x[i] = des(string.sub(y, a, b), bytes)
-		end
-		return x
-	end
 end
 
 --[[
@@ -179,12 +351,6 @@ Squash.Ser.Array.Int = serArrayNumber(Squash.Ser.Int)
 --]]
 Squash.Des.Array.Int = desArrayNumber(Squash.Des.Int)
 
-local function floatAssert(bytes: number)
-	if not (bytes == 4 or bytes == 8) then
-		error(`Expected 4 or 8 bytes. Invalid number of bytes for floating point: {bytes}`)
-	end
-end
-
 --[[
 	@within Squash
 ]]
@@ -212,42 +378,6 @@ Squash.Ser.Array.Float = serArrayNumber(Squash.Ser.Float)
 	@within Squash
 --]]
 Squash.Des.Array.Float = desArrayNumber(Squash.Des.Float)
-
-type NumberSer = typeof(Squash.Ser.Int)
-type NumberDes = typeof(Squash.Des.Int)
-
-local function serArrayVector<T>(serializer: (vector: T, ser: NumberSer, bytes: number?) -> string)
-	return function(x: { T }, ser: NumberSer?, bytes: number?): string
-		local bytes = bytes or 4
-		local encoding = ser or Squash.Ser.Int
-
-		local y = {}
-		for i, v in x do
-			y[i] = serializer(v, encoding, bytes)
-		end
-		return table.concat(y)
-	end
-end
-
-local function desArrayVector<T>(
-	deserializer: (y: string, des: NumberDes?, bytes: number?) -> T,
-	elements: number,
-	offsetBytes: number
-)
-	return function(y: string, des: NumberDes?, bytes: number?): { T }
-		local bytes = bytes or 4
-		local decoding = des or Squash.Des.Int
-
-		local size = offsetBytes + elements * bytes
-		local x = {}
-		for i = 1, #y / size do
-			local a = size * (i - 1) + 1
-			local b = size * i
-			x[i] = deserializer(string.sub(y, a, b), decoding, bytes)
-		end
-		return x
-	end
-end
 
 --[[
 	@within Squash
@@ -309,28 +439,6 @@ Squash.Ser.Array.Vector3 = serArrayVector(Squash.Ser.Vector3)
 --]]
 Squash.Des.Array.Vector3 = desArrayVector(Squash.Des.Vector3, 3, 0)
 
-local function serArrayFixed<T>(ser: (T) -> string)
-	return function(x: { T }): string
-		local y = {}
-		for i, v in x do
-			y[i] = ser(v)
-		end
-		return table.concat(y)
-	end
-end
-
-local function desArrayFixed<T>(des: (string) -> T, bytes: number)
-	return function(y: string): { T }
-		local x = {}
-		for i = 1, #y / bytes do
-			local a = bytes * (i - 1) + 1
-			local b = bytes * i
-			x[i] = des(string.sub(y, a, b))
-		end
-		return x
-	end
-end
-
 --[[
 	@within Squash
 ]]
@@ -382,14 +490,6 @@ Squash.Ser.Array.Vector3int16 = serArrayFixed(Squash.Ser.Vector3int16)
 	@within Squash
 ]]
 Squash.Des.Array.Vector3int16 = desArrayFixed(Squash.Des.Vector3int16, 6)
-
-local function serAngle(x: number): string
-	return Squash.Ser.Uint(2, (x + math.pi) % (2 * math.pi) * 65535)
-end
-
-local function desAngle(y: string): number
-	return Squash.Des.Uint(y, 2) / 65535 - math.pi
-end
 
 --[[
 	@within Squash
@@ -446,28 +546,6 @@ function Squash.Des.Array.CFrame(posBytes: number, y: string, des: NumberDes?): 
 		x[i] = Squash.Des.CFrame(string.sub(y, a, b), decoding, posBytes)
 	end
 	return x
-end
-
-local function getBitSize(x: number): number
-	return math.ceil(math.log(x, 2 ^ 1))
-end
-
-local function getByteSize(x: number): number
-	return math.ceil(math.log(x, 2 ^ 8))
-end
-
-local function getItemData<T>(array: { T }): { items: { T }, bits: number, bytes: number }
-	return {
-		items = array,
-		bits = getBitSize(#array),
-		bytes = getByteSize(#array),
-	}
-end
-
-local enumData = getItemData(Enum:GetEnums())
-local enumItemData = {}
-for _, enum in enumData.items do
-	enumItemData[enum] = getItemData(enum:GetEnumItems())
 end
 
 --[[
@@ -579,47 +657,6 @@ Squash.Ser.Array.Color3 = serArrayFixed(Squash.Ser.Color3)
 	@within Squash
 ]]
 Squash.Des.Array.Color3 = desArrayFixed(Squash.Des.Color3, 3)
-
-local function packBits(x: { number }, bits: number): string
-	local packed = {}
-	local byte = 0
-	local count = 0
-	for i = 1, #x do
-		for b = bits - 1, 0, -1 do
-			byte = byte * 2 + math.floor(x[i] / 2 ^ b) % 2
-			count = count + 1
-			if count == 8 then
-				table.insert(packed, string.char(byte))
-				byte = 0
-				count = 0
-			end
-		end
-	end
-	if count > 0 then
-		byte = byte * 2 ^ (8 - count)
-		table.insert(packed, string.char(byte))
-	end
-	return table.concat(packed)
-end
-
-local function unpackBits(y: string, bits: number): { number }
-	local x = {}
-	local value = 0
-	local count = 0
-	for i = 1, #y do
-		local byte = string.byte(y, i)
-		for b = 7, 0, -1 do
-			value = value * 2 + math.floor(byte / 2 ^ b) % 2
-			count = count + 1
-			if count == bits then
-				table.insert(x, value)
-				value = 0
-				count = 0
-			end
-		end
-	end
-	return x
-end
 
 --[[
 	@within Squash
@@ -880,7 +917,9 @@ Squash.Des.Array.FloatCurveKey =
 ]]
 function Squash.Ser.Font(x: Font): string
 	local family = string.match(x.Family, '(.+)%..+$')
-	if not family then error 'Font Family must be a Roblox font' end
+	if not family then
+		error 'Font Family must be a Roblox font'
+	end
 
 	return Squash.Ser.EnumItem(x.Style) .. Squash.Ser.EnumItem(x.Weight) .. family -- TODO: This needs a way to be serialized still
 end
@@ -1213,37 +1252,6 @@ Squash.Ser.Array.RaycastResult = serArrayFixed(Squash.Ser.RaycastResult) --TODO:
 	@within Squash
 ]]
 Squash.Des.Array.RaycastResult = desArrayVector(Squash.Des.RaycastResult, 7, enumItemData[Enum.Material].bytes) --TODO: Same story
-
-local function serArrayVectorNoCoding<T>(serializer: (vector: T, bytes: number?) -> string)
-	return function(x: { T }, bytes: number?): string
-		local bytes = bytes or 4
-
-		local y = {}
-		for i, v in x do
-			y[i] = serializer(v, bytes)
-		end
-		return table.concat(y)
-	end
-end
-
-local function desArrayVectorNoCoding<T>(
-	deserializer: (y: string, bytes: number?) -> T,
-	elements: number,
-	offsetBytes: number
-)
-	return function(y: string, bytes: number?): { T }
-		local bytes = bytes or 4
-
-		local size = offsetBytes + elements * bytes
-		local x = {}
-		for i = 1, #y / size do
-			local a = size * (i - 1) + 1
-			local b = size * i
-			x[i] = deserializer(string.sub(y, a, b), bytes)
-		end
-		return x
-	end
-end
 
 --[[
 	@within Squash

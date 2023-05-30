@@ -4,7 +4,7 @@ indent_type = "Tabs"
 indent_width = 4
 quote_style = "ForceSingle"
 call_parentheses = "None"
-collapse_simple_statement = "ConditionalOnly"
+collapse_simple_statement = "Never"
 
 [sort_requires]
 enabled = false
