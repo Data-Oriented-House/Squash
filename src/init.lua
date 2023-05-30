@@ -220,6 +220,7 @@ local function serArrayVector<T>(serializer: (vector: T, ser: NumberSer, bytes: 
 	return function(x: { T }, ser: NumberSer?, bytes: number?): string
 		local bytes = bytes or 4
 		local encoding = ser or Squash.Ser.Int
+
 		local y = {}
 		for i, v in x do
 			y[i] = serializer(v, encoding, bytes)
@@ -228,14 +229,20 @@ local function serArrayVector<T>(serializer: (vector: T, ser: NumberSer, bytes: 
 	end
 end
 
-local function desArrayVector<T>(elements: number, deserializer: (y: string, des: NumberDes?, bytes: number?) -> T)
+local function desArrayVector<T>(
+	deserializer: (y: string, des: NumberDes?, bytes: number?) -> T,
+	elements: number,
+	offsetBytes: number
+)
 	return function(y: string, des: NumberDes?, bytes: number?): { T }
 		local bytes = bytes or 4
 		local decoding = des or Squash.Des.Int
+
+		local size = offsetBytes + elements * bytes
 		local x = {}
-		for i = 1, #y / (elements * bytes) do
-			local a = elements * bytes * (i - 1) + 1
-			local b = elements * bytes * i
+		for i = 1, #y / size do
+			local a = size * (i - 1) + 1
+			local b = size * i
 			x[i] = deserializer(string.sub(y, a, b), decoding, bytes)
 		end
 		return x
@@ -268,7 +275,7 @@ Squash.Ser.Array.Vector2 = serArrayVector(Squash.Ser.Vector2)
 --[[
 	@within Squash
 --]]
-Squash.Des.Array.Vector2 = desArrayVector(2, Squash.Des.Vector2)
+Squash.Des.Array.Vector2 = desArrayVector(Squash.Des.Vector2, 2, 0)
 
 --[[
 	@within Squash
@@ -300,7 +307,7 @@ Squash.Ser.Array.Vector3 = serArrayVector(Squash.Ser.Vector3)
 --[[
 	@within Squash
 --]]
-Squash.Des.Array.Vector3 = desArrayVector(3, Squash.Des.Vector3)
+Squash.Des.Array.Vector3 = desArrayVector(Squash.Des.Vector3, 3, 0)
 
 local function serArrayFixed<T>(ser: (T) -> string)
 	return function(x: { T }): string
@@ -312,8 +319,7 @@ local function serArrayFixed<T>(ser: (T) -> string)
 	end
 end
 
-local function desArrayFixed<T>(des: (string) -> T, bytes: number?)
-	local bytes = bytes or 4
+local function desArrayFixed<T>(des: (string) -> T, bytes: number)
 	return function(y: string): { T }
 		local x = {}
 		for i = 1, #y / bytes do
@@ -866,7 +872,8 @@ Squash.Ser.Array.FloatCurveKey = serArrayVector(Squash.Ser.FloatCurveKey) --TODO
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.FloatCurveKey = desArrayVector(-1, Squash.Des.FloatCurveKey) --TODO: same story
+Squash.Des.Array.FloatCurveKey =
+	desArrayVector(Squash.Des.FloatCurveKey, 4, enumItemData[Enum.KeyInterpolationMode].bytes) --TODO: same story
 
 --[[
 	@within Squash
@@ -927,7 +934,7 @@ Squash.Ser.Array.NumberRange = serArrayVector(Squash.Ser.NumberRange)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.NumberRange = desArrayVector(2, Squash.Des.NumberRange)
+Squash.Des.Array.NumberRange = desArrayVector(Squash.Des.NumberRange, 2, 0)
 
 --[[
 	@within Squash
@@ -959,7 +966,7 @@ Squash.Ser.Array.NumberSequenceKeypoint = serArrayVector(Squash.Ser.NumberSequen
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.NumberSequenceKeypoint = desArrayVector(3, Squash.Des.NumberSequenceKeypoint)
+Squash.Des.Array.NumberSequenceKeypoint = desArrayVector(Squash.Des.NumberSequenceKeypoint, 3, 0)
 
 --[[
 	@within Squash
@@ -1079,12 +1086,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.PathWaypoint = serArrayVector(Squash.Ser.PathWaypoint) --TODO: Same story
+Squash.Ser.Array.PathWaypoint = serArrayVector(Squash.Ser.PathWaypoint)
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.PathWaypoint = desArrayVector(-1, Squash.Des.PathWaypoint) --TODO: Extend desArrayVector to include a constant bytes and per-element bytes
+Squash.Des.Array.PathWaypoint = desArrayVector(Squash.Des.PathWaypoint, 3, enumItemData[Enum.PathWaypointAction].bytes)
 
 --[[
 	@within Squash
@@ -1122,7 +1129,7 @@ Squash.Ser.Array.PhysicalProperties = serArrayVector(Squash.Ser.PhysicalProperti
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.PhysicalProperties = desArrayVector(5, Squash.Des.PhysicalProperties)
+Squash.Des.Array.PhysicalProperties = desArrayVector(Squash.Des.PhysicalProperties, 5, 0)
 
 --[[
 	@within Squash
@@ -1153,7 +1160,7 @@ Squash.Ser.Array.Ray = serArrayVector(Squash.Ser.Ray)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Ray = desArrayVector(2, Squash.Des.Ray)
+Squash.Des.Array.Ray = desArrayVector(Squash.Des.Ray, 2, 0)
 
 --[[
 	@within Squash
@@ -1205,7 +1212,38 @@ Squash.Ser.Array.RaycastResult = serArrayFixed(Squash.Ser.RaycastResult) --TODO:
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.RaycastResult = desArrayVector(-1, Squash.Des.RaycastResult) --TODO: Same story
+Squash.Des.Array.RaycastResult = desArrayVector(Squash.Des.RaycastResult, 7, enumItemData[Enum.Material].bytes) --TODO: Same story
+
+local function serArrayVectorNoCoding<T>(serializer: (vector: T, bytes: number?) -> string)
+	return function(x: { T }, bytes: number?): string
+		local bytes = bytes or 4
+
+		local y = {}
+		for i, v in x do
+			y[i] = serializer(v, bytes)
+		end
+		return table.concat(y)
+	end
+end
+
+local function desArrayVectorNoCoding<T>(
+	deserializer: (y: string, bytes: number?) -> T,
+	elements: number,
+	offsetBytes: number
+)
+	return function(y: string, bytes: number?): { T }
+		local bytes = bytes or 4
+
+		local size = offsetBytes + elements * bytes
+		local x = {}
+		for i = 1, #y / size do
+			local a = size * (i - 1) + 1
+			local b = size * i
+			x[i] = deserializer(string.sub(y, a, b), bytes)
+		end
+		return x
+	end
+end
 
 --[[
 	@within Squash
@@ -1234,12 +1272,12 @@ end
 --[[
 	@within Squash
 ]]
-Squash.Ser.Array.Rect = serArrayVector(Squash.Ser.Rect) --HGHINOGFEID ior
+Squash.Ser.Array.Rect = serArrayVectorNoCoding(Squash.Ser.Rect) --HGHINOGFEID ior
 
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.Rect = desArrayVector(4, Squash.Des.Rect)
+Squash.Des.Array.Rect = desArrayVectorNoCoding(Squash.Des.Rect, 4, 0)
 
 --[[
 	@within Squash
@@ -1268,17 +1306,7 @@ Squash.Ser.Array.Region3 = serArrayVector(Squash.Ser.Region3)
 --[[
 	@within Squash
 ]]
-function Squash.Des.Array.Region3(y: string, des: NumberDes?, bytes: number?): { Region3 }
-	local bytes = bytes or 4
-	local decode = des or Squash.Des.Int
-	local size = 6 + 9 * bytes
-
-	local x = {}
-	for i = 1, #y / size do
-		x[i] = Squash.Des.Region3(string.sub(y, (i - 1) * size + 1, i * size), decode, bytes)
-	end
-	return x
-end
+Squash.Des.Array.Region3 = desArrayVector(Squash.Des.Region3, 9, 6)
 
 --[[
 	@within Squash
@@ -1354,7 +1382,11 @@ Squash.Ser.Array.TweenInfo = serArrayVector(Squash.Ser.TweenInfo)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.TweenInfo = desArrayVector(-1, Squash.Des.TweenInfo) --TODO: Same story
+Squash.Des.Array.TweenInfo = desArrayVector(
+	Squash.Des.TweenInfo,
+	3,
+	1 + enumItemData[Enum.EasingStyle].bytes + enumItemData[Enum.EasingDirection].bytes
+) --TODO: Same story
 
 --[[
 	@within Squash
@@ -1382,7 +1414,7 @@ Squash.Ser.Array.UDim = serArrayVector(Squash.Ser.UDim)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.UDim = desArrayVector(2, Squash.Des.UDim)
+Squash.Des.Array.UDim = desArrayVector(Squash.Des.UDim, 2, 0)
 
 --[[
 	@within Squash
@@ -1413,7 +1445,7 @@ Squash.Ser.Array.UDim2 = serArrayVector(Squash.Ser.UDim2)
 --[[
 	@within Squash
 ]]
-Squash.Des.Array.UDim2 = desArrayVector(4, Squash.Des.UDim2)
+Squash.Des.Array.UDim2 = desArrayVector(Squash.Des.UDim2, 4, 0)
 
 return Squash
 
