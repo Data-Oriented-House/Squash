@@ -4,22 +4,22 @@ local Squash = {}
 
 -- Duplication Reducers --
 
-type NumberSer = typeof(Squash.int.ser)
-type NumberDes = typeof(Squash.int.des)
+type NumberSer = (x: number, bytes: number?) -> string
+type NumberDes = (y: string, bytes: number?) -> number
 
-local function bytesAssert(bytes: number)
+local bytesAssert = function(bytes: number)
 	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 8 then
 		error 'bytes must be 1, 2, 3, 4, 5, 6, 7, or 8'
 	end
 end
 
-local function floatAssert(bytes: number)
+local floatAssert = function(bytes: number)
 	if bytes ~= 4 and bytes ~= 8 then
 		error(`Expected 4 or 8 bytes. Invalid number of bytes for floating point: {bytes}`)
 	end
 end
 
-local function serArrayNumber<T>(ser: (x: T, bytes: number?) -> string)
+local serArrayNumber = function<T>(ser: (x: T, bytes: number?) -> string)
 	return function(x: { T }, bytes: number?): string
 		local bytes = bytes or 4
 		bytesAssert(bytes)
@@ -32,7 +32,7 @@ local function serArrayNumber<T>(ser: (x: T, bytes: number?) -> string)
 	end
 end
 
-local function desArrayNumber<T>(des: (y: string, bytes: number?) -> T)
+local desArrayNumber = function<T>(des: (y: string, bytes: number?) -> T)
 	return function(y: string, bytes: number?): { T }
 		local bytes = bytes or 4
 		bytesAssert(bytes)
@@ -47,7 +47,7 @@ local function desArrayNumber<T>(des: (y: string, bytes: number?) -> T)
 	end
 end
 
-local function serArrayFixed<T>(ser: (T) -> string)
+local serArrayFixed = function<T>(ser: (T) -> string)
 	return function(x: { T }): string
 		local y = {}
 		for i, v in x do
@@ -57,7 +57,7 @@ local function serArrayFixed<T>(ser: (T) -> string)
 	end
 end
 
-local function desArrayFixed<T>(des: (string) -> T, bytes: number)
+local desArrayFixed = function<T>(des: (string) -> T, bytes: number)
 	return function(y: string): { T }
 		local x = {}
 		for i = 1, #y / bytes do
@@ -69,7 +69,7 @@ local function desArrayFixed<T>(des: (string) -> T, bytes: number)
 	end
 end
 
-local function serArrayVector<T>(serializer: (vector: T, ser: NumberSer, bytes: number?) -> string)
+local serArrayVector = function<T>(serializer: (vector: T, ser: NumberSer, bytes: number?) -> string)
 	return function(x: { T }, ser: NumberSer?, bytes: number?): string
 		local bytes = bytes or 4
 		local encoding = ser or Squash.int.ser
@@ -82,7 +82,7 @@ local function serArrayVector<T>(serializer: (vector: T, ser: NumberSer, bytes: 
 	end
 end
 
-local function desArrayVector<T>(
+local desArrayVector = function<T>(
 	deserializer: (y: string, des: NumberDes?, bytes: number?) -> T,
 	elements: number,
 	offsetBytes: number
@@ -102,7 +102,7 @@ local function desArrayVector<T>(
 	end
 end
 
-local function serArrayVectorNoCoding<T>(serializer: (vector: T, bytes: number?) -> string)
+local serArrayVectorNoCoding = function<T>(serializer: (vector: T, bytes: number?) -> string)
 	return function(x: { T }, bytes: number?): string
 		local bytes = bytes or 4
 
@@ -114,7 +114,7 @@ local function serArrayVectorNoCoding<T>(serializer: (vector: T, bytes: number?)
 	end
 end
 
-local function desArrayVectorNoCoding<T>(
+local desArrayVectorNoCoding = function<T>(
 	deserializer: (y: string, bytes: number?) -> T,
 	elements: number,
 	offsetBytes: number
@@ -133,23 +133,23 @@ local function desArrayVectorNoCoding<T>(
 	end
 end
 
-local function serAngle(x: number): string
+local serAngle = function(x: number): string
 	return Squash.uint.ser(2, (x + math.pi) % (2 * math.pi) * 65535)
 end
 
-local function desAngle(y: string): number
+local desAngle = function(y: string): number
 	return Squash.uint.des(y, 2) / 65535 - math.pi
 end
 
-local function getBitSize(x: number): number
+local getBitSize = function(x: number): number
 	return math.ceil(math.log(x, 2 ^ 1))
 end
 
-local function getByteSize(x: number): number
+local getByteSize = function(x: number): number
 	return math.ceil(math.log(x, 2 ^ 8))
 end
 
-local function getItemData<T>(array: { T }): { items: { T }, bits: number, bytes: number }
+local getItemData = function<T>(array: { T }): { items: { T }, bits: number, bytes: number }
 	return {
 		items = array,
 		bits = getBitSize(#array),
@@ -163,7 +163,7 @@ for _, enum in enumData.items do
 	enumItemData[enum] = getItemData(enum:GetEnumItems())
 end
 
-local function packBits(x: { number }, bits: number): string
+local packBits = function(x: { number }, bits: number): string
 	local packed = {}
 	local byte = 0
 	local count = 0
@@ -185,7 +185,7 @@ local function packBits(x: { number }, bits: number): string
 	return table.concat(packed)
 end
 
-local function unpackBits(y: string, bits: number): { number }
+local unpackBits = function(y: string, bits: number): { number }
 	local x = {}
 	local value = 0
 	local count = 0
@@ -204,7 +204,7 @@ local function unpackBits(y: string, bits: number): { number }
 	return x
 end
 
-local function desEnumItem<T>(y: string, offset: number, enum: T & Enum): (number, T & EnumItem)
+local desEnumItem = function<T>(y: string, offset: number, enum: T & Enum): (number, T & EnumItem)
 	local enumData = enumItemData[enum]
 	local enumItemId = Squash.uint.des(string.sub(y, offset, offset + enumData.bytes - 1), enumData.bytes)
 	return offset + enumData.bytes, enumData.items[enumItemId]
@@ -220,7 +220,7 @@ Squash.bool = {}
 --[[
 	@within bool
 ]]
-function Squash.bool.ser(
+Squash.bool.ser = function(
 	x1: boolean?,
 	x2: boolean?,
 	x3: boolean?,
@@ -245,7 +245,7 @@ end
 --[[
 	@within bool
 ]]
-function Squash.bool.des(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+Squash.bool.des = function(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = string.byte(y)
 	return (x * 2 ^ -0) % 2 >= 1,
 		(x * 2 ^ -1) % 2 >= 1,
@@ -260,7 +260,7 @@ end
 --[[
 	@within bool
 --]]
-function Squash.bool.serarr(x: { boolean }): string
+Squash.bool.serarr = function(x: { boolean }): string
 	local y = {}
 	for i = 1, math.ceil(#x / 8) do
 		y[i] = Squash.bool.ser(x[i + 0], x[i + 1], x[i + 2], x[i + 3], x[i + 4], x[i + 5], x[i + 6], x[i + 7])
@@ -271,7 +271,8 @@ end
 --[[
 	@within bool
 --]]
-function Squash.bool.desarr(y: string): { boolean }
+
+Squash.bool.desarr = function(y: string): { boolean }
 	local x = {}
 	for i = 1, #y do
 		local j = 8 * i
@@ -289,7 +290,7 @@ Squash.uint = {}
 --[[
 	@within uint
 ]]
-function Squash.uint.ser(
+Squash.uint.ser = function(
 	x: number,
 	bytes: number?
 ): string --TODO: Consider using string.pack and working around the 3, 5, 6, and 7 byte limitations
@@ -306,7 +307,7 @@ end
 --[[
 	@within uint
 ]]
-function Squash.uint.des(y: string, bytes: number?): number
+Squash.uint.des = function(y: string, bytes: number?): number
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
@@ -335,7 +336,7 @@ Squash.int = {}
 --[[
 	@within int
 ]]
-function Squash.int.ser(x: number, bytes: number?): string
+Squash.int.ser = function(x: number, bytes: number?): string
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
@@ -346,7 +347,7 @@ end
 --[[
 	@within int
 ]]
-function Squash.int.des(y: string, bytes: number?): number
+Squash.int.des = function(y: string, bytes: number?): number
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
@@ -372,7 +373,7 @@ Squash.float = {}
 --[[
 	@within float
 ]]
-function Squash.float.ser(x: number, bytes: number?): string
+Squash.float.ser = function(x: number, bytes: number?): string
 	local bytes = bytes or 4
 	floatAssert(bytes)
 	return string.pack(if bytes == 4 then 'f' else 'd', x)
@@ -381,7 +382,7 @@ end
 --[[
 	@within float
 ]]
-function Squash.float.des(y: string, bytes: number?): number
+Squash.float.des = function(y: string, bytes: number?): number
 	local bytes = bytes or 4
 	floatAssert(bytes)
 	return string.unpack(if bytes == 4 then 'f' else 'd', y)
@@ -405,7 +406,7 @@ Squash.vector2 = {}
 --[[
 	@within vector2
 ]]
-function Squash.vector2.ser(x: Vector2, ser: NumberSer?, bytes: number?): string
+Squash.vector2.ser = function(x: Vector2, ser: NumberSer?, bytes: number?): string
 	local bytes = bytes or 4
 	local encoding = ser or Squash.int.ser
 	return encoding(bytes, x.X) .. encoding(bytes, x.Y)
@@ -414,7 +415,7 @@ end
 --[[
 	@within vector2
 ]]
-function Squash.vector2.des(y: string, des: NumberDes?, bytes: number?): Vector2
+Squash.vector2.des = function(y: string, des: NumberDes?, bytes: number?): Vector2
 	local bytes = bytes or 4
 	local decoding = des or Squash.int.des
 	return Vector2.new(decoding(string.sub(y, 1, bytes), bytes), decoding(string.sub(y, bytes + 1, 2 * bytes), bytes))
@@ -438,7 +439,7 @@ Squash.vector3 = {}
 --[[
 	@within vector3
 ]]
-function Squash.vector3.ser(x: Vector3, ser: NumberSer?, bytes: number?): string
+Squash.vector3.ser = function(x: Vector3, ser: NumberSer?, bytes: number?): string
 	local bytes = bytes or 4
 	local encoding = ser or Squash.int.ser
 	return encoding(bytes, x.X) .. encoding(bytes, x.Y) .. encoding(bytes, x.Z)
@@ -447,7 +448,7 @@ end
 --[[
 	@within vector3
 ]]
-function Squash.vector3.des(y: string, des: NumberDes?, bytes: number?): Vector3
+Squash.vector3.des = function(y: string, des: NumberDes?, bytes: number?): Vector3
 	local bytes = bytes or 4
 	local decoding = des or Squash.int.des
 	return Vector3.new(
@@ -475,14 +476,14 @@ Squash.vector2int16 = {}
 --[[
 	@within vector2int16
 ]]
-function Squash.vector2int16.ser(x: Vector2int16)
+Squash.vector2int16.ser = function(x: Vector2int16)
 	return Squash.int.ser(2, x.X) .. Squash.int.ser(2, x.Y)
 end
 
 --[[
 	@within vector2int16
 ]]
-function Squash.vector2int16.des(y: string): Vector2int16
+Squash.vector2int16.des = function(y: string): Vector2int16
 	return Vector2int16.new(Squash.int.des(string.sub(y, 1, 2), 2), Squash.int.des(string.sub(y, 3, 4), 2))
 end
 
@@ -504,14 +505,14 @@ Squash.vector3int16 = {}
 --[[
 	@within vector3int16
 ]]
-function Squash.vector3int16.ser(x: Vector3int16)
+Squash.vector3int16.ser = function(x: Vector3int16)
 	return Squash.int.ser(2, x.X) .. Squash.int.ser(2, x.Y) .. Squash.int.ser(2, x.Z)
 end
 
 --[[
 	@within vector3int16
 ]]
-function Squash.vector3int16.des(y: string): Vector3int16
+Squash.vector3int16.des = function(y: string): Vector3int16
 	return Vector3int16.new(
 		Squash.int.des(string.sub(y, 1, 2), 2),
 		Squash.int.des(string.sub(y, 3, 4), 2),
@@ -537,7 +538,7 @@ Squash.cframe = {}
 --[[
 	@within cframe
 ]]
-function Squash.cframe.ser(x: CFrame, ser: NumberSer?, posBytes: number?): string
+Squash.cframe.ser = function(x: CFrame, ser: NumberSer?, posBytes: number?): string
 	local posBytes = posBytes or 4
 	local encoding = ser or Squash.int.ser
 
@@ -555,7 +556,7 @@ end
 --[[
 	@within cframe
 ]]
-function Squash.cframe.des(y: string, des: NumberDes?, posBytes: number?): CFrame
+Squash.cframe.des = function(y: string, des: NumberDes?, posBytes: number?): CFrame
 	local posBytes = posBytes or 4
 	local decoding = des or Squash.int.des
 
@@ -578,7 +579,7 @@ Squash.cframe.serarr = serArrayVector(Squash.cframe.ser)
 --[[
 	@within cframe
 ]]
-function Squash.cframe.desarr(posBytes: number, y: string, des: NumberDes?): { CFrame }
+Squash.cframe.desarr = function(posBytes: number, y: string, des: NumberDes?): { CFrame }
 	local decoding = des or Squash.int.des
 	local bytes = 7 + 3 * posBytes
 
@@ -599,7 +600,7 @@ Squash.enum = {}
 --[[
 	@within enum
 ]]
-function Squash.enum.ser(enum: Enum): string
+Squash.enum.ser = function(enum: Enum): string
 	local enumData = enumItemData[enum]
 	local enumId = table.find(enumData.items, enum) :: number
 	return Squash.uint.ser(enumId, enumData.bytes)
@@ -608,7 +609,7 @@ end
 --[[
 	@within enum
 ]]
-function Squash.enum.des(y: string): Enum
+Squash.enum.des = function(y: string): Enum
 	local enumId = Squash.uint.des(y, enumData.bytes)
 	return enumData.items[enumId]
 end
@@ -621,7 +622,7 @@ Squash.enumitem = {}
 --[[
 	@within enumitem
 ]]
-function Squash.enumitem.ser(enumItem: EnumItem): string
+Squash.enumitem.ser = function(enumItem: EnumItem): string
 	local enumData = enumItemData[enumItem.EnumType]
 	local enumItemId = table.find(enumData.items, enumItem) :: number
 	return Squash.uint.ser(enumItemId, enumData.bytes)
@@ -630,7 +631,7 @@ end
 --[[
 	@within enumitem
 ]]
-function Squash.enumitem.des(y: string, enum: Enum): EnumItem
+Squash.enumitem.des = function(y: string, enum: Enum): EnumItem
 	local enumData = enumItemData[enum]
 	local enumItemId = Squash.uint.des(y, enumData.bytes)
 	return enumData.items[enumItemId]
@@ -644,14 +645,14 @@ Squash.axes = {}
 --[[
 	@within axes
 ]]
-function Squash.axes.ser(x: Axes)
+Squash.axes.ser = function(x: Axes)
 	return Squash.bool.ser(x.X, x.Y, x.Z) .. Squash.bool.ser(x.Top, x.Bottom, x.Left, x.Right, x.Back, x.Front)
 end
 
 --[[
 	@within axes
 ]]
-function Squash.axes.des(y: string): Axes
+Squash.axes.des = function(y: string): Axes
 	local axes = Axes.new()
 	axes.X, axes.Y, axes.Z = Squash.bool.des(string.sub(y, 1))
 	axes.Top, axes.Bottom, axes.Left, axes.Right, axes.Back, axes.Front = Squash.bool.des(string.sub(y, 2))
@@ -676,14 +677,14 @@ Squash.brickcolor = {}
 --[[
 	@within brickcolor
 ]]
-function Squash.brickcolor.ser(x: BrickColor): string
+Squash.brickcolor.ser = function(x: BrickColor): string
 	return Squash.uint.ser(x.Number, 2)
 end
 
 --[[
 	@within brickcolor
 ]]
-function Squash.brickcolor.des(y: string): BrickColor
+Squash.brickcolor.des = function(y: string): BrickColor
 	return BrickColor.new(Squash.uint.des(y, 2))
 end
 
@@ -705,14 +706,14 @@ Squash.color3 = {}
 --[[
 	@within color3
 ]]
-function Squash.color3.ser(x: Color3): string
+Squash.color3.ser = function(x: Color3): string
 	return string.char(x.R * 255, x.G * 255, x.B * 255)
 end
 
 --[[
 	@within color3
 ]]
-function Squash.color3.des(y: string): Color3
+Squash.color3.des = function(y: string): Color3
 	return Color3.fromRGB(string.byte(y, 1), string.byte(y, 2), string.byte(y, 3))
 end
 
@@ -734,7 +735,7 @@ Squash.catalogsearchparams = {}
 --[[
 	@within catalogsearchparams
 ]]
-function Squash.catalogsearchparams.ser(x: CatalogSearchParams): string
+Squash.catalogsearchparams.ser = function(x: CatalogSearchParams): string
 	local assetIndices = {}
 	for i, v in x.AssetTypes do
 		assetIndices[i] = table.find(enumItemData[Enum.AssetType].items, v) :: number
@@ -762,7 +763,7 @@ end
 --[[
 	@within catalogsearchparams
 ]]
-function Squash.catalogsearchparams.des(y: string): CatalogSearchParams
+Squash.catalogsearchparams.des = function(y: string): CatalogSearchParams
 	local x = CatalogSearchParams.new()
 	x.IncludeOffSale = Squash.bool.des(string.sub(y, 1, 1))
 	x.MinPrice = Squash.uint.des(string.sub(y, 2, 5), 4)
@@ -812,14 +813,14 @@ local dateTimeOffset = 17_987_443_200
 --[[
 	@within datetime
 ]]
-function Squash.datetime.ser(x: DateTime): string
+Squash.datetime.ser = function(x: DateTime): string
 	return Squash.uint.ser(5, x.UnixTimestamp + dateTimeOffset)
 end
 
 --[[
 	@within datetime
 ]]
-function Squash.datetime.des(y: string): DateTime
+Squash.datetime.des = function(y: string): DateTime
 	return DateTime.fromUnixTimestamp(Squash.uint.des(y, 5) - dateTimeOffset)
 end
 
@@ -841,7 +842,7 @@ Squash.dockwidgetpluginguiinfo = {}
 --[[
 	@within dockwidgetpluginguiinfo
 ]]
-function Squash.dockwidgetpluginguiinfo.ser(x: DockWidgetPluginGuiInfo): string
+Squash.dockwidgetpluginguiinfo.ser = function(x: DockWidgetPluginGuiInfo): string
 	return Squash.bool.ser(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore)
 		.. Squash.int.ser(2, x.floatingXSize)
 		.. Squash.int.ser(2, x.floatingYSize)
@@ -852,7 +853,7 @@ end
 --[[
 	@within dockwidgetpluginguiinfo
 ]]
-function Squash.dockwidgetpluginguiinfo.des(y: string): DockWidgetPluginGuiInfo
+Squash.dockwidgetpluginguiinfo.des = function(y: string): DockWidgetPluginGuiInfo
 	local x = DockWidgetPluginGuiInfo.new()
 	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.bool.des(string.sub(y, 1, 1))
 	x.floatingXSize = Squash.int.des(string.sub(y, 2, 3), 2)
@@ -880,14 +881,14 @@ Squash.colorsequencekeypoint = {}
 --[[
 	@within colorsequencekeypoint
 ]]
-function Squash.colorsequencekeypoint.ser(x: ColorSequenceKeypoint): string
+Squash.colorsequencekeypoint.ser = function(x: ColorSequenceKeypoint): string
 	return string.char(x.Time * 255) .. Squash.color3.ser(x.Value)
 end
 
 --[[
 	@within colorsequencekeypoint
 ]]
-function Squash.colorsequencekeypoint.des(y: string): ColorSequenceKeypoint
+Squash.colorsequencekeypoint.des = function(y: string): ColorSequenceKeypoint
 	return ColorSequenceKeypoint.new(string.byte(y, 1) / 255, Squash.color3.des(string.sub(y, 2, 4)))
 end
 
@@ -909,14 +910,14 @@ Squash.colorsequence = {}
 --[[
 	@within colorsequence
 ]]
-function Squash.colorsequence.ser(x: ColorSequence): string
+Squash.colorsequence.ser = function(x: ColorSequence): string
 	return Squash.colorsequencekeypoint.serarr(x.Keypoints)
 end
 
 --[[
 	@within colorsequence
 ]]
-function Squash.colorsequence.des(y: string): ColorSequence
+Squash.colorsequence.des = function(y: string): ColorSequence
 	return ColorSequence.new(Squash.colorsequencekeypoint.desarr(y))
 end
 
@@ -938,14 +939,14 @@ Squash.faces = {}
 --[[
 	@within faces
 ]]
-function Squash.faces.ser(x: Faces): string
+Squash.faces.ser = function(x: Faces): string
 	return Squash.bool.ser(x.Top, x.Bottom, x.Left, x.Right, x.Back, x.Front) --This marty, is how we squash 6 booleans into 1 byte
 end
 
 --[[
 	@within faces
 ]]
-function Squash.faces.des(y: string): Faces
+Squash.faces.des = function(y: string): Faces
 	local faces = Faces.new()
 	faces.Top, faces.Bottom, faces.Left, faces.Right, faces.Back, faces.Front = Squash.bool.des(y)
 	return faces
@@ -969,7 +970,7 @@ Squash.floatcurvekey = {}
 --[[
 	@within floatcurvekey
 ]]
-function Squash.floatcurvekey.ser(x: FloatCurveKey, ser: NumberSer?, bytes: number?): string
+Squash.floatcurvekey.ser = function(x: FloatCurveKey, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.float.ser :: NumberSer
 	local bytes = bytes or 4
 
@@ -983,7 +984,7 @@ end
 --[[
 	@within floatcurvekey
 ]]
-function Squash.floatcurvekey.des(y: string, des: NumberDes?, bytes: number?): FloatCurveKey
+Squash.floatcurvekey.des = function(y: string, des: NumberDes?, bytes: number?): FloatCurveKey
 	local des = des or Squash.float.des :: NumberDes
 	local bytes = bytes or 4
 
@@ -1018,7 +1019,7 @@ Squash.font = {}
 --[[
 	@within font
 ]]
-function Squash.font.ser(x: Font): string
+Squash.font.ser = function(x: Font): string
 	local family = string.match(x.Family, '(.+)%..+$')
 	if not family then
 		error 'Font Family must be a Roblox font'
@@ -1030,7 +1031,7 @@ end
 --[[
 	@within font
 ]]
-function Squash.font.des(y: string): Font
+Squash.font.des = function(y: string): Font
 	local a, b = 1, enumItemData[Enum.FontStyle].bytes
 	local style = Squash.enumitem.des(string.sub(y, a, b), Enum.FontStyle) :: Enum.FontStyle
 	a += b
@@ -1058,7 +1059,7 @@ Squash.numberrange = {}
 --[[
 	@within numberrange
 ]]
-function Squash.numberrange.ser(x: NumberRange, ser: NumberSer?, bytes: number?): string
+Squash.numberrange.ser = function(x: NumberRange, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.int.ser
 	local bytes = bytes or 4
 	return ser(x.Min, bytes) .. ser(x.Max, bytes)
@@ -1067,7 +1068,7 @@ end
 --[[
 	@within numberrange
 ]]
-function Squash.numberrange.des(y: string, des: NumberDes?, bytes: number?): NumberRange
+Squash.numberrange.des = function(y: string, des: NumberDes?, bytes: number?): NumberRange
 	local des = des or Squash.int.des
 	local bytes = bytes or 4
 	return NumberRange.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
@@ -1091,7 +1092,7 @@ Squash.numbersequencekeypoint = {}
 --[[
 	@within numbersequencekeypoint
 ]]
-function Squash.numbersequencekeypoint.ser(x: NumberSequenceKeypoint, ser: NumberSer?, bytes: number?): string
+Squash.numbersequencekeypoint.ser = function(x: NumberSequenceKeypoint, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.float.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.Time, bytes) .. ser(x.Value, bytes) .. ser(x.Envelope, bytes)
@@ -1100,7 +1101,7 @@ end
 --[[
 	@within numbersequencekeypoint
 ]]
-function Squash.numbersequencekeypoint.des(y: string, des: NumberDes?, bytes: number?): NumberSequenceKeypoint
+Squash.numbersequencekeypoint.des = function(y: string, des: NumberDes?, bytes: number?): NumberSequenceKeypoint
 	local des = des or Squash.float.des :: NumberDes
 	local bytes = bytes or 4
 	return NumberSequenceKeypoint.new(
@@ -1128,14 +1129,14 @@ Squash.numbersequence = {}
 --[[
 	@within numbersequence
 ]]
-function Squash.numbersequence.ser(x: NumberSequence, ser: NumberSer?, bytes: number?): string
+Squash.numbersequence.ser = function(x: NumberSequence, ser: NumberSer?, bytes: number?): string
 	return Squash.numbersequencekeypoint.serarr(x.Keypoints, ser, bytes)
 end
 
 --[[
 	@within numbersequence
 ]]
-function Squash.numbersequence.des(y: string, des: NumberDes?, bytes: number?): NumberSequence
+Squash.numbersequence.des = function(y: string, des: NumberDes?, bytes: number?): NumberSequence
 	return NumberSequence.new(Squash.numbersequencekeypoint.desarr(y, des, bytes))
 end
 
@@ -1157,7 +1158,7 @@ Squash.overlapparams = {}
 --[[
 	@within overlapparams
 ]]
-function Squash.overlapparams.ser(x: OverlapParams): string
+Squash.overlapparams.ser = function(x: OverlapParams): string
 	return string.char(
 		(if x.FilterType == Enum.RaycastFilterType.Include then 1 else 0) + (if x.RespectCanCollide then 2 else 0)
 	) .. Squash.uint.ser(2, x.MaxParts) .. x.CollisionGroup -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated. --TODO: Same story
@@ -1166,7 +1167,7 @@ end
 --[[
 	@within overlapparams
 ]]
-function Squash.overlapparams.des(y: string): OverlapParams
+Squash.overlapparams.des = function(y: string): OverlapParams
 	local filterTypeAndRespectCanCollide = string.byte(y, 1)
 
 	local x = OverlapParams.new()
@@ -1198,7 +1199,7 @@ Squash.raycastparams = {}
 --[[
 	@within raycastparams
 ]]
-function Squash.raycastparams.ser(x: RaycastParams): string
+Squash.raycastparams.ser = function(x: RaycastParams): string
 	return Squash.bool.ser(x.FilterType == Enum.RaycastFilterType.Include, x.IgnoreWater, x.RespectCanCollide)
 		.. x.CollisionGroup --TODO: Same story
 end
@@ -1206,7 +1207,7 @@ end
 --[[
 	@within raycastparams
 ]]
-function Squash.raycastparams.des(y: string): RaycastParams
+Squash.raycastparams.des = function(y: string): RaycastParams
 	local isInclude, ignoreWater, respectCanCollide = Squash.bool.des(string.sub(y, 1, 1))
 
 	local x = RaycastParams.new()
@@ -1236,7 +1237,7 @@ Squash.pathwaypoint = {}
 --[[
 	@within pathwaypoint
 ]]
-function Squash.pathwaypoint.ser(x: PathWaypoint, ser: NumberSer?, bytes: number?): string
+Squash.pathwaypoint.ser = function(x: PathWaypoint, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.int.ser
 	local bytes = bytes or 4
 
@@ -1246,7 +1247,7 @@ end
 --[[
 	@within pathwaypoint
 ]]
-function Squash.pathwaypoint.des(y: string, des: NumberDes?, bytes: number?): PathWaypoint
+Squash.pathwaypoint.des = function(y: string, des: NumberDes?, bytes: number?): PathWaypoint
 	local des = des or Squash.int.des
 	local bytes = bytes or 4
 
@@ -1273,7 +1274,7 @@ Squash.physicalproperties = {}
 --[[
 	@within physicalproperties
 ]]
-function Squash.physicalproperties.ser(x: PhysicalProperties, ser: NumberSer?, bytes: number?): string
+Squash.physicalproperties.ser = function(x: PhysicalProperties, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.int.ser
 	local bytes = bytes or 4
 	return ser(x.Density, bytes)
@@ -1286,7 +1287,7 @@ end
 --[[
 	@within physicalproperties
 ]]
-function Squash.physicalproperties.des(y: string, des: NumberDes?, bytes: number?): PhysicalProperties
+Squash.physicalproperties.des = function(y: string, des: NumberDes?, bytes: number?): PhysicalProperties
 	local des = des or Squash.int.des
 	local bytes = bytes or 4
 	return PhysicalProperties.new(
@@ -1316,7 +1317,7 @@ Squash.ray = {}
 --[[
 	@within ray
 ]]
-function Squash.ray.ser(x: Ray, ser: NumberSer?, bytes: number?): string
+Squash.ray.ser = function(x: Ray, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.int.ser
 	local bytes = bytes or 4
 	return Squash.vector3.ser(x.Origin, ser, bytes) .. Squash.vector3.ser(x.Direction, ser, bytes)
@@ -1325,7 +1326,7 @@ end
 --[[
 	@within ray
 ]]
-function Squash.ray.des(y: string, des: NumberDes?, bytes: number?): Ray
+Squash.ray.des = function(y: string, des: NumberDes?, bytes: number?): Ray
 	local des = des or Squash.int.des
 	local bytes = bytes or 4
 	return Ray.new(
@@ -1352,7 +1353,7 @@ Squash.raycastresult = {}
 --[[
 	@within raycastresult
 ]]
-function Squash.raycastresult.ser(x: RaycastResult, ser: NumberSer?, bytes: number?): string
+Squash.raycastresult.ser = function(x: RaycastResult, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.int.ser
 	local bytes = bytes or 4
 	return Squash.enumitem.ser(x.Material)
@@ -1364,7 +1365,7 @@ end
 --[[
 	@within raycastresult
 ]]
-function Squash.raycastresult.des(
+Squash.raycastresult.des = function(
 	y: string,
 	des: NumberDes?,
 	bytes: number?
@@ -1409,7 +1410,7 @@ Squash.rect = {}
 --[[
 	@within rect
 ]]
-function Squash.rect.ser(x: Rect, bytes: number?)
+Squash.rect.ser = function(x: Rect, bytes: number?)
 	local bytes = bytes or 4
 	return Squash.uint.ser(x.Min.X, bytes)
 		.. Squash.uint.ser(x.Min.Y, bytes)
@@ -1420,7 +1421,7 @@ end
 --[[
 	@within rect
 ]]
-function Squash.rect.des(y: string, bytes: number?): Rect
+Squash.rect.des = function(y: string, bytes: number?): Rect
 	local bytes = bytes or 4
 	return Rect.new(
 		Squash.uint.des(string.sub(y, 1, bytes), bytes),
@@ -1448,7 +1449,7 @@ Squash.region3 = {}
 --[[
 	@within region3
 ]]
-function Squash.region3.ser(x: Region3, ser: NumberSer?, bytes: number?): string
+Squash.region3.ser = function(x: Region3, ser: NumberSer?, bytes: number?): string
 	local bytes = bytes or 4
 	return Squash.vector3.ser(x.Size, ser, bytes) .. Squash.cframe.ser(x.CFrame, ser, bytes)
 end
@@ -1456,7 +1457,7 @@ end
 --[[
 	@within region3
 ]]
-function Squash.region3.des(y: string, des: NumberDes?, bytes: number?): Region3
+Squash.region3.des = function(y: string, des: NumberDes?, bytes: number?): Region3
 	local bytes = bytes or 4
 	local x = Region3.new(Vector3.zero, Vector3.zero)
 	x.Size = Squash.vector3.des(string.sub(y, 1, 12), des, bytes)
@@ -1482,14 +1483,14 @@ Squash.region3int16 = {}
 --[[
 	@within region3int16
 ]]
-function Squash.region3int16.ser(x: Region3int16): string
+Squash.region3int16.ser = function(x: Region3int16): string
 	return Squash.vector3int16.ser(x.Min) .. Squash.vector3int16.ser(x.Max)
 end
 
 --[[
 	@within region3int16
 ]]
-function Squash.region3int16.des(y: string): Region3int16
+Squash.region3int16.des = function(y: string): Region3int16
 	return Region3int16.new(Squash.vector3int16.des(string.sub(y, 1, 6)), Squash.vector3int16.des(string.sub(y, 7, 12)))
 end
 
@@ -1511,7 +1512,7 @@ Squash.tweeninfo = {}
 --[[
 	@within tweeninfo
 ]]
-function Squash.tweeninfo.ser(x: TweenInfo, ser: NumberSer?, bytes: number?): string
+Squash.tweeninfo.ser = function(x: TweenInfo, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.float.ser :: NumberSer
 	local bytes = bytes or 4
 	return Squash.bool.ser(x.Reverses)
@@ -1525,7 +1526,7 @@ end
 --[[
 	@within tweeninfo
 ]]
-function Squash.tweeninfo.des(y: string, des: NumberDes?, bytes: number?): TweenInfo
+Squash.tweeninfo.des = function(y: string, des: NumberDes?, bytes: number?): TweenInfo
 	local des = des or Squash.float.des :: NumberDes
 	local bytes = bytes or 4
 
@@ -1572,7 +1573,7 @@ Squash.udim = {}
 --[[
 	@within udim
 ]]
-function Squash.udim.ser(x: UDim, ser: NumberSer?, bytes: number?): string
+Squash.udim.ser = function(x: UDim, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.int.ser
 	local bytes = bytes or 4
 	return ser(x.Scale, bytes) .. ser(x.Offset, bytes)
@@ -1581,7 +1582,7 @@ end
 --[[
 	@within udim
 ]]
-function Squash.udim.des(y: string, des: NumberDes?, bytes: number?): UDim
+Squash.udim.des = function(y: string, des: NumberDes?, bytes: number?): UDim
 	local des = des or Squash.int.des
 	local bytes = bytes or 4
 	return UDim.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
@@ -1605,7 +1606,7 @@ Squash.udim2 = {}
 --[[
 	@within udim2
 ]]
-function Squash.udim2.ser(x: UDim2, ser: NumberSer?, bytes: number?): string
+Squash.udim2.ser = function(x: UDim2, ser: NumberSer?, bytes: number?): string
 	local ser = ser or Squash.int.ser
 	local bytes = bytes or 4
 	return Squash.udim.ser(x.X, ser, bytes) .. Squash.udim.ser(x.Y, ser, bytes)
@@ -1614,7 +1615,7 @@ end
 --[[
 	@within udim2
 ]]
-function Squash.udim2.des(y: string, des: NumberDes?, bytes: number?): UDim2
+Squash.udim2.des = function(y: string, des: NumberDes?, bytes: number?): UDim2
 	local des = des or Squash.int.des
 	local bytes = bytes or 4
 	return UDim2.new(
@@ -1677,21 +1678,21 @@ return Squash
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.ser.Rbx.Asset(id: number): string
+-- Squash.ser.Rbx.Asset(id: number): string
 -- 	return Squash.uint.ser(6, id)
 -- end
 
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.des.Rbx.Asset(y: string): number
+-- Squash.des.Rbx.Asset(y: string): number
 -- 	return Squash.uint.des(6, y)
 -- end
 
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.ser.Rbx.AssetPath(path: string, extension: string): string
+-- Squash.ser.Rbx.AssetPath(path: string, extension: string): string
 -- 	local extensionId = table.find(fileExtensions, extension)
 -- 	assert(extensionId, 'Invalid extension "' .. extension .. '"')
 
@@ -1701,7 +1702,7 @@ return Squash
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.des.Rbx.AssetPath(y: string): (string, string)
+-- Squash.des.Rbx.AssetPath(y: string): (string, string)
 -- 	local extensionId = Squash.uint.des(1, string.sub(y, 1))
 -- 	local path = string.sub(y, 2, -1) --TODO: Implement variable sized string decompression and use it here
 -- 	return path, fileExtensions[extensionId]
@@ -1736,7 +1737,7 @@ return Squash
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.ser.Rbx.Thumb(thumbType: string, id: number, width: number, height: number, filters: string?): string
+-- Squash.ser.Rbx.Thumb(thumbType: string, id: number, width: number, height: number, filters: string?): string
 -- 	local thumbTypeId = table.find(thumbTypes, thumbType)
 -- 	assert(thumbTypeId, 'Invalid thumb type "' .. thumbType .. '"')
 
@@ -1751,7 +1752,7 @@ return Squash
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.des.Rbx.Thumb(y: string): (string, number, number, number, string?)
+-- Squash.des.Rbx.Thumb(y: string): (string, number, number, number, string?)
 -- 	local thumbTypeIdAndFilters = Squash.uint.des(1, string.sub(y, 1))
 -- 	local thumbType = thumbTypes[math.floor(thumbTypeIdAndFilters / 2)]
 -- 	local filters = thumbTypeIdAndFilters % 2 == 1 and 'circular' or nil
@@ -1766,7 +1767,7 @@ return Squash
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.ser.Rbx.Http(path: string, posx: number, posy: number, format: string): string
+-- Squash.ser.Rbx.Http(path: string, posx: number, posy: number, format: string): string
 -- 	local formatId = table.find(fileExtensions, format)
 -- 	assert(formatId, 'Invalid format "' .. format .. '"')
 
@@ -1781,7 +1782,7 @@ return Squash
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.des.Rbx.Http(y: string): (string, number, number, string)
+-- Squash.des.Rbx.Http(y: string): (string, number, number, string)
 -- 	local formatId = Squash.uint.des(1, string.sub(y, 1))
 -- 	local posx = Squash.uint.des(2, string.sub(y, 2, 3))
 -- 	local posy = Squash.uint.des(2, string.sub(y, 4, 5))
@@ -1798,7 +1799,7 @@ return Squash
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.ser.StringCased(
+-- Squash.ser.StringCased(
 -- 	x: string,
 -- 	upper: boolean?
 -- ): string
@@ -1829,7 +1830,7 @@ return Squash
 -- --[[
 -- 	@within Squash
 -- ]]
--- function Squash.des.StringCased(
+-- Squash.des.StringCased(
 -- 	x: string,
 -- 	upper: boolean?
 -- ): string
@@ -1859,11 +1860,11 @@ return Squash
 
 -- arr Stuff
 
--- local function printarray(arr: { number })
+-- local printarray(arr: { number })
 -- 	return "[" .. table.concat(arr, ", ") .. "]"
 -- end
 
--- local function test(name: string, size: number, x: number | { number })
+-- local test(name: string, size: number, x: number | { number })
 -- 	local y = Squash.ser[name](size, x)
 -- 	local z = Squash.des[name](size, y)
 -- 	print(

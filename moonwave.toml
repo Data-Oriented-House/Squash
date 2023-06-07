@@ -28,7 +28,7 @@ organizationName = "Data-Oriented-House"
 projectName = "Squash"
 url = "https://data-oriented-house.github.io"
 baseUrl = "/Squash/"
-tagline = "Roblox's Minimal SerDes Library"
+tagline = "Roblox's Comprehensive SerDes Library"
 
 [navbar]
 # hideableSidebar = true
