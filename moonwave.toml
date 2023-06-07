@@ -10,12 +10,12 @@ includeReadme = false
 
 [[home.features]]
 title = "Minimalist"
-description = "Squash stomp"
+description = "Tiny tiny"
 image = "/Scaffolding.png"
 
 [[home.features]]
 title = "Serialization-Deserialization"
-description = "Tiny tiny"
+description = "Squash Stomp"
 image = "/Squash.png"
 
 [docusaurus]

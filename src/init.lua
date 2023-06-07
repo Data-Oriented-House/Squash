@@ -1,10 +1,5 @@
 --!strict
 
---[[
-	@class Squash
-
-	Provides a set of functions for serializing and deserializing data in both single and array forms.
-]]
 local Squash = {}
 
 -- Duplication Reducers --
@@ -207,6 +202,12 @@ local function unpackBits(y: string, bits: number): { number }
 		end
 	end
 	return x
+end
+
+local function desEnumItem<T>(y: string, offset: number, enum: T & Enum): (number, T & EnumItem)
+	local enumData = enumItemData[enum]
+	local enumItemId = Squash.uint.des(string.sub(y, offset, offset + enumData.bytes - 1), enumData.bytes)
+	return offset + enumData.bytes, enumData.items[enumItemId]
 end
 
 -- Actual API --
@@ -756,12 +757,6 @@ function Squash.catalogsearchparams.ser(x: CatalogSearchParams): string
 		.. x.Keyword -- TODO: Squash.ser.String(x.Keyword)
 		.. '\0'
 		.. x.Creator -- TODO: Squash.ser.String(x.Creator)
-end
-
-local function desEnumItem<T>(y: string, offset: number, enum: T & Enum): (number, T & EnumItem)
-	local enumData = enumItemData[enum]
-	local enumItemId = Squash.uint.des(string.sub(y, offset, offset + enumData.bytes - 1), enumData.bytes)
-	return offset + enumData.bytes, enumData.items[enumItemId]
 end
 
 --[[
