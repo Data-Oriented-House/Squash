@@ -538,8 +538,8 @@ Squash.cframe = {}
 --[[
 	@within cframe
 ]]
-Squash.cframe.ser = function(x: CFrame, ser: NumberSer?, posBytes: number?): string
-	local posBytes = posBytes or 4
+Squash.cframe.ser = function(x: CFrame, ser: NumberSer?, posbytes: number?): string
+	local posBytes = posbytes or 4
 	local encoding = ser or Squash.int.ser
 
 	local rx, ry, rz = x:ToOrientation()
@@ -556,8 +556,8 @@ end
 --[[
 	@within cframe
 ]]
-Squash.cframe.des = function(y: string, des: NumberDes?, posBytes: number?): CFrame
-	local posBytes = posBytes or 4
+Squash.cframe.des = function(y: string, des: NumberDes?, posbytes: number?): CFrame
+	local posBytes = posbytes or 4
 	local decoding = des or Squash.int.des
 
 	local rx = desAngle(string.sub(y, 1, 2))
@@ -579,15 +579,15 @@ Squash.cframe.serarr = serArrayVector(Squash.cframe.ser)
 --[[
 	@within cframe
 ]]
-Squash.cframe.desarr = function(posBytes: number, y: string, des: NumberDes?): { CFrame }
+Squash.cframe.desarr = function(posbytes: number, y: string, des: NumberDes?): { CFrame }
 	local decoding = des or Squash.int.des
-	local bytes = 7 + 3 * posBytes
+	local bytes = 7 + 3 * posbytes
 
 	local x = {}
 	for i = 1, #y / bytes do
 		local a = bytes * (i - 1) + 1
 		local b = bytes * i
-		x[i] = Squash.cframe.des(string.sub(y, a, b), decoding, posBytes)
+		x[i] = Squash.cframe.des(string.sub(y, a, b), decoding, posbytes)
 	end
 	return x
 end
