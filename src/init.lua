@@ -657,45 +657,45 @@ end
 	Converts a string from one alphabet to another.
 ]=]
 Squash.String.Convert = function(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet): string
-    inAlphabet = Squash.Delimiter .. inAlphabet
+	inAlphabet = Squash.Delimiter .. inAlphabet
 	outAlphabet = Squash.Delimiter .. outAlphabet
 
-    local sourceDigits = {}
-    for i = 1, #inAlphabet do
-        sourceDigits[string.byte(inAlphabet, i)] = i - 1
-    end
+	local sourceDigits = {}
+	for i = 1, #inAlphabet do
+		sourceDigits[string.byte(inAlphabet, i)] = i - 1
+	end
 
 	local targetDigits = {}
-    for i = 1, #outAlphabet do
-        targetDigits[i - 1] = string.byte(outAlphabet, i)
-    end
+	for i = 1, #outAlphabet do
+		targetDigits[i - 1] = string.byte(outAlphabet, i)
+	end
 
 	local inputDigits = {}
-    for i = 1, #x do
-        table.insert(inputDigits, sourceDigits[string.byte(x, i)])
-    end
+	for i = 1, #x do
+		table.insert(inputDigits, sourceDigits[string.byte(x, i)])
+	end
 
 	local output = {}
 	local sourceBase = #inAlphabet
-    local targetBase = #outAlphabet
+	local targetBase = #outAlphabet
 	local carry, value
-    while #inputDigits > 0 do
-        carry = 0
+	while #inputDigits > 0 do
+		carry = 0
 
-        for i = 1, #inputDigits do
-            value = inputDigits[i] + carry * sourceBase
-            inputDigits[i] = math.floor(value / targetBase)
-            carry = value % targetBase
-        end
+		for i = 1, #inputDigits do
+			value = inputDigits[i] + carry * sourceBase
+			inputDigits[i] = math.floor(value / targetBase)
+			carry = value % targetBase
+		end
 
-        while #inputDigits > 0 and inputDigits[1] == 0 do
-            table.remove(inputDigits, 1)
-        end
+		while #inputDigits > 0 and inputDigits[1] == 0 do
+			table.remove(inputDigits, 1)
+		end
 
-        table.insert(output, 1, string.char(targetDigits[carry]))
-    end
+		table.insert(output, 1, string.char(targetDigits[carry]))
+	end
 
-    return table.concat(output)
+	return table.concat(output)
 end
 
 --[=[
