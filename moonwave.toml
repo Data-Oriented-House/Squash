@@ -37,11 +37,11 @@ classes = ["Squash"]
 section = "Luau"
 collapsed = true
 classes = [
-	"boolean",
+	"string",
+	"number",
 	"uint",
 	"int",
-	"number",
-	"string"
+	"boolean"
 ]
 
 [[classOrder]]

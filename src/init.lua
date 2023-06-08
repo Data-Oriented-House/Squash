@@ -19,7 +19,7 @@ export type Alphabet = string
 
 	The delimiter used to separate strings or other types in variable sized arrays.
 ]=]
-Squash.delimiter = '\0'
+Squash.delimiter = string.char(0) -- \0
 
 --[=[
 	@within Squash
@@ -625,7 +625,7 @@ Squash.string = {}
 
 --[=[
 	@within string
-	@function Alphabet
+	@function alphabet
 	@param source string
 	@return Alphabet
 
@@ -648,7 +648,7 @@ end
 
 --[=[
 	@within string
-	@function Convert
+	@function convert
 	@param x string
 	@param inAlphabet Alphabet
 	@param outAlphabet Alphabet
@@ -1060,6 +1060,22 @@ Squash.Enum.des = function(y: string): Enum
 end
 
 --[=[
+	@within Enum
+	@function serarr
+	@param x { Enum }
+	@return string
+]=]
+Squash.Enum.serarr = serArrayVariable(Squash.Enum)
+
+--[=[
+	@within Enum
+	@function desarr
+	@param y string
+	@return { Enum }
+]=]
+Squash.Enum.desarr = desArrayVariable(Squash.Enum)
+
+--[=[
 	@class EnumItem
 ]=]
 Squash.EnumItem = {}
@@ -1088,6 +1104,23 @@ Squash.EnumItem.des = function(y: string, enum: Enum): EnumItem
 	local enumItemId = Squash.uint.des(y, enumData.bytes)
 	return enumData.items[enumItemId]
 end
+
+--[=[
+	@within EnumItem
+	@function serarr
+	@param x { EnumItem }
+	@return string
+]=]
+Squash.EnumItem.serarr = serArrayVariable(Squash.EnumItem)
+
+--[=[
+	@within EnumItem
+	@function desarr
+	@param y string
+	@param enum Enum
+	@return { EnumItem }
+]=]
+Squash.EnumItem.desarr = desArrayVariable(Squash.EnumItem)
 
 --[=[
 	@class Axes
