@@ -19,7 +19,7 @@ export type Alphabet = string
 
 	The delimiter used to separate strings or other types in variable sized arrays.
 ]=]
-Squash.delimiter = '\0'
+Squash.delimiter = string.char(0) -- \0
 
 --[=[
 	@within Squash
