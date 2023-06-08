@@ -1096,8 +1096,8 @@ Squash.EnumItem = {}
 	@param x EnumItem
 	@return string
 ]=]
-Squash.EnumItem.ser = function(enumItem: EnumItem): string
-	local enumData = enumItemData[enumItem.EnumType]
+Squash.EnumItem.ser = function(enumItem: EnumItem, enum: Enum): string
+	local enumData = enumItemData[enum]
 	local enumItemId = table.find(enumData.items, enumItem) :: number
 	return Squash.uint.ser(enumItemId, enumData.bytes)
 end
@@ -1121,7 +1121,13 @@ end
 	@param x { EnumItem }
 	@return string
 ]=]
-Squash.EnumItem.serarr = serArrayVariable(Squash.EnumItem)
+Squash.EnumItem.serarr = function(x: { EnumItem }, enum: Enum)
+	local y = {}
+	for i, v in x do
+		y[i] = Squash.EnumItem.ser(v, enum)
+	end
+	return table.concat(y)
+end
 
 --[=[
 	@within EnumItem
@@ -1130,7 +1136,14 @@ Squash.EnumItem.serarr = serArrayVariable(Squash.EnumItem)
 	@param enum Enum
 	@return { EnumItem }
 ]=]
-Squash.EnumItem.desarr = desArrayVariable(Squash.EnumItem)
+Squash.EnumItem.desarr = function(y: string, enum: Enum): { EnumItem }
+	local bytes = enumItemData[enum].bytes
+	local x = {}
+	for i = 1, #y / bytes do
+		x[i] = Squash.EnumItem.des(string.sub(y, bytes * (i - 1) + 1, bytes * i), enum)
+	end
+	return x
+end
 
 --[=[
 	@class Axes
