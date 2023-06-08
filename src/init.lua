@@ -309,12 +309,10 @@ local angleRatio = 65536 / tau
 
 local serAngle = function(x: number): string
 	return Squash.uint.ser(x % tau * angleRatio, 2)
-	--return Squash.number.ser(x)
 end
 
 local desAngle = function(y: string): number
 	return Squash.uint.des(y, 2) / angleRatio
-	--return Squash.number.des(y)
 end
 
 local getBitSize = function(x: number): number
@@ -1008,14 +1006,6 @@ Squash.CFrame.des = function(y: string, serdes: NumberSerDes?, posBytes: number?
 	local px = des(string.sub(y, 7 + 0 * posBytes, 7 + 1 * posBytes - 1), posBytes)
 	local py = des(string.sub(y, 7 + 1 * posBytes, 7 + 2 * posBytes - 1), posBytes)
 	local pz = des(string.sub(y, 7 + 2 * posBytes, 7 + 3 * posBytes - 1), posBytes)
-
-	--local rx = desAngle(string.sub(y, 1, 4))
-	--local ry = desAngle(string.sub(y, 5, 8))
-	--local rz = desAngle(string.sub(y, 9, 12))
-
-	--local px = des(string.sub(y, 13 + 0 * posBytes, 13 + 1 * posBytes - 1), posBytes)
-	--local py = des(string.sub(y, 13 + 1 * posBytes, 13 + 2 * posBytes - 1), posBytes)
-	--local pz = des(string.sub(y, 13 + 2 * posBytes, 13 + 3 * posBytes - 1), posBytes)
 
 	return CFrame.fromOrientation(rx, ry, rz) + Vector3.new(px, py, pz)
 end

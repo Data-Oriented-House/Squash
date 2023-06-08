@@ -5,7 +5,7 @@ registry = "https://github.com/UpliftGames/wally-index"
 licence = "MIT"
 authors = ["Sona"]
 
-description = "Squash is a minimal SerDes (Serialization/Deserialization) library for Roblox. It is designed to be fast, simple, and easy to use."
+description = "A comprehensive library for compressing and decompressing data."
 
 realm = "shared"
 
