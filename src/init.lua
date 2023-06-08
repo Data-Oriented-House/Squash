@@ -87,7 +87,7 @@ Squash.UTF8 = table.concat(utf8Characters) :: Alphabet
 	@within Squash
 	@type NumberSer (x: number, bytes: number?) -> string
 
-	A function that serializes a number into a string. Usually this is Squash's UInt, Int, or Float Ser methods.
+	A function that serializes a number into a string. Usually this is Squash's Uint, Int, or Float Ser methods.
 ]=]
 type NumberSer = (x: number, bytes: number?) -> string
 
@@ -95,7 +95,7 @@ type NumberSer = (x: number, bytes: number?) -> string
 	@within Squash
 	@type NumberDes (y: string, bytes: number?) -> number
 
-	A function that deserializes a number from a string. Usually this is Squash's UInt, Int, or Float Des methods.
+	A function that deserializes a number from a string. Usually this is Squash's Uint, Int, or Float Des methods.
 ]=]
 type NumberDes = (y: string, bytes: number?) -> number
 
@@ -288,12 +288,12 @@ local tau = 2 * math.pi
 local angleRatio = 65536 / tau
 
 local serAngle = function(x: number): string
-	return Squash.UInt.Ser(x % tau * angleRatio, 2)
+	return Squash.Uint.Ser(x % tau * angleRatio, 2)
 	--return Squash.Float.Ser(x)
 end
 
 local desAngle = function(y: string): number
-	return Squash.UInt.Des(y, 2) / angleRatio
+	return Squash.Uint.Des(y, 2) / angleRatio
 	--return Squash.Float.Des(y)
 end
 
@@ -321,7 +321,7 @@ end
 
 local desEnumItem = function<T>(y: string, offset: number, enum: Enum): (number, EnumItem)
 	local enumData = enumItemData[enum]
-	local enumItemId = Squash.UInt.Des(string.sub(y, offset, offset + enumData.bytes - 1), enumData.bytes)
+	local enumItemId = Squash.Uint.Des(string.sub(y, offset, offset + enumData.bytes - 1), enumData.bytes)
 	return offset + enumData.bytes, enumData.items[enumItemId]
 end
 
@@ -458,18 +458,18 @@ Squash.Bool.DesArr = function(y: string): { boolean }
 end
 
 --[=[
-	@class UInt
+	@class Uint
 ]=]
-Squash.UInt = {}
+Squash.Uint = {}
 
 --[=[
-	@within UInt
+	@within Uint
 	@function Ser
 	@param x number
 	@param bytes number?
 	@return string
 ]=]
-Squash.UInt.Ser = function(x: number, bytes: number?): string
+Squash.Uint.Ser = function(x: number, bytes: number?): string
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
@@ -481,13 +481,13 @@ Squash.UInt.Ser = function(x: number, bytes: number?): string
 end
 
 --[=[
-	@within UInt
+	@within Uint
 	@function Des
 	@param y string
 	@param bytes number?
 	@return number
 ]=]
-Squash.UInt.Des = function(y: string, bytes: number?): number
+Squash.Uint.Des = function(y: string, bytes: number?): number
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
@@ -499,22 +499,22 @@ Squash.UInt.Des = function(y: string, bytes: number?): number
 end
 
 --[=[
-	@within UInt
+	@within Uint
 	@function SerArr
 	@param x { number }
 	@param bytes number?
 	@return string
 ]=]
-Squash.UInt.SerArr = serArrayNumber(Squash.UInt.Ser)
+Squash.Uint.SerArr = serArrayNumber(Squash.Uint.Ser)
 
 --[=[
-	@within UInt
+	@within Uint
 	@function DesArr
 	@param y string
 	@param bytes number?
 	@return { number }
 ]=]
-Squash.UInt.DesArr = desArrayNumber(Squash.UInt.Des)
+Squash.Uint.DesArr = desArrayNumber(Squash.Uint.Des)
 
 --[=[
 	@class Int
@@ -533,7 +533,7 @@ Squash.Int.Ser = function(x: number, bytes: number?): string
 	bytesAssert(bytes)
 
 	local sx = if x < 0 then x + 256 ^ bytes else x
-	return Squash.UInt.Ser(sx, bytes)
+	return Squash.Uint.Ser(sx, bytes)
 end
 
 --[=[
@@ -547,7 +547,7 @@ Squash.Int.Des = function(y: string, bytes: number?): number
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
-	local x = Squash.UInt.Des(y, bytes)
+	local x = Squash.Uint.Des(y, bytes)
 	return if x > 0.5 * 256 ^ bytes - 1 then x - 256 ^ bytes else x
 end
 
@@ -1045,7 +1045,7 @@ Squash.Enum = {}
 Squash.Enum.Ser = function(x: Enum): string
 	local enumDataStuff = enumData[x]
 	local enumId = table.find(enumDataStuff.items, x) :: number
-	return Squash.UInt.Ser(enumId, enumDataStuff.bytes)
+	return Squash.Uint.Ser(enumId, enumDataStuff.bytes)
 end
 
 --[=[
@@ -1055,7 +1055,7 @@ end
 	@return Enum
 ]=]
 Squash.Enum.Des = function(y: string): Enum
-	local enumId = Squash.UInt.Des(y, enumData.bytes)
+	local enumId = Squash.Uint.Des(y, enumData.bytes)
 	return enumData.items[enumId]
 end
 
@@ -1073,7 +1073,7 @@ Squash.EnumItem = {}
 Squash.EnumItem.Ser = function(enumItem: EnumItem): string
 	local enumData = enumItemData[enumItem.EnumType]
 	local enumItemId = table.find(enumData.items, enumItem) :: number
-	return Squash.UInt.Ser(enumItemId, enumData.bytes)
+	return Squash.Uint.Ser(enumItemId, enumData.bytes)
 end
 
 --[=[
@@ -1085,7 +1085,7 @@ end
 ]=]
 Squash.EnumItem.Des = function(y: string, enum: Enum): EnumItem
 	local enumData = enumItemData[enum]
-	local enumItemId = Squash.UInt.Des(y, enumData.bytes)
+	local enumItemId = Squash.Uint.Des(y, enumData.bytes)
 	return enumData.items[enumItemId]
 end
 
@@ -1145,7 +1145,7 @@ Squash.BrickColor = {}
 	@return string
 ]=]
 Squash.BrickColor.Ser = function(x: BrickColor): string
-	return Squash.UInt.Ser(x.Number, 2)
+	return Squash.Uint.Ser(x.Number, 2)
 end
 
 --[=[
@@ -1155,7 +1155,7 @@ end
 	@return BrickColor
 ]=]
 Squash.BrickColor.Des = function(y: string): BrickColor
-	return BrickColor.new(Squash.UInt.Des(y, 2))
+	return BrickColor.new(Squash.Uint.Des(y, 2))
 end
 
 --[=[
@@ -1241,8 +1241,8 @@ Squash.CatalogSearchParams.Ser = function(x: CatalogSearchParams, alphabet: Alph
 	end
 
 	return Squash.Bool.Ser(x.IncludeOffSale)
-		.. Squash.UInt.Ser(x.MinPrice, 4)
-		.. Squash.UInt.Ser(x.MaxPrice, 4)
+		.. Squash.Uint.Ser(x.MinPrice, 4)
+		.. Squash.Uint.Ser(x.MaxPrice, 4)
 		.. Squash.EnumItem.Ser(x.SalesTypeFilter)
 		.. Squash.EnumItem.Ser(x.CategoryFilter)
 		.. Squash.EnumItem.Ser(x.SortAggregation)
@@ -1264,8 +1264,8 @@ Squash.CatalogSearchParams.Des = function(y: string, alphabet: Alphabet): Catalo
 
 	local x = CatalogSearchParams.new()
 	x.IncludeOffSale = Squash.Bool.Des(string.sub(y, 1, 1))
-	x.MinPrice = Squash.UInt.Des(string.sub(y, 2, 5), 4)
-	x.MaxPrice = Squash.UInt.Des(string.sub(y, 6, 9), 4)
+	x.MinPrice = Squash.Uint.Des(string.sub(y, 2, 5), 4)
+	x.MaxPrice = Squash.Uint.Des(string.sub(y, 6, 9), 4)
 
 	local offset = 10
 	offset, x.SalesTypeFilter = desEnumItem(y, offset, Enum.SalesTypeFilter)
@@ -1323,7 +1323,7 @@ local dateTimeOffset = 17_987_443_200
 	@return string
 ]=]
 Squash.DateTime.Ser = function(x: DateTime): string
-	return Squash.UInt.Ser(5, x.UnixTimestamp + dateTimeOffset)
+	return Squash.Uint.Ser(5, x.UnixTimestamp + dateTimeOffset)
 end
 
 --[=[
@@ -1333,7 +1333,7 @@ end
 	@return DateTime
 ]=]
 Squash.DateTime.Des = function(y: string): DateTime
-	return DateTime.fromUnixTimestamp(Squash.UInt.Des(y, 5) - dateTimeOffset)
+	return DateTime.fromUnixTimestamp(Squash.Uint.Des(y, 5) - dateTimeOffset)
 end
 
 --[=[
@@ -1821,7 +1821,7 @@ Squash.OverlapParams = {}
 Squash.OverlapParams.Ser = function(x: OverlapParams): string
 	return string.char(
 		(if x.FilterType == Enum.RaycastFilterType.Include then 1 else 0) + (if x.RespectCanCollide then 2 else 0)
-	) .. Squash.UInt.Ser(2, x.MaxParts) .. Squash.Str.Ser(x.CollisionGroup) -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated.
+	) .. Squash.Uint.Ser(2, x.MaxParts) .. Squash.Str.Ser(x.CollisionGroup) -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated.
 end
 
 --[=[
@@ -1835,7 +1835,7 @@ Squash.OverlapParams.Des = function(y: string): OverlapParams
 
 	local x = OverlapParams.new()
 	x.CollisionGroup = Squash.Str.Des(string.sub(y, 4))
-	x.MaxParts = Squash.UInt.Des(string.sub(y, 2, 3), 2)
+	x.MaxParts = Squash.Uint.Des(string.sub(y, 2, 3), 2)
 	x.RespectCanCollide = filterTypeAndRespectCanCollide >= 2
 	x.FilterType = if filterTypeAndRespectCanCollide % 2 == 1
 		then Enum.RaycastFilterType.Include
@@ -2099,7 +2099,7 @@ Squash.RaycastResult = {}
 Squash.RaycastResult.Ser = function(x: RaycastResult, serdes: NumberSerDes?, bytes: number?): string
 	local bytes = bytes or 4
 	return Squash.EnumItem.Ser(x.Material)
-		.. Squash.UInt.Ser(x.Distance, bytes)
+		.. Squash.Uint.Ser(x.Distance, bytes)
 		.. Squash.Vector3.Ser(x.Position, serdes, bytes)
 		.. Squash.Vector3.Ser(x.Normal, serdes, bytes)
 end
@@ -2133,7 +2133,7 @@ Squash.RaycastResult.Des = function(y: string, serdes: NumberSerDes?, bytes: num
 	local offset, material = 0, nil
 	offset, material = desEnumItem(y, offset, Enum.Material)
 
-	local distance = Squash.UInt.Des(string.sub(y, offset + 1, offset + bytes), bytes)
+	local distance = Squash.Uint.Des(string.sub(y, offset + 1, offset + bytes), bytes)
 	offset += bytes
 
 	local position = Squash.Vector3.Des(string.sub(y, offset + 1, offset + bytes), serdes, bytes)
@@ -2183,10 +2183,10 @@ Squash.Rect = {}
 ]=]
 Squash.Rect.Ser = function(x: Rect, bytes: number?)
 	local bytes = bytes or 4
-	return Squash.UInt.Ser(x.Min.X, bytes)
-		.. Squash.UInt.Ser(x.Min.Y, bytes)
-		.. Squash.UInt.Ser(x.Max.X, bytes)
-		.. Squash.UInt.Ser(x.Max.Y, bytes)
+	return Squash.Uint.Ser(x.Min.X, bytes)
+		.. Squash.Uint.Ser(x.Min.Y, bytes)
+		.. Squash.Uint.Ser(x.Max.X, bytes)
+		.. Squash.Uint.Ser(x.Max.Y, bytes)
 end
 
 --[=[
@@ -2199,10 +2199,10 @@ end
 Squash.Rect.Des = function(y: string, bytes: number?): Rect
 	local bytes = bytes or 4
 	return Rect.new(
-		Squash.UInt.Des(string.sub(y, 1, bytes), bytes),
-		Squash.UInt.Des(string.sub(y, bytes + 1, 2 * bytes), bytes),
-		Squash.UInt.Des(string.sub(y, 2 * bytes + 1, 3 * bytes), bytes),
-		Squash.UInt.Des(string.sub(y, 3 * bytes + 1, 4 * bytes), bytes)
+		Squash.Uint.Des(string.sub(y, 1, bytes), bytes),
+		Squash.Uint.Des(string.sub(y, bytes + 1, 2 * bytes), bytes),
+		Squash.Uint.Des(string.sub(y, 2 * bytes + 1, 3 * bytes), bytes),
+		Squash.Uint.Des(string.sub(y, 3 * bytes + 1, 4 * bytes), bytes)
 	)
 end
 
