@@ -619,19 +619,19 @@ Squash.Float.SerArr = serArrayNumber(Squash.Float.Ser)
 Squash.Float.DesArr = desArrayNumber(Squash.Float.Des)
 
 --[=[
-	@class String
+	@class Str
 ]=]
-Squash.String = {}
+Squash.Str = {}
 
 --[=[
-	@within String
+	@within Str
 	@function Alphabet
 	@param source string
 	@return Alphabet
 
 	Maps a string to the smallest alphabet that represents it.
 ]=]
-Squash.String.Alphabet = function(source: string): Alphabet
+Squash.Str.Alphabet = function(source: string): Alphabet
 	local lookup = {}
 	local alphabet = {}
 	for i = 1, #source do
@@ -647,7 +647,7 @@ Squash.String.Alphabet = function(source: string): Alphabet
 end
 
 --[=[
-	@within String
+	@within Str
 	@function Convert
 	@param x string
 	@param inAlphabet Alphabet
@@ -656,7 +656,7 @@ end
 
 	Converts a string from one alphabet to another.
 ]=]
-Squash.String.Convert = function(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet): string
+Squash.Str.Convert = function(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet): string
 	inAlphabet = Squash.Delimiter .. inAlphabet
 	outAlphabet = Squash.Delimiter .. outAlphabet
 
@@ -699,53 +699,53 @@ Squash.String.Convert = function(x: string, inAlphabet: Alphabet, outAlphabet: A
 end
 
 --[=[
-	@within String
+	@within Str
 	@function Ser
 	@param x string
 	@param alphabet Alphabet?
 	@return string
 ]=]
-Squash.String.Ser = function(x: string, alphabet: Alphabet?): string
-	return Squash.String.Convert(x, alphabet or Squash.English, Squash.UTF8)
+Squash.Str.Ser = function(x: string, alphabet: Alphabet?): string
+	return Squash.Str.Convert(x, alphabet or Squash.English, Squash.UTF8)
 end
 
 --[=[
-	@within String
+	@within Str
 	@function Des
 	@param y string
 	@param alphabet Alphabet?
 	@return string
 ]=]
-Squash.String.Des = function(y: string, alphabet: Alphabet?): string
-	return Squash.String.Convert(y, Squash.UTF8, alphabet or Squash.English)
+Squash.Str.Des = function(y: string, alphabet: Alphabet?): string
+	return Squash.Str.Convert(y, Squash.UTF8, alphabet or Squash.English)
 end
 
 --[=[
-	@within String
+	@within Str
 	@function SerArr
 	@param x { string }
 	@param alphabet Alphabet?
 	@return string
 ]=]
-Squash.String.SerArr = function(x: { string }, alphabet: Alphabet?)
+Squash.Str.SerArr = function(x: { string }, alphabet: Alphabet?)
 	local y = {}
 	for i, v in x do
-		y[i] = Squash.String.Ser(v, alphabet)
+		y[i] = Squash.Str.Ser(v, alphabet)
 	end
 	return table.concat(y, Squash.Delimiter)
 end
 
 --[=[
-	@within String
+	@within Str
 	@function DesArr
 	@param y string
 	@param alphabet Alphabet?
 	@return { string }
 ]=]
-Squash.String.DesArr = function(y: string, alphabet: Alphabet?): { string }
+Squash.Str.DesArr = function(y: string, alphabet: Alphabet?): { string }
 	local x = {}
 	for v in string.gmatch(y, '[^' .. Squash.Delimiter .. ']+') do
-		table.insert(x, Squash.String.Des(v, alphabet))
+		table.insert(x, Squash.Str.Des(v, alphabet))
 	end
 	return x
 end
@@ -1249,7 +1249,7 @@ Squash.CatalogSearchParams.Ser = function(x: CatalogSearchParams, alphabet: Alph
 		.. Squash.EnumItem.Ser(x.SortType)
 		.. packBits(assetIndices, enumItemData[Enum.AssetType].bits)
 		.. packBits(bundleIndices, enumItemData[Enum.BundleType].bits)
-		.. Squash.String.SerArr({ x.SearchKeyword, x.CreatorName }, alphabet)
+		.. Squash.Str.SerArr({ x.SearchKeyword, x.CreatorName }, alphabet)
 end
 
 --[=[
@@ -1285,7 +1285,7 @@ Squash.CatalogSearchParams.Des = function(y: string, alphabet: Alphabet): Catalo
 	end
 	offset += bundleTypeData.bytes
 
-	local keywordEnd = Squash.String.DesArr(string.sub(y, offset), alphabet)
+	local keywordEnd = Squash.Str.DesArr(string.sub(y, offset), alphabet)
 	x.SearchKeyword = keywordEnd[1]
 	x.CreatorName = keywordEnd[2]
 	return x
@@ -1614,7 +1614,7 @@ Squash.Font.Ser = function(x: Font): string
 		error 'Font Family must be a Roblox Font'
 	end
 
-	return Squash.EnumItem.Ser(x.Style) .. Squash.EnumItem.Ser(x.Weight) .. Squash.String.Ser(family)
+	return Squash.EnumItem.Ser(x.Style) .. Squash.EnumItem.Ser(x.Weight) .. Squash.Str.Ser(family)
 end
 
 --[=[
@@ -1629,7 +1629,7 @@ Squash.Font.Des = function(y: string): Font
 	a += b
 	b += enumItemData[Enum.FontWeight].bytes
 	local fontWeight = Squash.EnumItem.Des(string.sub(y, a, b), Enum.FontWeight) :: Enum.FontWeight
-	local family = Squash.String.Des(string.sub(y, b + 1))
+	local family = Squash.Str.Des(string.sub(y, b + 1))
 	return Font.new(family, fontWeight, style)
 end
 
@@ -1821,7 +1821,7 @@ Squash.OverlapParams = {}
 Squash.OverlapParams.Ser = function(x: OverlapParams): string
 	return string.char(
 		(if x.FilterType == Enum.RaycastFilterType.Include then 1 else 0) + (if x.RespectCanCollide then 2 else 0)
-	) .. Squash.UInt.Ser(2, x.MaxParts) .. Squash.String.Ser(x.CollisionGroup) -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated.
+	) .. Squash.UInt.Ser(2, x.MaxParts) .. Squash.Str.Ser(x.CollisionGroup) -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated.
 end
 
 --[=[
@@ -1834,7 +1834,7 @@ Squash.OverlapParams.Des = function(y: string): OverlapParams
 	local filterTypeAndRespectCanCollide = string.byte(y, 1)
 
 	local x = OverlapParams.new()
-	x.CollisionGroup = Squash.String.Des(string.sub(y, 4))
+	x.CollisionGroup = Squash.Str.Des(string.sub(y, 4))
 	x.MaxParts = Squash.UInt.Des(string.sub(y, 2, 3), 2)
 	x.RespectCanCollide = filterTypeAndRespectCanCollide >= 2
 	x.FilterType = if filterTypeAndRespectCanCollide % 2 == 1
@@ -1873,7 +1873,7 @@ Squash.RaycastParams = {}
 ]=]
 Squash.RaycastParams.Ser = function(x: RaycastParams): string
 	return Squash.Bool.Ser(x.FilterType == Enum.RaycastFilterType.Include, x.IgnoreWater, x.RespectCanCollide)
-		.. Squash.String.Ser(x.CollisionGroup)
+		.. Squash.Str.Ser(x.CollisionGroup)
 end
 
 --[=[
@@ -1886,7 +1886,7 @@ Squash.RaycastParams.Des = function(y: string): RaycastParams
 	local isInclude, ignoreWater, respectCanCollide = Squash.Bool.Des(string.sub(y, 1, 1))
 
 	local x = RaycastParams.new()
-	x.CollisionGroup = Squash.String.Des(string.sub(y, 2))
+	x.CollisionGroup = Squash.Str.Des(string.sub(y, 2))
 	x.RespectCanCollide = respectCanCollide
 	x.IgnoreWater = ignoreWater
 	x.FilterType = if isInclude then Enum.RaycastFilterType.Include else Enum.RaycastFilterType.Exclude
