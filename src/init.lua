@@ -626,21 +626,19 @@ Squash.String = {}
 --[=[
 	@within String
 	@function Alphabet
-	@param sources { string }
+	@param source string
 	@return Alphabet
 
 	Maps a set of strings to the smallest alphabet that represents them all.
 ]=]
-Squash.String.Alphabet = function(sources: { string }): Alphabet
+Squash.String.Alphabet = function(source: string): Alphabet
 	local lookup = {}
 	local alphabet = {}
-	for _, source in sources do
-		for i = 1, #source do
-			local char = string.sub(source, i, i)
-			if not lookup[char] then
-				lookup[char] = true
-				table.insert(alphabet, char)
-			end
+	for i = 1, #source do
+		local char = string.sub(source, i, i)
+		if not lookup[char] then
+			lookup[char] = true
+			table.insert(alphabet, char)
 		end
 	end
 	-- Sort alphabet for consistency. --! This is not necessary
