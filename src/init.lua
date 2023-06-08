@@ -1601,7 +1601,7 @@ Squash.FloatCurveKey.ser = function(x: FloatCurveKey, serdes: NumberSerDes?, byt
 	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 
-	return Squash.EnumItem.ser(x.Interpolation)
+	return Squash.EnumItem.ser(x.Interpolation, Enum.KeyInterpolationMode)
 		.. ser(x.Time, bytes)
 		.. ser(x.Value, bytes)
 		.. ser(x.LeftTangent, bytes)
@@ -1670,7 +1670,9 @@ Squash.Font.ser = function(x: Font): string
 		error 'Font Family must be a Roblox Font'
 	end
 
-	return Squash.EnumItem.ser(x.Style) .. Squash.EnumItem.ser(x.Weight) .. Squash.string.ser(family)
+	return Squash.EnumItem.ser(x.Style, Enum.FontStyle)
+		.. Squash.EnumItem.ser(x.Weight, Enum.FontWeight)
+		.. Squash.string.ser(family)
 end
 
 --[=[
@@ -1981,7 +1983,7 @@ Squash.PathWaypoint = {}
 ]=]
 Squash.PathWaypoint.ser = function(x: PathWaypoint, serdes: NumberSerDes?, bytes: Bytes?): string
 	local bytes = bytes or 4
-	return Squash.EnumItem.ser(x.Action) .. Squash.Vector3.ser(x.Position, serdes, bytes)
+	return Squash.EnumItem.ser(x.Action, Enum.PathWaypointAction) .. Squash.Vector3.ser(x.Position, serdes, bytes)
 end
 
 --[=[
@@ -2154,7 +2156,7 @@ Squash.RaycastResult = {}
 ]=]
 Squash.RaycastResult.ser = function(x: RaycastResult, serdes: NumberSerDes?, bytes: Bytes?): string
 	local bytes = bytes or 4
-	return Squash.EnumItem.ser(x.Material)
+	return Squash.EnumItem.ser(x.Material, Enum.Material)
 		.. Squash.uint.ser(x.Distance, bytes)
 		.. Squash.Vector3.ser(x.Position, serdes, bytes)
 		.. Squash.Vector3.ser(x.Normal, serdes, bytes)
@@ -2392,8 +2394,8 @@ Squash.TweenInfo.ser = function(x: TweenInfo, serdes: NumberSerDes?, bytes: Byte
 	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 	return Squash.boolean.ser(x.Reverses)
-		.. Squash.EnumItem.ser(x.EasingStyle)
-		.. Squash.EnumItem.ser(x.EasingDirection)
+		.. Squash.EnumItem.ser(x.EasingStyle, Enum.EasingStyle)
+		.. Squash.EnumItem.ser(x.EasingDirection, Enum.EasingDirection)
 		.. Squash.int.ser(x.RepeatCount, bytes)
 		.. ser(x.Time, bytes)
 		.. ser(x.DelayTime, bytes)
