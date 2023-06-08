@@ -626,7 +626,7 @@ Squash.String = {}
 --[=[
 	@within String
 	@function Alphabet
-	@param sources { string }
+	@param source string
 	@return Alphabet
 
 	Maps a string to the smallest alphabet that represents it.
