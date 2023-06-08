@@ -75,7 +75,7 @@ Squash.English = Squash.Letters .. Squash.Punctuation :: Alphabet
 
 	The UTF-8 character set, excluding the delimiter.
 ]=]
-local utf8Characters = {}
+local utf8Characters = table.create(255)
 for i = 1, 255 do
 	utf8Characters[i] = string.char(i)
 end
@@ -633,7 +633,7 @@ Squash.Str = {}
 ]=]
 Squash.Str.Alphabet = function(source: string): Alphabet
 	local lookup = {}
-	local alphabet = {}
+	local alphabet = table.create(#source)
 	for i = 1, #source do
 		local char = string.sub(source, i, i)
 		if not lookup[char] then
