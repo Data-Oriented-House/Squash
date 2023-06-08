@@ -38,7 +38,7 @@ section = "Luau"
 collapsed = true
 classes = [
 	"Bool",
-	"UInt",
+	"Uint",
 	"Int",
 	"Float",
 	"Str"
