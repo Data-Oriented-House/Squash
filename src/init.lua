@@ -625,11 +625,10 @@ Squash.String = {}
 	@within String
 	@function Ser
 	@param x string
-	@param inAlphabet Alphabet?
-	@param outAlphabet Alphabet?
+	@param alphabet Alphabet?
 	@return string
 ]=]
-Squash.String.Ser = function(x: string, inAlphabet: Alphabet?, outAlphabet: Alphabet?): string
+Squash.String.Ser = function(x: string, alphabet: Alphabet?): string
 	-- TODO: Implement compression algorithm using numerical base conversion
 	return x
 end
@@ -638,11 +637,10 @@ end
 	@within String
 	@function Des
 	@param y string
-	@param inAlphabet Alphabet?
-	@param outAlphabet Alphabet?
+	@param alphabet Alphabet?
 	@return string
 ]=]
-Squash.String.Des = function(y: string, inAlphabet: Alphabet?, outAlphabet: Alphabet?): string
+Squash.String.Des = function(y: string, alphabet: Alphabet?): string
 	-- TODO: Implement decompression algorithm using numerical base conversion
 	return y
 end
@@ -651,14 +649,13 @@ end
 	@within String
 	@function SerArr
 	@param x { string }
-	@param inAlphabet Alphabet?
-	@param outAlphabet Alphabet?
+	@param alphabet Alphabet?
 	@return string
 ]=]
-Squash.String.SerArr = function(x: { string }, inAlphabet: Alphabet?, outAlphabet: Alphabet?)
+Squash.String.SerArr = function(x: { string }, alphabet: Alphabet?)
 	local y = {}
 	for i, v in x do
-		y[i] = Squash.String.Ser(v)
+		y[i] = Squash.String.Ser(v, alphabet)
 	end
 	return table.concat(y, Squash.Delimiter)
 end
@@ -667,14 +664,13 @@ end
 	@within String
 	@function DesArr
 	@param y string
-	@param inAlphabet Alphabet?
-	@param outAlphabet Alphabet?
+	@param alphabet Alphabet?
 	@return { string }
 ]=]
-Squash.String.DesArr = function(y: string, inAlphabet: Alphabet?, outAlphabet: Alphabet?): { string }
+Squash.String.DesArr = function(y: string, alphabet: Alphabet?): { string }
 	local x = {}
 	for v in string.gmatch(y, '[^' .. Squash.Delimiter .. ']+') do
-		table.insert(x, Squash.String.Des(v))
+		table.insert(x, Squash.String.Des(v, alphabet))
 	end
 	return x
 end
@@ -688,7 +684,7 @@ Squash.Vector2 = {}
 	@within Vector2
 	@function Ser
 	@param x Vector2
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -702,7 +698,7 @@ end
 	@within Vector2
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return Vector2
 ]=]
@@ -716,7 +712,7 @@ end
 	@within Vector2
 	@function SerArr
 	@param x { Vector2 }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -726,7 +722,7 @@ Squash.Vector2.SerArr = serArrayVector(Squash.Vector2)
 	@within Vector2
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { Vector2 }
 ]=]
@@ -741,7 +737,7 @@ Squash.Vector3 = {}
 	@within Vector3
 	@function Ser
 	@param x Vector3
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -755,7 +751,7 @@ end
 	@within Vector3
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return Vector3
 ]=]
@@ -773,7 +769,7 @@ end
 	@within Vector3
 	@function SerArr
 	@param x { Vector3 }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -783,7 +779,7 @@ Squash.Vector3.SerArr = serArrayVector(Squash.Vector3)
 	@within Vector3
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { Vector3 }
 ]=]
@@ -884,7 +880,7 @@ Squash.CFrame = {}
 	@within CFrame
 	@function Ser
 	@param x CFrame
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param posBytes number?
 	@return string
 ]=]
@@ -902,7 +898,7 @@ end
 	@within CFrame
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param posBytes number?
 	@return CFrame
 ]=]
@@ -933,7 +929,7 @@ end
 	@within CFrame
 	@function SerArr
 	@param x { CFrame }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param posBytes number?
 	@return string
 ]=]
@@ -944,7 +940,7 @@ Squash.CFrame.SerArr = serArrayVector(Squash.CFrame)
 	@function DesArr
 	@param y string
 	@param posBytes number
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@return { CFrame }
 ]=]
 Squash.CFrame.DesArr = function(y: string, posBytes: number, serdes: NumberSerDes?): { CFrame }
@@ -1153,13 +1149,11 @@ Squash.CatalogSearchParams = {}
 	@within CatalogSearchParams
 	@function Ser
 	@param x CatalogSearchParams
-	@param inAlphabet Alphabet?
-	@param outAlphabet Alphabet?
+	@param alphabet Alphabet?
 	@return string
 ]=]
-Squash.CatalogSearchParams.Ser = function(x: CatalogSearchParams, inAlphabet: Alphabet?, outAlphabet: Alphabet?): string
-	local inAlphabet = inAlphabet or Squash.English
-	local outAlphabet = outAlphabet or Squash.UTF8
+Squash.CatalogSearchParams.Ser = function(x: CatalogSearchParams, alphabet: Alphabet?): string
+	local alphabet = alphabet or Squash.English
 
 	local assetIndices = {}
 	for i, v in x.AssetTypes do
@@ -1180,20 +1174,18 @@ Squash.CatalogSearchParams.Ser = function(x: CatalogSearchParams, inAlphabet: Al
 		.. Squash.EnumItem.Ser(x.SortType)
 		.. packBits(assetIndices, enumItemData[Enum.AssetType].bits)
 		.. packBits(bundleIndices, enumItemData[Enum.BundleType].bits)
-		.. Squash.String.SerArr({ x.SearchKeyword, x.CreatorName }, inAlphabet, outAlphabet)
+		.. Squash.String.SerArr({ x.SearchKeyword, x.CreatorName }, alphabet)
 end
 
 --[=[
 	@within CatalogSearchParams
 	@function Des
 	@param y string
-	@param inAlphabet Alphabet?
-	@param outAlphabet Alphabet?
+	@param alphabet Alphabet?
 	@return CatalogSearchParams
 ]=]
-Squash.CatalogSearchParams.Des = function(y: string, inAlphabet: Alphabet?, outAlphabet: Alphabet?): CatalogSearchParams
-	local inAlphabet = inAlphabet or Squash.UTF8
-	local outAlphabet = outAlphabet or Squash.English
+Squash.CatalogSearchParams.Des = function(y: string, alphabet: Alphabet): CatalogSearchParams
+	local alphabet = alphabet or Squash.English
 
 	local x = CatalogSearchParams.new()
 	x.IncludeOffSale = Squash.Bool.Des(string.sub(y, 1, 1))
@@ -1218,7 +1210,7 @@ Squash.CatalogSearchParams.Des = function(y: string, inAlphabet: Alphabet?, outA
 	end
 	offset += bundleTypeData.bytes
 
-	local keywordEnd = Squash.String.DesArr(string.sub(y, offset), inAlphabet, outAlphabet)
+	local keywordEnd = Squash.String.DesArr(string.sub(y, offset), alphabet)
 	x.SearchKeyword = keywordEnd[1]
 	x.CreatorName = keywordEnd[2]
 	return x
@@ -1228,8 +1220,7 @@ end
 	@within CatalogSearchParams
 	@function SerArr
 	@param x { CatalogSearchParams }
-	@param inAlphabet Alphabet?
-	@param outAlphabet Alphabet?
+	@param alphabet Alphabet?
 	@return string
 ]=]
 Squash.CatalogSearchParams.SerArr = serArrayVariable(Squash.CatalogSearchParams)
@@ -1238,8 +1229,7 @@ Squash.CatalogSearchParams.SerArr = serArrayVariable(Squash.CatalogSearchParams)
 	@within CatalogSearchParams
 	@function DesArr
 	@param y string
-	@param inAlphabet Alphabet?
-	@param outAlphabet Alphabet?
+	@param alphabet Alphabet?
 	@return { CatalogSearchParams }
 ]=]
 Squash.CatalogSearchParams.DesArr = desArrayVariable(Squash.CatalogSearchParams)
@@ -1472,7 +1462,7 @@ Squash.FloatCurveKey = {}
 	@within FloatCurveKey
 	@function Ser
 	@param x FloatCurveKey
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1491,7 +1481,7 @@ end
 	@within FloatCurveKey
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return FloatCurveKey
 ]=]
@@ -1516,7 +1506,7 @@ end
 	@within FloatCurveKey
 	@function SerArr
 	@param x { FloatCurveKey }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1526,7 +1516,7 @@ Squash.FloatCurveKey.SerArr = serArrayVariable(Squash.FloatCurveKey)
 	@within FloatCurveKey
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { FloatCurveKey }
 ]=]
@@ -1593,7 +1583,7 @@ Squash.NumberRange = {}
 	@within NumberRange
 	@function Ser
 	@param x NumberRange
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 ]=]
 Squash.NumberRange.Ser = function(x: NumberRange, serdes: NumberSerDes?, bytes: number?): string
@@ -1606,7 +1596,7 @@ end
 	@within NumberRange
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return NumberRange
 ]=]
@@ -1620,7 +1610,7 @@ end
 	@within NumberRange
 	@function SerArr
 	@param x { NumberRange }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1630,7 +1620,7 @@ Squash.NumberRange.SerArr = serArrayVector(Squash.NumberRange)
 	@within NumberRange
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { NumberRange }
 ]=]
@@ -1645,7 +1635,7 @@ Squash.NumberSequenceKeypoint = {}
 	@within NumberSequenceKeypoint
 	@function Ser
 	@param x NumberSequenceKeypoint
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1659,7 +1649,7 @@ end
 	@within NumberSequenceKeypoint
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return NumberSequenceKeypoint
 ]=]
@@ -1677,7 +1667,7 @@ end
 	@within NumberSequenceKeypoint
 	@function SerArr
 	@param x { NumberSequenceKeypoint }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1687,7 +1677,7 @@ Squash.NumberSequenceKeypoint.SerArr = serArrayVector(Squash.NumberSequenceKeypo
 	@within NumberSequenceKeypoint
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { NumberSequenceKeypoint }
 ]=]
@@ -1702,7 +1692,7 @@ Squash.NumberSequence = {}
 	@within NumberSequence
 	@function Ser
 	@param x NumberSequence
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1714,7 +1704,7 @@ end
 	@within NumberSequence
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return NumberSequence
 ]=]
@@ -1726,7 +1716,7 @@ end
 	@within NumberSequence
 	@function SerArr
 	@param x { NumberSequence }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1736,7 +1726,7 @@ Squash.NumberSequence.SerArr = serArrayVariable(Squash.NumberSequence)
 	@within NumberSequence
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { NumberSequence }
 ]=]
@@ -1854,7 +1844,7 @@ Squash.PathWaypoint = {}
 	@within PathWaypoint
 	@function Ser
 	@param x PathWaypoint
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1867,7 +1857,7 @@ end
 	@within PathWaypoint
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return PathWaypoint
 ]=]
@@ -1885,7 +1875,7 @@ end
 	@within PathWaypoint
 	@function SerArr
 	@param x { PathWaypoint }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1895,7 +1885,7 @@ Squash.PathWaypoint.SerArr = serArrayVector(Squash.PathWaypoint)
 	@within PathWaypoint
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { PathWaypoint }
 ]=]
@@ -1910,7 +1900,7 @@ Squash.PhysicalProperties = {}
 	@within PhysicalProperties
 	@function Ser
 	@param x PhysicalProperties
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1928,7 +1918,7 @@ end
 	@within PhysicalProperties
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return PhysicalProperties
 ]=]
@@ -1948,7 +1938,7 @@ end
 	@within PhysicalProperties
 	@function SerArr
 	@param x { PhysicalProperties }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1958,7 +1948,7 @@ Squash.PhysicalProperties.SerArr = serArrayVector(Squash.PhysicalProperties)
 	@within PhysicalProperties
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { PhysicalProperties }
 ]=]
@@ -1973,7 +1963,7 @@ Squash.Ray = {}
 	@within Ray
 	@function Ser
 	@param x Ray
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -1986,7 +1976,7 @@ end
 	@within Ray
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return Ray
 ]=]
@@ -2002,7 +1992,7 @@ end
 	@within Ray
 	@function SerArr
 	@param x { Ray }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2012,7 +2002,7 @@ Squash.Ray.SerArr = serArrayVector(Squash.Ray)
 	@within Ray
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { Ray }
 ]=]
@@ -2027,7 +2017,7 @@ Squash.RaycastResult = {}
 	@within RaycastResult
 	@function Ser
 	@param x RaycastResult
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2058,7 +2048,7 @@ export type SquashRaycastResult = {
 	@within RaycastResult
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { Material: Enum.Material, Distance: number, Position: Vector3, Normal: Vector3 }
 ]=]
@@ -2088,7 +2078,7 @@ end
 	@within RaycastResult
 	@function SerArr
 	@param x { RaycastResult }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2098,7 +2088,7 @@ Squash.RaycastResult.SerArr = serArrayVector(Squash.RaycastResult)
 	@within RaycastResult
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { RaycastResult }
 ]=]
@@ -2168,7 +2158,7 @@ Squash.Region3 = {}
 	@within Region3
 	@function Ser
 	@param x Region3
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2181,7 +2171,7 @@ end
 	@within Region3
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return Region3
 ]=]
@@ -2197,7 +2187,7 @@ end
 	@within Region3
 	@function SerArr
 	@param x { Region3 }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2207,7 +2197,7 @@ Squash.Region3.SerArr = serArrayVector(Squash.Region3)
 	@within Region3
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { Region3 }
 ]=]
@@ -2263,7 +2253,7 @@ Squash.TweenInfo = {}
 	@within TweenInfo
 	@function Ser
 	@param x TweenInfo
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2282,7 +2272,7 @@ end
 	@within TweenInfo
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return TweenInfo
 ]=]
@@ -2322,7 +2312,7 @@ end
 	@within TweenInfo
 	@function SerArr
 	@param x { TweenInfo }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2332,7 +2322,7 @@ Squash.TweenInfo.SerArr = serArrayVector(Squash.TweenInfo)
 	@within TweenInfo
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { TweenInfo }
 ]=]
@@ -2351,7 +2341,7 @@ Squash.UDim = {}
 	@within UDim
 	@function Ser
 	@param x UDim
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2365,7 +2355,7 @@ end
 	@within UDim
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return UDim
 ]=]
@@ -2379,7 +2369,7 @@ end
 	@within UDim
 	@function SerArr
 	@param x { UDim }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2389,7 +2379,7 @@ Squash.UDim.SerArr = serArrayVector(Squash.UDim)
 	@within UDim
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { UDim }
 ]=]
@@ -2404,7 +2394,7 @@ Squash.UDim2 = {}
 	@within UDim2
 	@function Ser
 	@param x UDim2
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2417,7 +2407,7 @@ end
 	@within UDim2
 	@function Des
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return UDim2
 ]=]
@@ -2433,7 +2423,7 @@ end
 	@within UDim2
 	@function SerArr
 	@param x { UDim2 }
-	@param ser NumberSer?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return string
 ]=]
@@ -2443,7 +2433,7 @@ Squash.UDim2.SerArr = serArrayVector(Squash.UDim2)
 	@within UDim2
 	@function DesArr
 	@param y string
-	@param des NumberDes?
+	@param serdes NumberSerDes?
 	@param bytes number?
 	@return { UDim2 }
 ]=]
