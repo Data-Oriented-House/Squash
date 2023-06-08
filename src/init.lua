@@ -110,11 +110,11 @@ Squash.utf8 = table.concat(utf8Characters) :: Alphabet
 type NumberSer = (x: number, bytes: Bytes?) -> string
 
 --[=[
-		@within Squash
-		@type NumberDes (y: string, bytes: Bytes?) -> number
+	@within Squash
+	@type NumberDes (y: string, bytes: Bytes?) -> number
 
-		A function that deserializes a number from a string. Usually this is Squash's uint, int, or number des methods.
-		]=]
+	A function that deserializes a number from a string. Usually this is Squash's uint, int, or number des methods.
+]=]
 type NumberDes = (y: string, bytes: Bytes?) -> number
 
 --[=[
