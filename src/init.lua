@@ -282,12 +282,17 @@ local desArrayVectorNoCoding = function<T>(deserializer: VectorNoCodingSerDes<T>
 	end
 end
 
+local tau = 2 * math.pi
+local angleRatio = 65536 / tau
+
 local serAngle = function(x: number): string
-	return Squash.UInt.Ser(2, (x + math.pi) % (2 * math.pi) * 65535)
+	return Squash.UInt.Ser(x % tau * angleRatio, 2)
+	--return Squash.Float.Ser(x)
 end
 
 local desAngle = function(y: string): number
-	return Squash.UInt.Des(y, 2) / 65535 - math.pi
+	return Squash.UInt.Des(y, 2) / angleRatio
+	--return Squash.Float.Des(y)
 end
 
 local getBitSize = function(x: number): number
@@ -909,11 +914,19 @@ Squash.CFrame.Des = function(y: string, serdes: NumberSerDes?, posBytes: number?
 	local ry = desAngle(string.sub(y, 3, 4))
 	local rz = desAngle(string.sub(y, 5, 6))
 
-	local px = des(string.sub(y, 7, 7 + posBytes - 1), posBytes)
-	local py = des(string.sub(y, 7 + posBytes, 7 + 2 * posBytes - 1), posBytes)
+	local px = des(string.sub(y, 7 + 0 * posBytes, 7 + 1 * posBytes - 1), posBytes)
+	local py = des(string.sub(y, 7 + 1 * posBytes, 7 + 2 * posBytes - 1), posBytes)
 	local pz = des(string.sub(y, 7 + 2 * posBytes, 7 + 3 * posBytes - 1), posBytes)
 
-	return CFrame.Angles(rx, ry, rz) + Vector3.new(px, py, pz)
+	--local rx = desAngle(string.sub(y, 1, 4))
+	--local ry = desAngle(string.sub(y, 5, 8))
+	--local rz = desAngle(string.sub(y, 9, 12))
+
+	--local px = des(string.sub(y, 13 + 0 * posBytes, 13 + 1 * posBytes - 1), posBytes)
+	--local py = des(string.sub(y, 13 + 1 * posBytes, 13 + 2 * posBytes - 1), posBytes)
+	--local pz = des(string.sub(y, 13 + 2 * posBytes, 13 + 3 * posBytes - 1), posBytes)
+
+	return CFrame.fromOrientation(rx, ry, rz) + Vector3.new(px, py, pz)
 end
 
 --[=[
