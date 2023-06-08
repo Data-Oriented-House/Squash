@@ -364,6 +364,50 @@ local unpackBits = function(y: string, bits: number): { number }
 	return x
 end
 
+local function baseConvert(input: string, inAlphabet: string, outAlphabet: string): string
+    inAlphabet = Squash.Delimiter .. inAlphabet
+	outAlphabet = Squash.Delimiter .. outAlphabet
+
+    local sourceDigits = {}
+    local targetDigits = {}
+    local inputDigits = {}
+
+    for i = 1, #inAlphabet do
+        sourceDigits[string.byte(inAlphabet, i)] = i - 1
+    end
+
+    for i = 1, #outAlphabet do
+        targetDigits[i - 1] = string.byte(outAlphabet, i)
+    end
+
+    for i = 1, #input do
+        table.insert(inputDigits, sourceDigits[string.byte(input, i)])
+    end
+
+	local output = {}
+	local sourceBase = #inAlphabet
+    local targetBase = #outAlphabet
+	local carry, value
+
+    while #inputDigits > 0 do
+        carry = 0
+
+        for i = 1, #inputDigits do
+            value = inputDigits[i] + carry * sourceBase
+            inputDigits[i] = math.floor(value / targetBase)
+            carry = value % targetBase
+        end
+
+        while #inputDigits > 0 and inputDigits[1] == 0 do
+            table.remove(inputDigits, 1)
+        end
+
+        table.insert(output, 1, string.char(targetDigits[carry]))
+    end
+
+    return table.concat(output)
+end
+
 --* Actual API *--
 
 --[=[
@@ -629,8 +673,7 @@ Squash.String = {}
 	@return string
 ]=]
 Squash.String.Ser = function(x: string, alphabet: Alphabet?): string
-	-- TODO: Implement compression algorithm using numerical base conversion
-	return x
+	return baseConvert(x, alphabet or Squash.English, Squash.UTF8)
 end
 
 --[=[
@@ -641,8 +684,7 @@ end
 	@return string
 ]=]
 Squash.String.Des = function(y: string, alphabet: Alphabet?): string
-	-- TODO: Implement decompression algorithm using numerical base conversion
-	return y
+	return baseConvert(y, Squash.UTF8, alphabet or Squash.English)
 end
 
 --[=[
