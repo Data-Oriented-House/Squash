@@ -15,6 +15,26 @@ export type Alphabet = string
 
 --[=[
 	@within Squash
+	@type Bytes number
+
+	1, 2, 3, 4, 5, 6, 7, 8
+
+	The number of bytes used to represent a number.
+]=]
+export type Bytes = number
+
+--[=[
+	@within Squash
+	@type FloatBytes number
+
+	4, 8
+
+	The number of bytes used to represent a floating point number.
+]=]
+export type FloatBytes = number
+
+--[=[
+	@within Squash
 	@prop delimiter string
 
 	The delimiter used to separate strings or other types in variable sized arrays.
@@ -85,19 +105,19 @@ Squash.utf8 = table.concat(utf8Characters) :: Alphabet
 
 --[=[
 	@within Squash
-	@type NumberSer (x: number, bytes: number?) -> string
+	@type NumberSer (x: number, bytes: Bytes?) -> string
 
 	A function that serializes a number into a string. Usually this is Squash's uint, int, or number ser methods.
 ]=]
-type NumberSer = (x: number, bytes: number?) -> string
+type NumberSer = (x: number, bytes: Bytes?) -> string
 
 --[=[
 	@within Squash
-	@type NumberDes (y: string, bytes: number?) -> number
+	@type NumberDes (y: string, bytes: Bytes?) -> number
 
 	A function that deserializes a number from a string. Usually this is Squash's uint, int, or number des methods.
 ]=]
-type NumberDes = (y: string, bytes: number?) -> number
+type NumberDes = (y: string, bytes: Bytes?) -> number
 
 --[=[
 	@within Squash
@@ -150,8 +170,8 @@ local floatAssert = function(bytes: number)
 	end
 end
 
-local serArrayNumber = function<T>(ser: (x: T, bytes: number?) -> string)
-	return function(x: { T }, bytes: number?): string
+local serArrayNumber = function<T>(ser: (x: T, bytes: Bytes?) -> string)
+	return function(x: { T }, bytes: Bytes?): string
 		local bytes = bytes or 4
 		bytesAssert(bytes)
 
@@ -163,8 +183,8 @@ local serArrayNumber = function<T>(ser: (x: T, bytes: number?) -> string)
 	end
 end
 
-local desArrayNumber = function<T>(des: (y: string, bytes: number?) -> T)
-	return function(y: string, bytes: number?): { T }
+local desArrayNumber = function<T>(des: (y: string, bytes: Bytes?) -> T)
+	return function(y: string, bytes: Bytes?): { T }
 		local bytes = bytes or 4
 		bytesAssert(bytes)
 
@@ -226,7 +246,7 @@ end
 
 local serArrayVector = function<T, U>(serializer: VectorSerDes<T, U>)
 	local ser = serializer.ser
-	return function(x: { T }, serdes: NumberSerDes?, bytes: number?): string
+	return function(x: { T }, serdes: NumberSerDes?, bytes: Bytes?): string
 		local bytes = bytes or 4
 		local encoding = serdes or Squash.int
 
@@ -240,7 +260,7 @@ end
 
 local desArrayVector = function<T, U>(deserializer: VectorSerDes<T, U>, elements: number, offsetBytes: number)
 	local des = deserializer.des
-	return function(y: string, serdes: NumberSerDes?, bytes: number?): { U }
+	return function(y: string, serdes: NumberSerDes?, bytes: Bytes?): { U }
 		local bytes = bytes or 4
 		local decoding = serdes or Squash.int
 
@@ -257,7 +277,7 @@ end
 
 local serArrayVectorNoCoding = function<T>(serializer: VectorNoCodingSerDes<T>)
 	local ser = serializer.ser
-	return function(x: { T }, bytes: number?): string
+	return function(x: { T }, bytes: Bytes?): string
 		local bytes = bytes or 4
 
 		local y = {}
@@ -270,7 +290,7 @@ end
 
 local desArrayVectorNoCoding = function<T>(deserializer: VectorNoCodingSerDes<T>, elements: number, offsetBytes: number)
 	local des = deserializer.des
-	return function(y: string, bytes: number?): { T }
+	return function(y: string, bytes: Bytes?): { T }
 		local bytes = bytes or 4
 
 		local size = offsetBytes + elements * bytes
@@ -466,10 +486,10 @@ Squash.uint = {}
 	@within uint
 	@function ser
 	@param x number
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.uint.ser = function(x: number, bytes: number?): string
+Squash.uint.ser = function(x: number, bytes: Bytes?): string
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
@@ -484,10 +504,10 @@ end
 	@within uint
 	@function des
 	@param y string
-	@param bytes number?
+	@param bytes Bytes?
 	@return number
 ]=]
-Squash.uint.des = function(y: string, bytes: number?): number
+Squash.uint.des = function(y: string, bytes: Bytes?): number
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
@@ -502,7 +522,7 @@ end
 	@within uint
 	@function serarr
 	@param x { number }
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.uint.serarr = serArrayNumber(Squash.uint.ser)
@@ -511,7 +531,7 @@ Squash.uint.serarr = serArrayNumber(Squash.uint.ser)
 	@within uint
 	@function desarr
 	@param y string
-	@param bytes number?
+	@param bytes Bytes?
 	@return { number }
 ]=]
 Squash.uint.desarr = desArrayNumber(Squash.uint.des)
@@ -525,10 +545,10 @@ Squash.int = {}
 	@within int
 	@function ser
 	@param x number
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.int.ser = function(x: number, bytes: number?): string
+Squash.int.ser = function(x: number, bytes: Bytes?): string
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
@@ -540,10 +560,10 @@ end
 	@within int
 	@function des
 	@param y string
-	@param bytes number?
+	@param bytes Bytes?
 	@return number
 ]=]
-Squash.int.des = function(y: string, bytes: number?): number
+Squash.int.des = function(y: string, bytes: Bytes?): number
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
@@ -555,7 +575,7 @@ end
 	@within int
 	@function serarr
 	@param x { number }
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.int.serarr = serArrayNumber(Squash.int.ser)
@@ -564,7 +584,7 @@ Squash.int.serarr = serArrayNumber(Squash.int.ser)
 	@within int
 	@function desarr
 	@param y string
-	@param bytes number?
+	@param bytes Bytes?
 	@return { number }
 ]=]
 Squash.int.desarr = desArrayNumber(Squash.int.des)
@@ -578,10 +598,10 @@ Squash.number = {}
 	@within number
 	@function ser
 	@param x number
-	@param bytes number?
+	@param bytes FloatBytes?
 	@return string
 ]=]
-Squash.number.ser = function(x: number, bytes: number?): string
+Squash.number.ser = function(x: number, bytes: FloatBytes?): string
 	local bytes = bytes or 4
 	floatAssert(bytes)
 	return string.pack(if bytes == 4 then 'f' else 'd', x)
@@ -591,10 +611,10 @@ end
 	@within number
 	@function des
 	@param y string
-	@param bytes number?
+	@param bytes FloatBytes?
 	@return number
 ]=]
-Squash.number.des = function(y: string, bytes: number?): number
+Squash.number.des = function(y: string, bytes: FloatBytes?): number
 	local bytes = bytes or 4
 	floatAssert(bytes)
 	return string.unpack(if bytes == 4 then 'f' else 'd', y)
@@ -604,7 +624,7 @@ end
 	@within number
 	@function serarr
 	@param x { number }
-	@param bytes number?
+	@param bytes FloatBytes?
 	@return string
 ]=]
 Squash.number.serarr = serArrayNumber(Squash.number.ser)
@@ -613,7 +633,7 @@ Squash.number.serarr = serArrayNumber(Squash.number.ser)
 	@within number
 	@function desarr
 	@param y string
-	@param bytes number?
+	@param bytes FloatBytes?
 	@return { number }
 ]=]
 Squash.number.desarr = desArrayNumber(Squash.number.des)
@@ -760,10 +780,10 @@ Squash.Vector2 = {}
 	@function ser
 	@param x Vector2
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.Vector2.ser = function(x: Vector2, serdes: NumberSerDes?, bytes: number?): string
+Squash.Vector2.ser = function(x: Vector2, serdes: NumberSerDes?, bytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.X, bytes) .. ser(x.Y, bytes)
@@ -774,10 +794,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return Vector2
 ]=]
-Squash.Vector2.des = function(y: string, serdes: NumberSerDes?, bytes: number?): Vector2
+Squash.Vector2.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Vector2
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
 	return Vector2.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
@@ -788,7 +808,7 @@ end
 	@function serarr
 	@param x { Vector2 }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.Vector2.serarr = serArrayVector(Squash.Vector2)
@@ -798,7 +818,7 @@ Squash.Vector2.serarr = serArrayVector(Squash.Vector2)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { Vector2 }
 ]=]
 Squash.Vector2.desarr = desArrayVector(Squash.Vector2, 2, 0)
@@ -813,10 +833,10 @@ Squash.Vector3 = {}
 	@function ser
 	@param x Vector3
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.Vector3.ser = function(x: Vector3, serdes: NumberSerDes?, bytes: number?): string
+Squash.Vector3.ser = function(x: Vector3, serdes: NumberSerDes?, bytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.X, bytes) .. ser(x.Y, bytes) .. ser(x.Z, bytes)
@@ -827,10 +847,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return Vector3
 ]=]
-Squash.Vector3.des = function(y: string, serdes: NumberSerDes?, bytes: number?): Vector3
+Squash.Vector3.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Vector3
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
 	return Vector3.new(
@@ -845,7 +865,7 @@ end
 	@function serarr
 	@param x { Vector3 }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.Vector3.serarr = serArrayVector(Squash.Vector3)
@@ -855,7 +875,7 @@ Squash.Vector3.serarr = serArrayVector(Squash.Vector3)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { Vector3 }
 ]=]
 Squash.Vector3.desarr = desArrayVector(Squash.Vector3, 3, 0)
@@ -956,10 +976,10 @@ Squash.CFrame = {}
 	@function ser
 	@param x CFrame
 	@param serdes NumberSerDes?
-	@param posBytes number?
+	@param posBytes Bytes?
 	@return string
 ]=]
-Squash.CFrame.ser = function(x: CFrame, serdes: NumberSerDes?, posBytes: number?): string
+Squash.CFrame.ser = function(x: CFrame, serdes: NumberSerDes?, posBytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
 	local posBytes = posBytes or 4
 
@@ -1571,10 +1591,10 @@ Squash.FloatCurveKey = {}
 	@function ser
 	@param x FloatCurveKey
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.FloatCurveKey.ser = function(x: FloatCurveKey, serdes: NumberSerDes?, bytes: number?): string
+Squash.FloatCurveKey.ser = function(x: FloatCurveKey, serdes: NumberSerDes?, bytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 
@@ -1590,10 +1610,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return FloatCurveKey
 ]=]
-Squash.FloatCurveKey.des = function(y: string, serdes: NumberSerDes?, bytes: number?): FloatCurveKey
+Squash.FloatCurveKey.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): FloatCurveKey
 	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 
@@ -1615,7 +1635,7 @@ end
 	@function serarr
 	@param x { FloatCurveKey }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.FloatCurveKey.serarr = serArrayVariable(Squash.FloatCurveKey)
@@ -1625,7 +1645,7 @@ Squash.FloatCurveKey.serarr = serArrayVariable(Squash.FloatCurveKey)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { FloatCurveKey }
 ]=]
 Squash.FloatCurveKey.desarr = desArrayVariable(Squash.FloatCurveKey)
@@ -1692,9 +1712,9 @@ Squash.NumberRange = {}
 	@function ser
 	@param x NumberRange
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 ]=]
-Squash.NumberRange.ser = function(x: NumberRange, serdes: NumberSerDes?, bytes: number?): string
+Squash.NumberRange.ser = function(x: NumberRange, serdes: NumberSerDes?, bytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.Min, bytes) .. ser(x.Max, bytes)
@@ -1705,10 +1725,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return NumberRange
 ]=]
-Squash.NumberRange.des = function(y: string, serdes: NumberSerDes?, bytes: number?): NumberRange
+Squash.NumberRange.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): NumberRange
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
 	return NumberRange.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
@@ -1719,7 +1739,7 @@ end
 	@function serarr
 	@param x { NumberRange }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.NumberRange.serarr = serArrayVector(Squash.NumberRange)
@@ -1729,7 +1749,7 @@ Squash.NumberRange.serarr = serArrayVector(Squash.NumberRange)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { NumberRange }
 ]=]
 Squash.NumberRange.desarr = desArrayVector(Squash.NumberRange, 2, 0)
@@ -1744,10 +1764,10 @@ Squash.NumberSequenceKeypoint = {}
 	@function ser
 	@param x NumberSequenceKeypoint
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.NumberSequenceKeypoint.ser = function(x: NumberSequenceKeypoint, serdes: NumberSerDes?, bytes: number?): string
+Squash.NumberSequenceKeypoint.ser = function(x: NumberSequenceKeypoint, serdes: NumberSerDes?, bytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.Time, bytes) .. ser(x.Value, bytes) .. ser(x.Envelope, bytes)
@@ -1758,10 +1778,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return NumberSequenceKeypoint
 ]=]
-Squash.NumberSequenceKeypoint.des = function(y: string, serdes: NumberSerDes?, bytes: number?): NumberSequenceKeypoint
+Squash.NumberSequenceKeypoint.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): NumberSequenceKeypoint
 	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 	return NumberSequenceKeypoint.new(
@@ -1776,7 +1796,7 @@ end
 	@function serarr
 	@param x { NumberSequenceKeypoint }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.NumberSequenceKeypoint.serarr = serArrayVector(Squash.NumberSequenceKeypoint)
@@ -1786,7 +1806,7 @@ Squash.NumberSequenceKeypoint.serarr = serArrayVector(Squash.NumberSequenceKeypo
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { NumberSequenceKeypoint }
 ]=]
 Squash.NumberSequenceKeypoint.desarr = desArrayVector(Squash.NumberSequenceKeypoint, 3, 0)
@@ -1801,10 +1821,10 @@ Squash.NumberSequence = {}
 	@function ser
 	@param x NumberSequence
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.NumberSequence.ser = function(x: NumberSequence, serdes: NumberSerDes?, bytes: number?): string
+Squash.NumberSequence.ser = function(x: NumberSequence, serdes: NumberSerDes?, bytes: Bytes?): string
 	return Squash.NumberSequenceKeypoint.serarr(x.Keypoints, serdes, bytes)
 end
 
@@ -1813,10 +1833,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return NumberSequence
 ]=]
-Squash.NumberSequence.des = function(y: string, serdes: NumberSerDes?, bytes: number?): NumberSequence
+Squash.NumberSequence.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): NumberSequence
 	return NumberSequence.new(Squash.NumberSequenceKeypoint.desarr(y, serdes, bytes))
 end
 
@@ -1825,7 +1845,7 @@ end
 	@function serarr
 	@param x { NumberSequence }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.NumberSequence.serarr = serArrayVariable(Squash.NumberSequence)
@@ -1835,7 +1855,7 @@ Squash.NumberSequence.serarr = serArrayVariable(Squash.NumberSequence)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { NumberSequence }
 ]=]
 Squash.NumberSequence.desarr = desArrayVariable(Squash.NumberSequence)
@@ -1953,10 +1973,10 @@ Squash.PathWaypoint = {}
 	@function ser
 	@param x PathWaypoint
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.PathWaypoint.ser = function(x: PathWaypoint, serdes: NumberSerDes?, bytes: number?): string
+Squash.PathWaypoint.ser = function(x: PathWaypoint, serdes: NumberSerDes?, bytes: Bytes?): string
 	local bytes = bytes or 4
 	return Squash.EnumItem.ser(x.Action) .. Squash.Vector3.ser(x.Position, serdes, bytes)
 end
@@ -1966,10 +1986,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return PathWaypoint
 ]=]
-Squash.PathWaypoint.des = function(y: string, serdes: NumberSerDes?, bytes: number?): PathWaypoint
+Squash.PathWaypoint.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): PathWaypoint
 	local bytes = bytes or 4
 	local offset, action = 1, nil
 	offset, action = desEnumItem(y, offset, Enum.PathWaypointAction)
@@ -1984,7 +2004,7 @@ end
 	@function serarr
 	@param x { PathWaypoint }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.PathWaypoint.serarr = serArrayVector(Squash.PathWaypoint)
@@ -1994,7 +2014,7 @@ Squash.PathWaypoint.serarr = serArrayVector(Squash.PathWaypoint)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { PathWaypoint }
 ]=]
 Squash.PathWaypoint.desarr = desArrayVector(Squash.PathWaypoint, 3, enumItemData[Enum.PathWaypointAction].bytes)
@@ -2009,10 +2029,10 @@ Squash.PhysicalProperties = {}
 	@function ser
 	@param x PhysicalProperties
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.PhysicalProperties.ser = function(x: PhysicalProperties, serdes: NumberSerDes?, bytes: number?): string
+Squash.PhysicalProperties.ser = function(x: PhysicalProperties, serdes: NumberSerDes?, bytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.Density, bytes)
@@ -2027,10 +2047,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return PhysicalProperties
 ]=]
-Squash.PhysicalProperties.des = function(y: string, serdes: NumberSerDes?, bytes: number?): PhysicalProperties
+Squash.PhysicalProperties.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): PhysicalProperties
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
 	return PhysicalProperties.new(
@@ -2047,7 +2067,7 @@ end
 	@function serarr
 	@param x { PhysicalProperties }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.PhysicalProperties.serarr = serArrayVector(Squash.PhysicalProperties)
@@ -2057,7 +2077,7 @@ Squash.PhysicalProperties.serarr = serArrayVector(Squash.PhysicalProperties)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { PhysicalProperties }
 ]=]
 Squash.PhysicalProperties.desarr = desArrayVector(Squash.PhysicalProperties, 5, 0)
@@ -2072,10 +2092,10 @@ Squash.Ray = {}
 	@function ser
 	@param x Ray
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.Ray.ser = function(x: Ray, serdes: NumberSerDes?, bytes: number?): string
+Squash.Ray.ser = function(x: Ray, serdes: NumberSerDes?, bytes: Bytes?): string
 	local bytes = bytes or 4
 	return Squash.Vector3.ser(x.Origin, serdes, bytes) .. Squash.Vector3.ser(x.Direction, serdes, bytes)
 end
@@ -2085,10 +2105,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return Ray
 ]=]
-Squash.Ray.des = function(y: string, serdes: NumberSerDes?, bytes: number?): Ray
+Squash.Ray.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Ray
 	local bytes = bytes or 4
 	return Ray.new(
 		Squash.Vector3.des(string.sub(y, 1, bytes), serdes, bytes),
@@ -2101,7 +2121,7 @@ end
 	@function serarr
 	@param x { Ray }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.Ray.serarr = serArrayVector(Squash.Ray)
@@ -2111,7 +2131,7 @@ Squash.Ray.serarr = serArrayVector(Squash.Ray)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { Ray }
 ]=]
 Squash.Ray.desarr = desArrayVector(Squash.Ray, 2, 0)
@@ -2126,10 +2146,10 @@ Squash.RaycastResult = {}
 	@function ser
 	@param x RaycastResult
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.RaycastResult.ser = function(x: RaycastResult, serdes: NumberSerDes?, bytes: number?): string
+Squash.RaycastResult.ser = function(x: RaycastResult, serdes: NumberSerDes?, bytes: Bytes?): string
 	local bytes = bytes or 4
 	return Squash.EnumItem.ser(x.Material)
 		.. Squash.uint.ser(x.Distance, bytes)
@@ -2157,10 +2177,10 @@ export type SquashRaycastResult = {
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { Material: Enum.Material, Distance: number, Position: Vector3, Normal: Vector3 }
 ]=]
-Squash.RaycastResult.des = function(y: string, serdes: NumberSerDes?, bytes: number?): SquashRaycastResult
+Squash.RaycastResult.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): SquashRaycastResult
 	local bytes = bytes or 4
 
 	local offset, material = 0, nil
@@ -2187,7 +2207,7 @@ end
 	@function serarr
 	@param x { RaycastResult }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.RaycastResult.serarr = serArrayVector(Squash.RaycastResult)
@@ -2197,7 +2217,7 @@ Squash.RaycastResult.serarr = serArrayVector(Squash.RaycastResult)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { RaycastResult }
 ]=]
 Squash.RaycastResult.desarr = desArrayVector(Squash.RaycastResult, 7, enumItemData[Enum.Material].bytes)
@@ -2211,10 +2231,10 @@ Squash.Rect = {}
 	@within Rect
 	@function ser
 	@param x Rect
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.Rect.ser = function(x: Rect, bytes: number?)
+Squash.Rect.ser = function(x: Rect, bytes: Bytes?)
 	local bytes = bytes or 4
 	return Squash.uint.ser(x.Min.X, bytes)
 		.. Squash.uint.ser(x.Min.Y, bytes)
@@ -2226,10 +2246,10 @@ end
 	@within Rect
 	@function des
 	@param y string
-	@param bytes number?
+	@param bytes Bytes?
 	@return Rect
 ]=]
-Squash.Rect.des = function(y: string, bytes: number?): Rect
+Squash.Rect.des = function(y: string, bytes: Bytes?): Rect
 	local bytes = bytes or 4
 	return Rect.new(
 		Squash.uint.des(string.sub(y, 1, bytes), bytes),
@@ -2243,7 +2263,7 @@ end
 	@within Rect
 	@function serarr
 	@param x { Rect }
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.Rect.serarr = serArrayVectorNoCoding(Squash.Rect)
@@ -2252,7 +2272,7 @@ Squash.Rect.serarr = serArrayVectorNoCoding(Squash.Rect)
 	@within Rect
 	@function desarr
 	@param y string
-	@param bytes number?
+	@param bytes Bytes?
 	@return { Rect }
 ]=]
 Squash.Rect.desarr = desArrayVectorNoCoding(Squash.Rect, 4, 0)
@@ -2267,10 +2287,10 @@ Squash.Region3 = {}
 	@function ser
 	@param x Region3
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.Region3.ser = function(x: Region3, serdes: NumberSerDes?, bytes: number?): string
+Squash.Region3.ser = function(x: Region3, serdes: NumberSerDes?, bytes: Bytes?): string
 	local bytes = bytes or 4
 	return Squash.Vector3.ser(x.Size, serdes, bytes) .. Squash.CFrame.ser(x.CFrame, serdes, bytes)
 end
@@ -2280,10 +2300,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return Region3
 ]=]
-Squash.Region3.des = function(y: string, serdes: NumberSerDes?, bytes: number?): Region3
+Squash.Region3.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Region3
 	local bytes = bytes or 4
 	local x = Region3.new(Vector3.zero, Vector3.zero)
 	x.Size = Squash.Vector3.des(string.sub(y, 1, 12), serdes, bytes)
@@ -2296,7 +2316,7 @@ end
 	@function serarr
 	@param x { Region3 }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.Region3.serarr = serArrayVector(Squash.Region3)
@@ -2306,7 +2326,7 @@ Squash.Region3.serarr = serArrayVector(Squash.Region3)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { Region3 }
 ]=]
 Squash.Region3.desarr = desArrayVector(Squash.Region3, 9, 6)
@@ -2362,10 +2382,10 @@ Squash.TweenInfo = {}
 	@function ser
 	@param x TweenInfo
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.TweenInfo.ser = function(x: TweenInfo, serdes: NumberSerDes?, bytes: number?): string
+Squash.TweenInfo.ser = function(x: TweenInfo, serdes: NumberSerDes?, bytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 	return Squash.boolean.ser(x.Reverses)
@@ -2381,10 +2401,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return TweenInfo
 ]=]
-Squash.TweenInfo.des = function(y: string, serdes: NumberSerDes?, bytes: number?): TweenInfo
+Squash.TweenInfo.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): TweenInfo
 	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 
@@ -2421,7 +2441,7 @@ end
 	@function serarr
 	@param x { TweenInfo }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.TweenInfo.serarr = serArrayVector(Squash.TweenInfo)
@@ -2431,7 +2451,7 @@ Squash.TweenInfo.serarr = serArrayVector(Squash.TweenInfo)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { TweenInfo }
 ]=]
 Squash.TweenInfo.desarr = desArrayVector(
@@ -2450,10 +2470,10 @@ Squash.UDim = {}
 	@function ser
 	@param x UDim
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.UDim.ser = function(x: UDim, serdes: NumberSerDes?, bytes: number?): string
+Squash.UDim.ser = function(x: UDim, serdes: NumberSerDes?, bytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.Scale, bytes) .. ser(x.Offset, bytes)
@@ -2464,10 +2484,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return UDim
 ]=]
-Squash.UDim.des = function(y: string, serdes: NumberSerDes?, bytes: number?): UDim
+Squash.UDim.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): UDim
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
 	return UDim.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
@@ -2478,7 +2498,7 @@ end
 	@function serarr
 	@param x { UDim }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.UDim.serarr = serArrayVector(Squash.UDim)
@@ -2488,7 +2508,7 @@ Squash.UDim.serarr = serArrayVector(Squash.UDim)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { UDim }
 ]=]
 Squash.UDim.desarr = desArrayVector(Squash.UDim, 2, 0)
@@ -2503,10 +2523,10 @@ Squash.UDim2 = {}
 	@function ser
 	@param x UDim2
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
-Squash.UDim2.ser = function(x: UDim2, serdes: NumberSerDes?, bytes: number?): string
+Squash.UDim2.ser = function(x: UDim2, serdes: NumberSerDes?, bytes: Bytes?): string
 	local bytes = bytes or 4
 	return Squash.UDim.ser(x.X, serdes, bytes) .. Squash.UDim.ser(x.Y, serdes, bytes)
 end
@@ -2516,10 +2536,10 @@ end
 	@function des
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return UDim2
 ]=]
-Squash.UDim2.des = function(y: string, serdes: NumberSerDes?, bytes: number?): UDim2
+Squash.UDim2.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): UDim2
 	local bytes = bytes or 4
 	return UDim2.new(
 		Squash.UDim.des(string.sub(y, 1, 2 * bytes), serdes, bytes),
@@ -2532,7 +2552,7 @@ end
 	@function serarr
 	@param x { UDim2 }
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return string
 ]=]
 Squash.UDim2.serarr = serArrayVector(Squash.UDim2)
@@ -2542,7 +2562,7 @@ Squash.UDim2.serarr = serArrayVector(Squash.UDim2)
 	@function desarr
 	@param y string
 	@param serdes NumberSerDes?
-	@param bytes number?
+	@param bytes Bytes?
 	@return { UDim2 }
 ]=]
 Squash.UDim2.desarr = desArrayVector(Squash.UDim2, 4, 0)
