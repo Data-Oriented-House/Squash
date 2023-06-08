@@ -8,6 +8,8 @@ local Squash = {}
 --[=[
 	@within Squash
 	@type Alphabet string
+
+	A string of unique characters that represent the basis of other strings.
 ]=]
 export type Alphabet = string
 
@@ -662,6 +664,31 @@ Squash.Float.DesArr = desArrayNumber(Squash.Float.Des)
 	@class String
 ]=]
 Squash.String = {}
+
+--[=[
+	@within String
+	@function Alphabet
+	@param source string
+	@return Alphabet
+
+	Maps a set of strings to the smallest alphabet that represents them all.
+]=]
+Squash.String.Alphabet = function(sources: { string }): Alphabet
+	local lookup = {}
+	local alphabet = {}
+	for _, source in sources do
+		for i = 1, #source do
+			local char = string.sub(source, i, i)
+			if not lookup[char] then
+				lookup[char] = true
+				table.insert(alphabet, char)
+			end
+		end
+	end
+	-- Sort alphabet for consistency. --! This is not necessary
+	table.sort(alphabet) --? Remove this? It allows some nice properties, such as the order of characters in strings not changing the output alphabet
+	return table.concat(alphabet)
+end
 
 --[=[
 	@within String
