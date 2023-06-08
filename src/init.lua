@@ -369,17 +369,16 @@ local function baseConvert(input: string, inAlphabet: string, outAlphabet: strin
 	outAlphabet = Squash.Delimiter .. outAlphabet
 
     local sourceDigits = {}
-    local targetDigits = {}
-    local inputDigits = {}
-
     for i = 1, #inAlphabet do
         sourceDigits[string.byte(inAlphabet, i)] = i - 1
     end
 
+	local targetDigits = {}
     for i = 1, #outAlphabet do
         targetDigits[i - 1] = string.byte(outAlphabet, i)
     end
 
+	local inputDigits = {}
     for i = 1, #input do
         table.insert(inputDigits, sourceDigits[string.byte(input, i)])
     end
@@ -388,7 +387,6 @@ local function baseConvert(input: string, inAlphabet: string, outAlphabet: strin
 	local sourceBase = #inAlphabet
     local targetBase = #outAlphabet
 	local carry, value
-
     while #inputDigits > 0 do
         carry = 0
 
