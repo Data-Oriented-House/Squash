@@ -101,22 +101,20 @@ for i = 1, 255 do
 end
 Squash.utf8 = table.concat(utf8Characters) :: Alphabet
 
--- Duplication Reducers --
-
 --[=[
 	@within Squash
 	@type NumberSer (x: number, bytes: Bytes?) -> string
 
 	A function that serializes a number into a string. Usually this is Squash's uint, int, or number ser methods.
-]=]
+	]=]
 type NumberSer = (x: number, bytes: Bytes?) -> string
 
 --[=[
-	@within Squash
-	@type NumberDes (y: string, bytes: Bytes?) -> number
+		@within Squash
+		@type NumberDes (y: string, bytes: Bytes?) -> number
 
-	A function that deserializes a number from a string. Usually this is Squash's uint, int, or number des methods.
-]=]
+		A function that deserializes a number from a string. Usually this is Squash's uint, int, or number des methods.
+		]=]
 type NumberDes = (y: string, bytes: Bytes?) -> number
 
 --[=[
@@ -157,6 +155,8 @@ type VariableSerDes<T, U...> = {
 	ser: VariableSer<T, U...>,
 	des: VariableDes<T, U...>,
 }
+
+--* Duplication Reducers *--
 
 local bytesAssert = function(bytes: number)
 	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 8 then
