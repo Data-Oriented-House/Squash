@@ -41,7 +41,7 @@ classes = [
 	"UInt",
 	"Int",
 	"Float",
-	"String"
+	"Str"
 ]
 
 [[classOrder]]
