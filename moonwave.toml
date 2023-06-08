@@ -30,6 +30,59 @@ url = "https://data-oriented-house.github.io"
 baseUrl = "/Squash/"
 tagline = "Roblox's Comprehensive SerDes Library"
 
+[[classOrder]]
+classes = ["Squash"]
+
+[[classOrder]]
+section = "Luau"
+collapsed = true
+classes = [
+	"Bool",
+	"UInt",
+	"Int",
+	"Float",
+	"String"
+]
+
+[[classOrder]]
+section = "Roblox"
+collapsed = true
+classes = [
+	"Axes",
+	"BrickColor",
+	"CFrame",
+	"CatalogSearchParams",
+	"Color3",
+	"ColorSequence",
+	"ColorSequenceKeypoint",
+	"DateTime",
+	"DockWidgetPluginGuiInfo",
+	"Enum",
+	"EnumItem",
+	"Faces",
+	"FloatCurveKey",
+	"Font",
+	"NumberRange",
+	"NumberSequence",
+	"NumberSequenceKeypoint",
+	"OverlapParams",
+	"PathWaypoint",
+	"PhysicalProperties",
+	"Ray",
+	"RaycastParams",
+	"RaycastResult",
+	"Rect",
+	"Region3",
+	"Region3int16",
+	"TweenInfo",
+	"UDim",
+	"UDim2",
+	"Vector2",
+	"Vector2int16",
+	"Vector3",
+	"Vector3int16"
+]
+
 [navbar]
 # hideableSidebar = true
 
