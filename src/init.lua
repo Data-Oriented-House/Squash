@@ -629,7 +629,7 @@ Squash.String = {}
 	@param sources { string }
 	@return Alphabet
 
-	Maps a set of strings to the smallest alphabet that represents them all.
+	Maps a string to the smallest alphabet that represents it.
 ]=]
 Squash.String.Alphabet = function(sources: { string }): Alphabet
 	local lookup = {}
