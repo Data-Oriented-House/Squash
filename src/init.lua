@@ -37,7 +37,7 @@ export type FloatBytes = number
 	@within Squash
 	@prop delimiter string
 
-	The delimiter used to separate strings or other types in variable sized arrays.
+	The delimiter used to separate strings or other types in variable sized arrays and act as the 0 element for base conversions.
 ]=]
 Squash.delimiter = string.char(0) -- \0
 
