@@ -5,6 +5,8 @@
 ]=]
 local Squash = {}
 
+--* Types *--
+
 --[=[
 	@within Squash
 	@type Alphabet string
@@ -32,6 +34,63 @@ export type Bytes = number
 	The number of bytes used to represent a floating point number.
 ]=]
 export type FloatBytes = number
+
+--[=[
+	@within Squash
+	@type NumberSer (x: number, bytes: Bytes?) -> string
+
+	A function that serializes a number into a string. Usually this is Squash's uint, int, or number ser methods.
+]=]
+export type NumberSer = (x: number, bytes: Bytes?) -> string
+
+--[=[
+	@within Squash
+	@type NumberDes (y: string, bytes: Bytes?) -> number
+
+	A function that deserializes a number from a string. Usually this is Squash's uint, int, or number des methods.
+]=]
+export type NumberDes = (y: string, bytes: Bytes?) -> number
+
+--[=[
+	@within Squash
+	@interface NumberSerDes
+	.ser NumberSer
+	.des NumberDes
+]=]
+export type NumberSerDes = {
+	ser: NumberSer,
+	des: NumberDes,
+}
+
+type VectorSer<T> = (T, NumberSerDes?, number?) -> string
+type VectorDes<T> = (string, NumberSerDes?, number?) -> T
+type VectorSerDes<T, U> = {
+	ser: VectorSer<T>,
+	des: VectorDes<U>,
+}
+
+type VectorNoCodingSer<T> = (T, number?) -> string
+type VectorNoCodingDes<T> = (string, number?) -> T
+type VectorNoCodingSerDes<T> = {
+	ser: VectorNoCodingSer<T>,
+	des: VectorNoCodingDes<T>,
+}
+
+type FixedSer<T> = (T) -> string
+type FixedDes<T> = (string) -> T
+type FixedSerDes<T> = {
+	ser: FixedSer<T>,
+	des: FixedDes<T>,
+}
+
+type VariableSer<T, U...> = (T, U...) -> string
+type VariableDes<T, U...> = (string, U...) -> T
+type VariableSerDes<T, U...> = {
+	ser: VariableSer<T, U...>,
+	des: VariableDes<T, U...>,
+}
+
+--* Properties *--
 
 --[=[
 	@within Squash
@@ -79,7 +138,7 @@ Squash.letters = Squash.lower .. Squash.upper :: Alphabet
 
 	All punctuation symbols in the english language.
 ]=]
-Squash.punctuation = ' .,?!:;\'"-' :: Alphabet
+Squash.punctuation = ' .,?!:;\'"-_' :: Alphabet
 
 --[=[
 	@within Squash
@@ -100,61 +159,6 @@ for i = 1, 255 do
 	utf8Characters[i] = string.char(i)
 end
 Squash.utf8 = table.concat(utf8Characters) :: Alphabet
-
---[=[
-	@within Squash
-	@type NumberSer (x: number, bytes: Bytes?) -> string
-
-	A function that serializes a number into a string. Usually this is Squash's uint, int, or number ser methods.
-	]=]
-type NumberSer = (x: number, bytes: Bytes?) -> string
-
---[=[
-	@within Squash
-	@type NumberDes (y: string, bytes: Bytes?) -> number
-
-	A function that deserializes a number from a string. Usually this is Squash's uint, int, or number des methods.
-]=]
-type NumberDes = (y: string, bytes: Bytes?) -> number
-
---[=[
-	@within Squash
-	@interface NumberSerDes
-	.ser NumberSer
-	.des NumberDes
-]=]
-type NumberSerDes = {
-	ser: NumberSer,
-	des: NumberDes,
-}
-
-type VectorSer<T> = (T, NumberSerDes?, number?) -> string
-type VectorDes<T> = (string, NumberSerDes?, number?) -> T
-type VectorSerDes<T, U> = {
-	ser: VectorSer<T>,
-	des: VectorDes<U>,
-}
-
-type VectorNoCodingSer<T> = (T, number?) -> string
-type VectorNoCodingDes<T> = (string, number?) -> T
-type VectorNoCodingSerDes<T> = {
-	ser: VectorNoCodingSer<T>,
-	des: VectorNoCodingDes<T>,
-}
-
-type FixedSer<T> = (T) -> string
-type FixedDes<T> = (string) -> T
-type FixedSerDes<T> = {
-	ser: FixedSer<T>,
-	des: FixedDes<T>,
-}
-
-type VariableSer<T, U...> = (T, U...) -> string
-type VariableDes<T, U...> = (string, U...) -> T
-type VariableSerDes<T, U...> = {
-	ser: VariableSer<T, U...>,
-	des: VariableDes<T, U...>,
-}
 
 --* Duplication Reducers *--
 
@@ -1295,26 +1299,33 @@ Squash.CatalogSearchParams = {}
 Squash.CatalogSearchParams.ser = function(x: CatalogSearchParams, alphabet: Alphabet?): string
 	local alphabet = alphabet or Squash.english
 
+	local avatarAssetTypeData = enumItemData[Enum.AvatarAssetType]
+	local bundleTypeData = enumItemData[Enum.BundleType]
+
 	local assetIndices = {}
 	for i, v in x.AssetTypes do
-		assetIndices[i] = table.find(enumItemData[Enum.AssetType].items, v) :: number
+		assetIndices[i] = table.find(avatarAssetTypeData.items, v) :: number
 	end
 
 	local bundleIndices = {}
 	for i, v in x.BundleTypes do
-		bundleIndices[i] = table.find(enumItemData[Enum.BundleType].items, v) :: number
+		bundleIndices[i] = table.find(bundleTypeData.items, v) :: number
 	end
 
 	return Squash.boolean.ser(x.IncludeOffSale)
 		.. Squash.uint.ser(x.MinPrice, 4)
 		.. Squash.uint.ser(x.MaxPrice, 4)
-		.. Squash.EnumItem.ser(x.SalesTypeFilter)
-		.. Squash.EnumItem.ser(x.CategoryFilter)
-		.. Squash.EnumItem.ser(x.SortAggregation)
-		.. Squash.EnumItem.ser(x.SortType)
-		.. packBits(assetIndices, enumItemData[Enum.AssetType].bits)
-		.. packBits(bundleIndices, enumItemData[Enum.BundleType].bits)
-		.. Squash.string.serarr({ x.SearchKeyword, x.CreatorName }, alphabet)
+		.. Squash.EnumItem.ser(x.SalesTypeFilter, Enum.SalesTypeFilter)
+		.. Squash.EnumItem.ser(x.CategoryFilter, Enum.CatalogCategoryFilter)
+		.. Squash.EnumItem.ser(x.SortAggregation, Enum.CatalogSortAggregation)
+		.. Squash.EnumItem.ser(x.SortType, Enum.CatalogSortType)
+		.. packBits(assetIndices, avatarAssetTypeData.bits)
+		.. Squash.delimiter
+		.. packBits(bundleIndices, bundleTypeData.bits)
+		.. Squash.delimiter
+		.. Squash.string.ser(x.SearchKeyword, alphabet)
+		.. Squash.delimiter
+		.. Squash.string.ser(x.CreatorName, alphabet)
 end
 
 --[=[
@@ -1327,6 +1338,9 @@ end
 Squash.CatalogSearchParams.des = function(y: string, alphabet: Alphabet): CatalogSearchParams
 	local alphabet = alphabet or Squash.english
 
+	local avatarAssetTypeData = enumItemData[Enum.AvatarAssetType]
+	local bundleTypeData = enumItemData[Enum.BundleType]
+
 	local x = CatalogSearchParams.new()
 	x.IncludeOffSale = Squash.boolean.des(string.sub(y, 1, 1))
 	x.MinPrice = Squash.uint.des(string.sub(y, 2, 5), 4)
@@ -1338,21 +1352,25 @@ Squash.CatalogSearchParams.des = function(y: string, alphabet: Alphabet): Catalo
 	offset, x.SortAggregation = desEnumItem(y, offset, Enum.CatalogSortAggregation)
 	offset, x.SortType = desEnumItem(y, offset, Enum.CatalogSortType)
 
-	local assetTypeData = enumItemData[Enum.AssetType]
-	for i, v in unpackBits(string.sub(y, offset, offset + assetTypeData.bytes - 1), assetTypeData.bits) do
-		x.AssetTypes[i] = assetTypeData[v]
+	local assetTypes = {}
+	local delimiter1 = string.find(y, Squash.delimiter, offset, true) :: number
+	for i, v in unpackBits(string.sub(y, offset, delimiter1 - 1), avatarAssetTypeData.bits) do
+		assetTypes[i] = avatarAssetTypeData.items[v]
 	end
-	offset += assetTypeData.bytes
+	x.AssetTypes = assetTypes
+	offset = delimiter1 + 1
 
-	local bundleTypeData = enumItemData[Enum.BundleType]
-	for i, v in unpackBits(string.sub(y, offset, offset + bundleTypeData.bytes - 1), bundleTypeData.bits) do
-		x.BundleTypes[i] = bundleTypeData[v]
+	local bundleTypes = {}
+	local delimiter2 = string.find(y, Squash.delimiter, offset, true) :: number
+	for i, v in unpackBits(string.sub(y, offset, delimiter2 - 1), bundleTypeData.bits) do
+		bundleTypes[i] = bundleTypeData.items[v]
 	end
-	offset += bundleTypeData.bytes
+	x.BundleTypes = bundleTypes
+	offset = delimiter2 + 1
 
-	local keywordEnd = Squash.string.desarr(string.sub(y, offset), alphabet)
-	x.SearchKeyword = keywordEnd[1]
-	x.CreatorName = keywordEnd[2]
+	local delimiter3 = string.find(y, Squash.delimiter, offset, true) :: number
+	x.SearchKeyword = Squash.string.des(string.sub(y, offset, delimiter3 - 1), alphabet)
+	x.CreatorName = Squash.string.des(string.sub(y, delimiter3 + 1), alphabet)
 	return x
 end
 
