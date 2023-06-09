@@ -466,7 +466,7 @@ end
 
 test.PathWaypoint = function(serdes: Squash.NumberSerDes)
 	local input = PathWaypoint.new(
-		Vector3.new(math.random(), math.random(), math.random()),
+		Vector3.new(math.random() - 0.5, math.random() - 0.5, math.random() - 0.5) * 2000,
 		Enum.PathWaypointAction:GetEnumItems()[math.random(#Enum.PathWaypointAction:GetEnumItems())],
 		' oawfupqywgnudioqfwmq32wfgmo_'
 	)

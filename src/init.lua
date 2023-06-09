@@ -2047,8 +2047,7 @@ Squash.PathWaypoint.des = function(y: string, serdes: NumberSerDes?, bytes: Byte
 	local bytes = bytes or 4
 	local offset, action = 1, nil
 	offset, action = desEnumItem(y, offset, Enum.PathWaypointAction)
-	local position = Squash.Vector3.des(string.sub(y, offset + 1, offset + 3 * bytes), serdes, bytes)
-	warn(position, string.sub(y, offset + 1, offset + 3 * bytes), offset + 1, offset + 3 * bytes)
+	local position = Squash.Vector3.des(string.sub(y, offset, offset + 3 * bytes), serdes, bytes)
 	offset += 3 * bytes
 	local label = Squash.string.des(string.sub(y, offset + 1))
 	return PathWaypoint.new(position, action :: Enum.PathWaypointAction, label)
