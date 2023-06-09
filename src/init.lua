@@ -625,7 +625,8 @@ end
 Squash.number.des = function(y: string, bytes: FloatBytes?): number
 	local bytes = bytes or 4
 	floatAssert(bytes)
-	return string.unpack(if bytes == 4 then 'f' else 'd', y)
+	local x = string.unpack(if bytes == 4 then 'f' else 'd', y) --! This is to avoid returning multiple values
+	return x
 end
 
 --[=[
@@ -2107,18 +2108,7 @@ end
 Squash.PhysicalProperties.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): PhysicalProperties
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
-	print(
-		'Density',
-		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
-		'Friction',
-		des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),
-		'Elasticity',
-		des(string.sub(y, 1 + 2 * bytes, 3 * bytes), bytes),
-		'FrictionWeight',
-		des(string.sub(y, 1 + 3 * bytes, 4 * bytes), bytes),
-		'ElasticityWeight',
-		des(string.sub(y, 1 + 4 * bytes, 5 * bytes), bytes)
-	)
+
 	return PhysicalProperties.new(
 		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
 		des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),

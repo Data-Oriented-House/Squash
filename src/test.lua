@@ -638,7 +638,7 @@ test.Region3 = function(serdes: Squash.NumberSerDes)
 	print('Min', output.Min, 'Max', output.Max)
 end
 
-test.Regeion3int16 = function()
+test.Region3int16 = function()
 	local input = Region3int16.new(
 		Vector3int16.new(math.random(), math.random(), math.random()),
 		Vector3int16.new(math.random(), math.random(), math.random())
