@@ -1437,6 +1437,8 @@ Squash.DateTime.desarr = desArrayFixed(Squash.DateTime, 5)
 
 --[=[
 	@class DockWidgetPluginGuiInfo
+
+	This is broken. Roblox doesn't allow us to access any of the fields even though they've made it very clear they should be accessible. Until this is addressed, this type's serdes functions will not function properly.
 ]=]
 Squash.DockWidgetPluginGuiInfo = {}
 
@@ -1447,11 +1449,13 @@ Squash.DockWidgetPluginGuiInfo = {}
 	@return string
 ]=]
 Squash.DockWidgetPluginGuiInfo.ser = function(x: DockWidgetPluginGuiInfo): string
-	return Squash.boolean.ser(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore)
-		.. Squash.int.ser(x.FloatingXSize, 2)
-		.. Squash.int.ser(x.FloatingYSize, 2)
-		.. Squash.int.ser(x.MinWidth, 2)
-		.. Squash.int.ser(x.MinHeight, 2)
+	-- return Squash.boolean.ser(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore)
+	-- 	.. Squash.int.ser(x.FloatingXSize, 2)
+	-- 	.. Squash.int.ser(x.FloatingYSize, 2)
+	-- 	.. Squash.int.ser(x.MinWidth, 2)
+	-- 	.. Squash.int.ser(x.MinHeight, 2)
+
+	return ''
 end
 
 --[=[
@@ -1462,11 +1466,11 @@ end
 ]=]
 Squash.DockWidgetPluginGuiInfo.des = function(y: string): DockWidgetPluginGuiInfo
 	local x = DockWidgetPluginGuiInfo.new()
-	x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.boolean.des(string.sub(y, 1, 1))
-	x.FloatingXSize = Squash.int.des(string.sub(y, 2, 3), 2)
-	x.FloatingYSize = Squash.int.des(string.sub(y, 4, 5), 2)
-	x.MinWidth = Squash.int.des(string.sub(y, 6, 7), 2)
-	x.MinHeight = Squash.int.des(string.sub(y, 8, 9), 2)
+	-- x.InitialEnabled, x.InitialEnabledShouldOverrideRestore = Squash.boolean.des(string.sub(y, 1, 1)) -- TODO: Fix this when possible.
+	-- x.FloatingXSize = Squash.int.des(string.sub(y, 2, 3), 2)
+	-- x.FloatingYSize = Squash.int.des(string.sub(y, 4, 5), 2)
+	-- x.MinWidth = Squash.int.des(string.sub(y, 6, 7), 2)
+	-- x.MinHeight = Squash.int.des(string.sub(y, 8, 9), 2)
 	return x
 end
 
