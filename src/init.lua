@@ -1406,7 +1406,7 @@ local dateTimeOffset = 17_987_443_200
 	@return string
 ]=]
 Squash.DateTime.ser = function(x: DateTime): string
-	return Squash.uint.ser(5, x.UnixTimestamp + dateTimeOffset)
+	return Squash.uint.ser(x.UnixTimestamp + dateTimeOffset, 5)
 end
 
 --[=[
