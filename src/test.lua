@@ -442,50 +442,38 @@ test.OverlapParams = function()
 	print(midput)
 	print 'Input:'
 	print(
-		'FilterDescendantsInstances',
-		input.FilterDescendantsInstances,
 		'FilterType',
 		input.FilterType,
-		'HitboxMode',
-		input.HitboxMode,
-		'Hitbox',
-		input.Hitbox,
 		'MaxParts',
 		input.MaxParts,
 		'CollisionGroup',
 		input.CollisionGroup,
-		'CollisionGroupId',
-		input.CollisionGroupId
+		'RespectCanCollide',
+		input.RespectCanCollide
 	)
 	print 'Output:'
 	print(
-		'FilterDescendantsInstances',
-		output.FilterDescendantsInstances,
 		'FilterType',
 		output.FilterType,
-		'HitboxMode',
-		output.HitboxMode,
-		'Hitbox',
-		output.Hitbox,
 		'MaxParts',
 		output.MaxParts,
 		'CollisionGroup',
 		output.CollisionGroup,
-		'CollisionGroupId',
-		output.CollisionGroupId
+		'RespectCanCollide',
+		output.RespectCanCollide
 	)
 end
 
-test.PathWaypoint = function()
+test.PathWaypoint = function(serdes: Squash.NumberSerDes)
 	local input = PathWaypoint.new(
 		Vector3.new(math.random(), math.random(), math.random()),
-		Enum.PathWaypointAction.Jump,
+		Enum.PathWaypointAction:GetEnumItems()[math.random(#Enum.PathWaypointAction:GetEnumItems())],
 		' oawfupqywgnudioqfwmq32wfgmo_'
 	)
-	local midput = Squash.PathWaypoint.ser(input)
-	local output = Squash[typeof(input)].des(midput)
+	local midput = Squash.PathWaypoint.ser(input, serdes)
+	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'PathWaypoint'
+	warn 'PathWaypoint'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -499,7 +487,7 @@ test.PhysicalProperties = function(serdes: Squash.NumberSerDes)
 	local midput = Squash.PhysicalProperties.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'PhysicalProperties'
+	warn 'PhysicalProperties'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -538,7 +526,7 @@ test.Ray = function(serdes: Squash.NumberSerDes)
 	local midput = Squash.Ray.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'Ray'
+	warn 'Ray'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -556,7 +544,7 @@ test.RaycastParams = function()
 	local midput = Squash.RaycastParams.ser(input)
 	local output = Squash[typeof(input)].des(midput)
 
-	print 'RaycastParams'
+	warn 'RaycastParams'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -588,13 +576,36 @@ test.RaycastParams = function()
 end
 
 test.RaycastResult = function()
-	--help
+	local input = workspace:Raycast(
+		Vector3.new(math.random() - 0.5, math.random() - 0.5, math.random() - 0.5) * 2000,
+		Vector3.new(math.random() - 0.5, math.random() - 0.5, math.random() - 0.5),
+		RaycastParams.new()
+	)
+	local midput = Squash.RaycastResult.ser(input)
+	local output = Squash[typeof(input)].des(midput)
+
+	warn 'RaycastResult'
+	print 'Midput:'
+	print(midput)
+	print 'Input:'
+	print(
+		'Position',
+		input.Position,
+		'Normal',
+		input.Normal,
+		'Material',
+		input.Material,
+		'Distance',
+		input.Distance,
+		'Unit',
+		input.Unit
+	)
 end
 
-test.Rect = function(serdes: Squash.NumberSerDes)
+test.Rect = function()
 	local input = Rect.new(math.random(), math.random(), math.random(), math.random())
-	local midput = Squash.Rect.ser(input, serdes)
-	local output = Squash[typeof(input)].des(midput, serdes)
+	local midput = Squash.Rect.ser(input, 4)
+	local output = Squash[typeof(input)].des(midput, 4)
 
 	print 'Rect'
 	print 'Midput:'

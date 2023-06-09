@@ -1,0 +1,12 @@
+{
+  "name": "Squash",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "Squash": {
+        "$path": "src"
+      }
+    }
+  }
+}

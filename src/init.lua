@@ -807,7 +807,7 @@ end
 Squash.Vector2.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Vector2
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
-	return Vector2.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
+	return Vector2.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, 1 + bytes, 2 * bytes), bytes))
 end
 
 --[=[
@@ -861,9 +861,9 @@ Squash.Vector3.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): 
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
 	return Vector3.new(
-		des(string.sub(y, 1, bytes), bytes),
-		des(string.sub(y, bytes + 1, 2 * bytes), bytes),
-		des(string.sub(y, 2 * bytes + 1, 3 * bytes), bytes)
+		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
+		des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),
+		des(string.sub(y, 1 + 2 * bytes, 3 * bytes), bytes)
 	)
 end
 
@@ -1871,6 +1871,8 @@ Squash.NumberSequence = {}
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
 	@return string
+
+	Careful when calling this with Squash.uint,
 ]=]
 Squash.NumberSequence.ser = function(x: NumberSequence, serdes: NumberSerDes?, bytes: Bytes?): string
 	return Squash.NumberSequenceKeypoint.serarr(x.Keypoints, serdes, bytes) --TODO: Recognize that the start and end times are always 0 and 1 and omit them.
@@ -1918,11 +1920,13 @@ Squash.OverlapParams = {}
 	@function ser
 	@param x OverlapParams
 	@return string
+
+	The FilterDescedantsInstances property is not serialized because is an array of Instance objects, which are not supported.
 ]=]
 Squash.OverlapParams.ser = function(x: OverlapParams): string
 	return string.char(
 		(if x.FilterType == Enum.RaycastFilterType.Include then 1 else 0) + (if x.RespectCanCollide then 2 else 0)
-	) .. Squash.uint.ser(2, x.MaxParts) .. Squash.string.ser(x.CollisionGroup) -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated.
+	) .. Squash.uint.ser(x.MaxParts, 2) .. Squash.string.ser(x.CollisionGroup) -- I wish we could use GetCollisionGroupId and restrict this to 1 or 2 bytes, but that was deprecated.
 end
 
 --[=[
@@ -2026,7 +2030,9 @@ Squash.PathWaypoint = {}
 ]=]
 Squash.PathWaypoint.ser = function(x: PathWaypoint, serdes: NumberSerDes?, bytes: Bytes?): string
 	local bytes = bytes or 4
-	return Squash.EnumItem.ser(x.Action, Enum.PathWaypointAction) .. Squash.Vector3.ser(x.Position, serdes, bytes)
+	return Squash.EnumItem.ser(x.Action, Enum.PathWaypointAction)
+		.. Squash.Vector3.ser(x.Position, serdes, bytes)
+		.. Squash.string.ser(x.Label)
 end
 
 --[=[
@@ -2041,10 +2047,11 @@ Squash.PathWaypoint.des = function(y: string, serdes: NumberSerDes?, bytes: Byte
 	local bytes = bytes or 4
 	local offset, action = 1, nil
 	offset, action = desEnumItem(y, offset, Enum.PathWaypointAction)
-	return PathWaypoint.new(
-		Squash.Vector3.des(string.sub(y, offset + 1), serdes, bytes),
-		action :: Enum.PathWaypointAction
-	)
+	local position = Squash.Vector3.des(string.sub(y, offset + 1, offset + 3 * bytes), serdes, bytes)
+	warn(position, string.sub(y, offset + 1, offset + 3 * bytes), offset + 1, offset + 3 * bytes)
+	offset += 3 * bytes
+	local label = Squash.string.des(string.sub(y, offset + 1))
+	return PathWaypoint.new(position, action :: Enum.PathWaypointAction, label)
 end
 
 --[=[
@@ -2101,12 +2108,24 @@ end
 Squash.PhysicalProperties.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): PhysicalProperties
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
+	print(
+		'Density',
+		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
+		'Friction',
+		des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),
+		'Elasticity',
+		des(string.sub(y, 1 + 2 * bytes, 3 * bytes), bytes),
+		'FrictionWeight',
+		des(string.sub(y, 1 + 3 * bytes, 4 * bytes), bytes),
+		'ElasticityWeight',
+		des(string.sub(y, 1 + 4 * bytes, 5 * bytes), bytes)
+	)
 	return PhysicalProperties.new(
-		des(string.sub(y, 1, bytes), bytes),
-		des(string.sub(y, bytes + 1, 2 * bytes), bytes),
-		des(string.sub(y, 2 * bytes + 1, 3 * bytes), bytes),
-		des(string.sub(y, 3 * bytes + 1, 4 * bytes), bytes),
-		des(string.sub(y, 4 * bytes + 1, 5 * bytes), bytes)
+		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
+		des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),
+		des(string.sub(y, 1 + 2 * bytes, 3 * bytes), bytes),
+		des(string.sub(y, 1 + 3 * bytes, 4 * bytes), bytes),
+		des(string.sub(y, 1 + 4 * bytes, 5 * bytes), bytes)
 	)
 end
 
