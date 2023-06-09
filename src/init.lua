@@ -1448,10 +1448,10 @@ Squash.DockWidgetPluginGuiInfo = {}
 ]=]
 Squash.DockWidgetPluginGuiInfo.ser = function(x: DockWidgetPluginGuiInfo): string
 	return Squash.boolean.ser(x.InitialEnabled, x.InitialEnabledShouldOverrideRestore)
-		.. Squash.int.ser(2, x.FloatingXSize)
-		.. Squash.int.ser(2, x.FloatingYSize)
-		.. Squash.int.ser(2, x.MinWidth)
-		.. Squash.int.ser(2, x.MinHeight)
+		.. Squash.int.ser(x.FloatingXSize, 2)
+		.. Squash.int.ser(x.FloatingYSize, 2)
+		.. Squash.int.ser(x.MinWidth, 2)
+		.. Squash.int.ser(x.MinHeight, 2)
 end
 
 --[=[
