@@ -2104,10 +2104,20 @@ end
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
 	@return PhysicalProperties
+
+	The minimum density is 0.009999999776482582, so if the serialization rounds down to 0, it will be set to 0.009999999776482582 when deserialized.
 ]=]
 Squash.PhysicalProperties.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): PhysicalProperties
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
+
+	print(
+		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
+		des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),
+		des(string.sub(y, 1 + 2 * bytes, 3 * bytes), bytes),
+		des(string.sub(y, 1 + 3 * bytes, 4 * bytes), bytes),
+		des(string.sub(y, 1 + 4 * bytes, 5 * bytes), bytes)
+	)
 
 	return PhysicalProperties.new(
 		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
