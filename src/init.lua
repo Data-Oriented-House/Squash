@@ -1818,7 +1818,7 @@ Squash.NumberSequenceKeypoint = {}
 Squash.NumberSequenceKeypoint.ser = function(x: NumberSequenceKeypoint, serdes: NumberSerDes?, bytes: Bytes?): string
 	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
-	return ser(x.Time, bytes) .. ser(x.Value, bytes) .. ser(x.Envelope, bytes)
+	return string.char(x.Time * 255) .. ser(x.Value, bytes) .. ser(x.Envelope, bytes)
 end
 
 --[=[
@@ -1833,9 +1833,9 @@ Squash.NumberSequenceKeypoint.des = function(y: string, serdes: NumberSerDes?, b
 	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 	return NumberSequenceKeypoint.new(
-		des(string.sub(y, 1, bytes), bytes),
-		des(string.sub(y, bytes + 1, 2 * bytes), bytes),
-		des(string.sub(y, 2 * bytes + 1, 3 * bytes), bytes)
+		string.byte(y, 1) / 255,
+		des(string.sub(y, 2, 1 + bytes), bytes),
+		des(string.sub(y, 2 + bytes, 1 + 2 * bytes), bytes)
 	)
 end
 
@@ -1857,7 +1857,7 @@ Squash.NumberSequenceKeypoint.serarr = serArrayVector(Squash.NumberSequenceKeypo
 	@param bytes Bytes?
 	@return { NumberSequenceKeypoint }
 ]=]
-Squash.NumberSequenceKeypoint.desarr = desArrayVector(Squash.NumberSequenceKeypoint, 3, 0)
+Squash.NumberSequenceKeypoint.desarr = desArrayVector(Squash.NumberSequenceKeypoint, 2, 1)
 
 --[=[
 	@class NumberSequence
@@ -1873,7 +1873,7 @@ Squash.NumberSequence = {}
 	@return string
 ]=]
 Squash.NumberSequence.ser = function(x: NumberSequence, serdes: NumberSerDes?, bytes: Bytes?): string
-	return Squash.NumberSequenceKeypoint.serarr(x.Keypoints, serdes, bytes)
+	return Squash.NumberSequenceKeypoint.serarr(x.Keypoints, serdes, bytes) --TODO: Recognize that the start and end times are always 0 and 1 and omit them.
 end
 
 --[=[

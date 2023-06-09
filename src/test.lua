@@ -371,7 +371,7 @@ test.Font = function()
 	local midput = Squash.Font.ser(input)
 	local output = Squash[typeof(input)].des(midput)
 
-	print 'Font'
+	warn 'Font'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -381,11 +381,13 @@ test.Font = function()
 end
 
 test.NumberRange = function(serdes: Squash.NumberSerDes)
-	local input = NumberRange.new(math.random(), math.random())
+	local a = math.random() * 1000
+	local b = math.random() * 1000
+	local input = NumberRange.new(math.min(a, b), math.max(a, b))
 	local midput = Squash.NumberRange.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'NumberRange'
+	warn 'NumberRange'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -395,14 +397,15 @@ test.NumberRange = function(serdes: Squash.NumberSerDes)
 end
 
 test.NumberSequence = function(serdes: Squash.NumberSerDes)
-	local input = NumberSequence.new(
+	local input = NumberSequence.new {
+		NumberSequenceKeypoint.new(0, math.random(), math.random()),
 		NumberSequenceKeypoint.new(math.random(), math.random(), math.random()),
-		NumberSequenceKeypoint.new(math.random(), math.random(), math.random())
-	)
+		NumberSequenceKeypoint.new(1, math.random(), math.random()),
+	}
 	local midput = Squash.NumberSequence.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'NumberSequence'
+	warn 'NumberSequence'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -416,7 +419,7 @@ test.NumberSequenceKeypoint = function(serdes: Squash.NumberSerDes)
 	local midput = Squash.NumberSequenceKeypoint.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'NumberSequenceKeypoint'
+	warn 'NumberSequenceKeypoint'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -434,7 +437,7 @@ test.OverlapParams = function()
 	local midput = Squash.OverlapParams.ser(input)
 	local output = Squash[typeof(input)].des(midput)
 
-	print 'OverlapParams'
+	warn 'OverlapParams'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
