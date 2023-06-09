@@ -142,6 +142,12 @@ Squash.punctuation = ' .,?!:;\'"-_' :: Alphabet
 
 --[=[
 	@within Squash
+	@prop filepath Alphabet
+]=]
+Squash.filepath = Squash.letters .. ':/' :: Alphabet
+
+--[=[
+	@within Squash
 	@prop english Alphabet
 
 	All symbols in the english language.
@@ -651,7 +657,7 @@ Squash.string = {}
 	@param source string
 	@return Alphabet
 
-	Maps a string to the smallest alphabet that represents it.
+	Maps a string to the smallest sorted alphabet that represents it.
 ]=]
 Squash.string.alphabet = function(source: string): Alphabet
 	local lookup = {}
@@ -663,8 +669,7 @@ Squash.string.alphabet = function(source: string): Alphabet
 			table.insert(alphabet, char)
 		end
 	end
-	-- Sort alphabet for consistency. --! This is not necessary
-	table.sort(alphabet) --? Remove this? It allows some nice properties, such as the order of characters in strings not changing the output alphabet
+	table.sort(alphabet)
 	return table.concat(alphabet)
 end
 
@@ -1633,15 +1638,16 @@ Squash.FloatCurveKey = {}
 	@param bytes Bytes?
 	@return string
 ]=]
-Squash.FloatCurveKey.ser = function(x: FloatCurveKey, serdes: NumberSerDes?, bytes: Bytes?): string
-	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
-	local bytes = bytes or 4
+Squash.FloatCurveKey.ser = function(x: FloatCurveKey): string
+	local y = Squash.EnumItem.ser(x.Interpolation, Enum.KeyInterpolationMode)
+		.. Squash.number.ser(x.Time)
+		.. Squash.number.ser(x.Value)
 
-	return Squash.EnumItem.ser(x.Interpolation, Enum.KeyInterpolationMode)
-		.. ser(x.Time, bytes)
-		.. ser(x.Value, bytes)
-		.. ser(x.LeftTangent, bytes)
-		.. ser(x.RightTangent, bytes)
+	if x.Interpolation == Enum.KeyInterpolationMode.Cubic then
+		y ..= Squash.number.ser(x.LeftTangent) .. Squash.number.ser(x.RightTangent)
+	end
+
+	return y
 end
 
 --[=[
@@ -1652,20 +1658,21 @@ end
 	@param bytes Bytes?
 	@return FloatCurveKey
 ]=]
-Squash.FloatCurveKey.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): FloatCurveKey
-	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
-	local bytes = bytes or 4
-
+Squash.FloatCurveKey.des = function(y: string): FloatCurveKey
 	local offset = enumItemData[Enum.KeyInterpolationMode].bytes
 	local x = FloatCurveKey.new(
-		des(string.sub(y, offset + 1, offset + bytes), bytes),
-		des(string.sub(y, offset + bytes + 1, offset + 2 * bytes), bytes),
+		Squash.number.des(string.sub(y, offset + 1, offset + 4)),
+		Squash.number.des(string.sub(y, offset + 5, offset + 8)),
 		Squash.EnumItem.des(string.sub(y, 1, offset), Enum.KeyInterpolationMode) :: Enum.KeyInterpolationMode
 	)
-	offset += 2 * bytes
-	x.LeftTangent = des(string.sub(y, offset + 1, offset + bytes), bytes)
-	offset += bytes
-	x.RightTangent = des(string.sub(y, offset + 1, offset + bytes), bytes)
+
+	if x.Interpolation == Enum.KeyInterpolationMode.Cubic then
+		offset += 8
+		x.LeftTangent = Squash.number.des(string.sub(y, offset + 1, offset + 4))
+		offset += 4
+		x.RightTangent = Squash.number.des(string.sub(y, offset + 1, offset + 4))
+	end
+
 	return x
 end
 
@@ -1708,7 +1715,7 @@ Squash.Font.ser = function(x: Font): string
 
 	return Squash.EnumItem.ser(x.Style, Enum.FontStyle)
 		.. Squash.EnumItem.ser(x.Weight, Enum.FontWeight)
-		.. Squash.string.ser(family)
+		.. Squash.string.ser(family, Squash.filepath)
 end
 
 --[=[
@@ -1723,7 +1730,7 @@ Squash.Font.des = function(y: string): Font
 	a += b
 	b += enumItemData[Enum.FontWeight].bytes
 	local fontWeight = Squash.EnumItem.des(string.sub(y, a, b), Enum.FontWeight) :: Enum.FontWeight
-	local family = Squash.string.des(string.sub(y, b + 1))
+	local family = Squash.string.des(string.sub(y, b + 1), Squash.filepath) .. '.json'
 	return Font.new(family, fontWeight, style)
 end
 

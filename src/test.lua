@@ -154,8 +154,8 @@ test.CFrame = function(serdes: Squash.NumberSerDes)
 		math.random() * 2 * math.pi,
 		math.random() * 2 * math.pi
 	) + Vector3.new(math.random() - 0.5, math.random() - 0.5, math.random() - 0.5) * 2000
-	local midput = Squash.CFrame.ser(input, Squash.uint)
-	local output = Squash[typeof(input)].des(midput, Squash.uint)
+	local midput = Squash.CFrame.ser(input, serdes)
+	local output = Squash[typeof(input)].des(midput, serdes)
 
 	warn 'CFrame'
 	print 'Midput:'
@@ -344,26 +344,30 @@ test.Faces = function()
 	)
 end
 
-test.FloatCurveKey = function(serdes: Squash.NumberSerDes)
+test.FloatCurveKey = function()
 	local input = FloatCurveKey.new(
 		math.random(),
 		math.random(),
 		Enum.KeyInterpolationMode:GetEnumItems()[math.random(#Enum.KeyInterpolationMode:GetEnumItems())]
 	)
-	local midput = Squash.FloatCurveKey.ser(input, serdes)
-	local output = Squash[typeof(input)].des(midput, serdes)
+	if input.Interpolation == Enum.KeyInterpolationMode.Cubic then
+		input.LeftTangent = (math.random() - 0.5) * 10
+		input.RightTangent = (math.random() - 0.5) * 10
+	end
+	local midput = Squash.FloatCurveKey.ser(input)
+	local output = Squash[typeof(input)].des(midput)
 
 	warn 'FloatCurveKey'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
-	print('Time', input.Time, 'Value', input.Value, 'Envelope', input.Envelope)
+	print('Time', input.Time, 'Value', input.Value, 'Interpolation', input.Interpolation, 'LeftTangent', input.LeftTangent, 'RightTangent', input.RightTangent)
 	print 'Output:'
-	print('Time', output.Time, 'Value', output.Value, 'Envelope', output.Envelope)
+	print('Time', output.Time, 'Value', output.Value, 'Interpolation', output.Interpolation, 'LeftTangent', output.LeftTangent, 'RightTangent', output.RightTangent)
 end
 
 test.Font = function()
-	local input = Enum.Font.SourceSans
+	local input = Font.fromEnum(Enum.Font.SourceSans)
 	local midput = Squash.Font.ser(input)
 	local output = Squash[typeof(input)].des(midput)
 
@@ -407,10 +411,10 @@ test.NumberSequence = function(serdes: Squash.NumberSerDes)
 	print('Keypoints', output.Keypoints)
 end
 
-test.NumberSequenceKeypoint = function()
+test.NumberSequenceKeypoint = function(serdes: Squash.NumberSerDes)
 	local input = NumberSequenceKeypoint.new(math.random(), math.random(), math.random())
-	local midput = Squash.NumberSequenceKeypoint.ser(input)
-	local output = Squash[typeof(input)].des(midput)
+	local midput = Squash.NumberSequenceKeypoint.ser(input, serdes)
+	local output = Squash[typeof(input)].des(midput, serdes)
 
 	print 'NumberSequenceKeypoint'
 	print 'Midput:'
