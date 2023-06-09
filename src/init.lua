@@ -1167,10 +1167,19 @@ end
 	@return Axes
 ]=]
 Squash.Axes.des = function(y: string): Axes
-	local axes = Axes.new()
-	axes.X, axes.Y, axes.Z = Squash.boolean.des(string.sub(y, 1))
-	axes.Top, axes.Bottom, axes.Left, axes.Right, axes.Back, axes.Front = Squash.boolean.des(string.sub(y, 2))
-	return axes
+	local fx, fy, fz = Squash.boolean.des(string.sub(y, 1, 1))
+	local top, bottom, left, right, back, front = Squash.boolean.des(string.sub(y, 2, 2))
+	return Axes.new(
+		fx and Enum.Axis.X,
+		fy and Enum.Axis.Y,
+		fz and Enum.Axis.Z,
+		top and Enum.NormalId.Top,
+		bottom and Enum.NormalId.Bottom,
+		left and Enum.NormalId.Left,
+		right and Enum.NormalId.Right,
+		back and Enum.NormalId.Back,
+		front and Enum.NormalId.Front
+	)
 end
 
 --[=[
