@@ -202,7 +202,7 @@ test.ColorSequenceKeypoint = function()
 	local midput = Squash.ColorSequenceKeypoint.ser(input)
 	local output = Squash[typeof(input)].des(midput)
 
-	print 'ColorSequenceKeypoint'
+	warn 'ColorSequenceKeypoint'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -216,7 +216,7 @@ test.DateTime = function()
 	local midput = Squash.DateTime.ser(input)
 	local output = Squash[typeof(input)].des(midput)
 
-	print 'DateTime'
+	warn 'DateTime'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -230,42 +230,42 @@ test.DockWidgetPluginGuiInfo = function()
 	local midput = Squash.DockWidgetPluginGuiInfo.ser(input)
 	local output = Squash[typeof(input)].des(midput)
 
-	print 'DockWidgetPluginGuiInfo'
+	warn 'DockWidgetPluginGuiInfo'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
 	print(
-		'InitialDockState',
-		input.InitialDockState,
-		'Enabled',
-		input.Enabled,
-		'OverrideEnabledRestore',
-		input.OverrideEnabledRestore,
-		'InitialEnabled',
-		input.InitialEnabled,
-		'FloatingXSize',
-		input.FloatingXSize,
-		'FloatingYSize',
-		input.FloatingYSize,
-		'MinimumWindowSize',
-		input.MinimumWindowSize
+		-- 'InitialDockState',
+		-- input.InitialDockState,
+		-- 'Enabled',
+		-- input.Enabled,
+		-- 'OverrideEnabledRestore',
+		-- input.OverrideEnabledRestore,
+		-- 'InitialEnabled',
+		-- input.InitialEnabled,
+		-- 'FloatingXSize',
+		-- input.FloatingXSize,
+		-- 'FloatingYSize',
+		-- input.FloatingYSize,
+		-- 'MinimumWindowSize',
+		-- input.MinimumWindowSize
 	)
 	print 'Output:'
 	print(
-		'InitialDockState',
-		output.InitialDockState,
-		'Enabled',
-		output.Enabled,
-		'OverrideEnabledRestore',
-		output.OverrideEnabledRestore,
-		'InitialEnabled',
-		output.InitialEnabled,
-		'FloatingXSize',
-		output.FloatingXSize,
-		'FloatingYSize',
-		output.FloatingYSize,
-		'MinimumWindowSize',
-		output.MinimumWindowSize
+		-- 'InitialDockState',
+		-- output.InitialDockState,
+		-- 'Enabled',
+		-- output.Enabled,
+		-- 'OverrideEnabledRestore',
+		-- output.OverrideEnabledRestore,
+		-- 'InitialEnabled',
+		-- output.InitialEnabled,
+		-- 'FloatingXSize',
+		-- output.FloatingXSize,
+		-- 'FloatingYSize',
+		-- output.FloatingYSize,
+		-- 'MinimumWindowSize',
+		-- output.MinimumWindowSize
 	)
 end
 
@@ -274,7 +274,7 @@ test.Enum = function()
 	local midput = Squash.Enum.ser(input)
 	local output = Squash[typeof(input)].des(midput)
 
-	print 'Enum'
+	warn 'Enum'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -288,7 +288,7 @@ test.EnumItem = function()
 	local midput = Squash.EnumItem.ser(input, input.EnumType)
 	local output = Squash[typeof(input)].des(midput, input.EnumType)
 
-	print 'EnumItem'
+	warn 'EnumItem'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -309,7 +309,7 @@ test.Faces = function()
 	local midput = Squash.Faces.ser(input)
 	local output = Squash[typeof(input)].des(midput)
 
-	print 'Faces'
+	warn 'Faces'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -353,7 +353,7 @@ test.FloatCurveKey = function(serdes: Squash.NumberSerDes)
 	local midput = Squash.FloatCurveKey.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'FloatCurveKey'
+	warn 'FloatCurveKey'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'

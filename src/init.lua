@@ -1057,9 +1057,8 @@ Squash.Enum = {}
 	@return string
 ]=]
 Squash.Enum.ser = function(x: Enum): string
-	local enumDataStuff = enumData[x]
-	local enumId = table.find(enumDataStuff.items, x) :: number
-	return Squash.uint.ser(enumId, enumDataStuff.bytes)
+	local enumId = table.find(enumData.items, x) :: number
+	return Squash.uint.ser(enumId, enumData.bytes)
 end
 
 --[=[
@@ -1594,9 +1593,15 @@ end
 	@return Faces
 ]=]
 Squash.Faces.des = function(y: string): Faces
-	local faces = Faces.new()
-	faces.Top, faces.Bottom, faces.Left, faces.Right, faces.Back, faces.Front = Squash.boolean.des(y)
-	return faces
+	local top, bottom, left, right, back, front = Squash.boolean.des(y)
+	return Faces.new(
+		top and Enum.NormalId.Top,
+		bottom and Enum.NormalId.Bottom,
+		left and Enum.NormalId.Left,
+		right and Enum.NormalId.Right,
+		back and Enum.NormalId.Back,
+		front and Enum.NormalId.Front
+	)
 end
 
 --[=[
