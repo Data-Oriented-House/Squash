@@ -2465,7 +2465,7 @@ Squash.TweenInfo.ser = function(x: TweenInfo, serdes: NumberSerDes?, bytes: Byte
 	return Squash.boolean.ser(x.Reverses)
 		.. Squash.EnumItem.ser(x.EasingStyle, Enum.EasingStyle)
 		.. Squash.EnumItem.ser(x.EasingDirection, Enum.EasingDirection)
-		.. Squash.int.ser(x.RepeatCount, bytes)
+		.. Squash.uint.ser(x.RepeatCount, bytes)
 		.. ser(x.Time, bytes)
 		.. ser(x.DelayTime, bytes)
 end
@@ -2482,8 +2482,8 @@ Squash.TweenInfo.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?)
 	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 
-	local offset = 0
-	local reverses = Squash.boolean.des(string.sub(y, offset + 1, offset + 1))
+	local offset = 1
+	local reverses = Squash.boolean.des(string.sub(y, offset, offset))
 	offset += 1
 
 	local easingStyle
@@ -2492,13 +2492,13 @@ Squash.TweenInfo.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?)
 	local easingDirection
 	offset, easingDirection = desEnumItem(y, offset, Enum.EasingDirection)
 
-	local repeatCount = Squash.int.des(string.sub(y, offset + 1, offset + bytes), bytes)
+	local repeatCount = Squash.uint.des(string.sub(y, offset, offset + bytes - 1), bytes)
 	offset += bytes
 
-	local tweenTime = des(string.sub(y, offset + 1, offset + bytes), bytes)
+	local tweenTime = des(string.sub(y, offset, offset + bytes - 1), bytes)
 	offset += bytes
 
-	local delayTime = des(string.sub(y, offset + 1, offset + bytes), bytes)
+	local delayTime = des(string.sub(y, offset, offset + bytes - 1), bytes)
 
 	return TweenInfo.new(
 		tweenTime,

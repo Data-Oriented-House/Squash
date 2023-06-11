@@ -1,3 +1,5 @@
+--!strict
+
 local Squash = require(script.Parent)
 
 local test = {}
@@ -361,9 +363,31 @@ test.FloatCurveKey = function()
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
-	print('Time', input.Time, 'Value', input.Value, 'Interpolation', input.Interpolation, 'LeftTangent', input.LeftTangent, 'RightTangent', input.RightTangent)
+	print(
+		'Time',
+		input.Time,
+		'Value',
+		input.Value,
+		'Interpolation',
+		input.Interpolation,
+		'LeftTangent',
+		input.LeftTangent,
+		'RightTangent',
+		input.RightTangent
+	)
 	print 'Output:'
-	print('Time', output.Time, 'Value', output.Value, 'Interpolation', output.Interpolation, 'LeftTangent', output.LeftTangent, 'RightTangent', output.RightTangent)
+	print(
+		'Time',
+		output.Time,
+		'Value',
+		output.Value,
+		'Interpolation',
+		output.Interpolation,
+		'LeftTangent',
+		output.LeftTangent,
+		'RightTangent',
+		output.RightTangent
+	)
 end
 
 test.Font = function()
@@ -580,7 +604,7 @@ test.RaycastResult = function(serdes: Squash.NumberSerDes)
 		Vector3.new(math.random() - 0.5, math.random(), math.random() - 0.5) * 200,
 		Vector3.yAxis * -2000,
 		RaycastParams.new()
-	)
+	) :: RaycastResult
 	print(input)
 	local midput = Squash.RaycastResult.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
@@ -589,16 +613,7 @@ test.RaycastResult = function(serdes: Squash.NumberSerDes)
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
-	print(
-		'Position',
-		input.Position,
-		'Normal',
-		input.Normal,
-		'Material',
-		input.Material,
-		'Distance',
-		input.Distance
-	)
+	print('Position', input.Position, 'Normal', input.Normal, 'Material', input.Material, 'Distance', input.Distance)
 	print 'Output:'
 	print(
 		'Position',
@@ -645,10 +660,8 @@ test.Region3 = function(serdes: Squash.NumberSerDes)
 	}
 	table.sort(values) -- Region3.new requires min < max
 
-	local input = Region3.new(
-		Vector3.new(values[1], values[2], values[3]),
-		Vector3.new(values[4], values[5], values[6])
-	)
+	local input =
+		Region3.new(Vector3.new(values[1], values[2], values[3]), Vector3.new(values[4], values[5], values[6]))
 	local midput = Squash.Region3.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
@@ -700,7 +713,7 @@ test.TweenInfo = function(serdes: Squash.NumberSerDes)
 	local midput = Squash.TweenInfo.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'TweenInfo'
+	warn 'TweenInfo'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -740,7 +753,7 @@ test.UDim = function(serdes: Squash.NumberSerDes)
 	local midput = Squash.UDim.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'UDim'
+	warn 'UDim'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -754,7 +767,7 @@ test.UDim2 = function(serdes: Squash.NumberSerDes)
 	local midput = Squash.UDim2.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'UDim2'
+	warn 'UDim2'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -773,11 +786,11 @@ test.UDim2 = function(serdes: Squash.NumberSerDes)
 end
 
 test.Vector2 = function(serdes: Squash.NumberSerDes)
-	local input = Vector2.new(math.random(), math.random())
+	local input = (Vector2.new(math.random(), math.random()) - Vector2.one * 0.5) * 2000
 	local midput = Squash.Vector2.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'Vector2'
+	warn 'Vector2'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -786,12 +799,12 @@ test.Vector2 = function(serdes: Squash.NumberSerDes)
 	print('X', output.X, 'Y', output.Y)
 end
 
-test.Vector2int16 = function(serdes: Squash.NumberSerDes)
-	local input = Vector2int16.new(math.random(), math.random())
-	local midput = Squash.Vector2int16.ser(input, serdes)
-	local output = Squash[typeof(input)].des(midput, serdes)
+test.Vector2int16 = function(serdes: Squash.NumberSerDes, bytes: number?)
+	local input = Vector2int16.new(2000 * math.random() - 1000, 2000 * math.random() - 1000)
+	local midput = Squash.Vector2int16.ser(input, serdes, bytes)
+	local output = Squash[typeof(input)].des(midput, serdes, bytes)
 
-	print 'Vector2int16'
+	warn 'Vector2int16'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -805,7 +818,7 @@ test.Vector3 = function(serdes: Squash.NumberSerDes)
 	local midput = Squash.Vector3.ser(input, serdes)
 	local output = Squash[typeof(input)].des(midput, serdes)
 
-	print 'Vector3'
+	warn 'Vector3'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
@@ -814,12 +827,13 @@ test.Vector3 = function(serdes: Squash.NumberSerDes)
 	print('X', output.X, 'Y', output.Y, 'Z', output.Z)
 end
 
-test.Vector3int16 = function(serdes: Squash.NumberSerDes)
-	local input = Vector3int16.new(math.random(), math.random(), math.random())
-	local midput = Squash.Vector3int16.ser(input, serdes)
-	local output = Squash[typeof(input)].des(midput, serdes)
+test.Vector3int16 = function(serdes: Squash.NumberSerDes, bytes: number?)
+	local input =
+		Vector3int16.new(2000 * math.random() - 1000, 2000 * math.random() - 1000, 2000 * math.random() - 1000)
+	local midput = Squash.Vector3int16.ser(input, serdes, bytes)
+	local output = Squash[typeof(input)].des(midput, serdes, bytes)
 
-	print 'Vector3int16'
+	warn 'Vector3int16'
 	print 'Midput:'
 	print(midput)
 	print 'Input:'
