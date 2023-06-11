@@ -1,0 +1,1 @@
+{"name":"Squash","className":"DataModel","filePaths":["default.project.json"],"children":[{"name":"ServerScriptService","className":"ServerScriptService","children":[{"name":"Squash","className":"ModuleScript","filePaths":["src\\init.lua"]}]}]}
