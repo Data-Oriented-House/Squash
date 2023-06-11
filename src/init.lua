@@ -890,6 +890,7 @@ Squash.Vector3.desarr = desArrayVector(Squash.Vector3, 3, 0)
 
 --[=[
 	@class Vector2int16
+	Default bytes is 2, because int16 is 2 bytes.
 ]=]
 Squash.Vector2int16 = {}
 
@@ -899,8 +900,10 @@ Squash.Vector2int16 = {}
 	@param x Vector2int16
 	@return string
 ]=]
-Squash.Vector2int16.ser = function(x: Vector2int16)
-	return Squash.int.ser(2, x.X) .. Squash.int.ser(2, x.Y)
+Squash.Vector2int16.ser = function(x: Vector2int16, serdes: NumberSerDes?, bytes: Bytes?): string
+	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
+	local bytes = bytes or 2
+	return ser(x.X, bytes) .. ser(x.Y, bytes)
 end
 
 --[=[
@@ -909,8 +912,10 @@ end
 	@param y string
 	@return Vector2int16
 ]=]
-Squash.Vector2int16.des = function(y: string): Vector2int16
-	return Vector2int16.new(Squash.int.des(string.sub(y, 1, 2), 2), Squash.int.des(string.sub(y, 3, 4), 2))
+Squash.Vector2int16.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Vector2int16
+	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
+	local bytes = bytes or 2
+	return Vector2int16.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, 1 + bytes, 2 * bytes), bytes))
 end
 
 --[=[
@@ -919,7 +924,7 @@ end
 	@param x { Vector2int16 }
 	@return string
 ]=]
-Squash.Vector2int16.serarr = serArrayFixed(Squash.Vector2int16)
+Squash.Vector2int16.serarr = serArrayVector(Squash.Vector2int16)
 
 --[=[
 	@within Vector2int16
@@ -927,10 +932,11 @@ Squash.Vector2int16.serarr = serArrayFixed(Squash.Vector2int16)
 	@param y string
 	@return { Vector2int16 }
 ]=]
-Squash.Vector2int16.desarr = desArrayFixed(Squash.Vector2int16, 4)
+Squash.Vector2int16.desarr = desArrayVector(Squash.Vector2int16, 3, 0)
 
 --[=[
 	@class Vector3int16
+	Default bytes is 2, because int16 is 2 bytes.
 ]=]
 Squash.Vector3int16 = {}
 
@@ -940,8 +946,10 @@ Squash.Vector3int16 = {}
 	@param x Vector3int16
 	@return string
 ]=]
-Squash.Vector3int16.ser = function(x: Vector3int16)
-	return Squash.int.ser(2, x.X) .. Squash.int.ser(2, x.Y) .. Squash.int.ser(2, x.Z)
+Squash.Vector3int16.ser = function(x: Vector3int16, serdes: NumberSerDes?, bytes: Bytes?)
+	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
+	local bytes = bytes or 2
+	return ser(x.X, bytes) .. ser(x.Y, bytes) .. ser(x.Z, bytes)
 end
 
 --[=[
@@ -950,11 +958,13 @@ end
 	@param y string
 	@return Vector3int16
 ]=]
-Squash.Vector3int16.des = function(y: string): Vector3int16
+Squash.Vector3int16.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Vector3int16
+	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
+	local bytes = bytes or 2
 	return Vector3int16.new(
-		Squash.int.des(string.sub(y, 1, 2), 2),
-		Squash.int.des(string.sub(y, 3, 4), 2),
-		Squash.int.des(string.sub(y, 5, 6), 2)
+		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
+		des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),
+		des(string.sub(y, 1 + 2 * bytes, 3 * bytes), bytes)
 	)
 end
 
@@ -964,7 +974,7 @@ end
 	@param x { Vector3int16 }
 	@return string
 ]=]
-Squash.Vector3int16.serarr = serArrayFixed(Squash.Vector3int16)
+Squash.Vector3int16.serarr = serArrayVector(Squash.Vector3int16)
 
 --[=[
 	@within Vector3int16
@@ -972,7 +982,7 @@ Squash.Vector3int16.serarr = serArrayFixed(Squash.Vector3int16)
 	@param y string
 	@return { Vector3int16 }
 ]=]
-Squash.Vector3int16.desarr = desArrayFixed(Squash.Vector3int16, 6)
+Squash.Vector3int16.desarr = desArrayVector(Squash.Vector3int16, 3, 0)
 
 --[=[
 	@class CFrame
@@ -2110,15 +2120,6 @@ end
 Squash.PhysicalProperties.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): PhysicalProperties
 	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
 	local bytes = bytes or 4
-
-	print(
-		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
-		des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),
-		des(string.sub(y, 1 + 2 * bytes, 3 * bytes), bytes),
-		des(string.sub(y, 1 + 3 * bytes, 4 * bytes), bytes),
-		des(string.sub(y, 1 + 4 * bytes, 5 * bytes), bytes)
-	)
-
 	return PhysicalProperties.new(
 		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
 		des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),
@@ -2177,8 +2178,8 @@ end
 Squash.Ray.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Ray
 	local bytes = bytes or 4
 	return Ray.new(
-		Squash.Vector3.des(string.sub(y, 1, bytes), serdes, bytes),
-		Squash.Vector3.des(string.sub(y, bytes + 1, 2 * bytes), serdes, bytes)
+		Squash.Vector3.des(string.sub(y, 1 + 0 * bytes, 3 * bytes), serdes, bytes),
+		Squash.Vector3.des(string.sub(y, 1 + 3 * bytes, 6 * bytes), serdes, bytes)
 	)
 end
 
@@ -2249,16 +2250,17 @@ export type SquashRaycastResult = {
 Squash.RaycastResult.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): SquashRaycastResult
 	local bytes = bytes or 4
 
-	local offset, material = 0, nil
+	local offset, material = 1, nil
 	offset, material = desEnumItem(y, offset, Enum.Material)
+	offset -= 1
 
-	local distance = Squash.uint.des(string.sub(y, offset + 1, offset + bytes), bytes)
+	local distance = Squash.uint.des(string.sub(y, offset + 1, offset + 1 * bytes), bytes)
 	offset += bytes
 
-	local position = Squash.Vector3.des(string.sub(y, offset + 1, offset + bytes), serdes, bytes)
-	offset += bytes
+	local position = Squash.Vector3.des(string.sub(y, offset + 1, offset + 3 * bytes), serdes, bytes)
+	offset += 3 * bytes
 
-	local normal = Squash.Vector3.des(string.sub(y, offset + 1, offset + bytes), serdes, bytes)
+	local normal = Squash.Vector3.des(string.sub(y, offset + 1, offset + 3 * bytes), serdes, bytes)
 
 	return {
 		Material = material :: Enum.Material,
@@ -2318,10 +2320,10 @@ end
 Squash.Rect.des = function(y: string, bytes: Bytes?): Rect
 	local bytes = bytes or 4
 	return Rect.new(
-		Squash.uint.des(string.sub(y, 1, bytes), bytes),
-		Squash.uint.des(string.sub(y, bytes + 1, 2 * bytes), bytes),
-		Squash.uint.des(string.sub(y, 2 * bytes + 1, 3 * bytes), bytes),
-		Squash.uint.des(string.sub(y, 3 * bytes + 1, 4 * bytes), bytes)
+		Squash.uint.des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
+		Squash.uint.des(string.sub(y, 1 + 1 * bytes, 2 * bytes), bytes),
+		Squash.uint.des(string.sub(y, 1 + 2 * bytes, 3 * bytes), bytes),
+		Squash.uint.des(string.sub(y, 1 + 3 * bytes, 4 * bytes), bytes)
 	)
 end
 
@@ -2345,6 +2347,7 @@ Squash.Rect.desarr = desArrayVectorNoCoding(Squash.Rect, 4, 0)
 
 --[=[
 	@class Region3
+	Finnicky with uints, beware.
 ]=]
 Squash.Region3 = {}
 
@@ -2358,7 +2361,7 @@ Squash.Region3 = {}
 ]=]
 Squash.Region3.ser = function(x: Region3, serdes: NumberSerDes?, bytes: Bytes?): string
 	local bytes = bytes or 4
-	return Squash.Vector3.ser(x.Size, serdes, bytes) .. Squash.CFrame.ser(x.CFrame, serdes, bytes)
+	return Squash.Vector3.ser(x.Size, serdes, bytes) .. Squash.Vector3.ser(x.CFrame.Position, serdes, bytes)
 end
 
 --[=[
@@ -2371,10 +2374,9 @@ end
 ]=]
 Squash.Region3.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Region3
 	local bytes = bytes or 4
-	local x = Region3.new(Vector3.zero, Vector3.zero)
-	x.Size = Squash.Vector3.des(string.sub(y, 1, 12), serdes, bytes)
-	x.CFrame = Squash.CFrame.des(string.sub(y, 13, 24), serdes, bytes)
-	return x
+	local size = 0.5 * Squash.Vector3.des(string.sub(y, 1 + 0 * bytes, 3 * bytes), serdes, bytes)
+	local position = Squash.Vector3.des(string.sub(y, 1 + 3 * bytes, 6 * bytes), serdes, bytes)
+	return Region3.new(position - size, position + size)
 end
 
 --[=[
@@ -2399,6 +2401,7 @@ Squash.Region3.desarr = desArrayVector(Squash.Region3, 9, 6)
 
 --[=[
 	@class Region3int16
+	Default bytes is 2, because int16 is 2 bytes. Region3int16 internally uses 2's compliment, where for example a value of 64700 is treated as -836. Beware of this when serdes-ing with uint.
 ]=]
 Squash.Region3int16 = {}
 
@@ -2408,8 +2411,9 @@ Squash.Region3int16 = {}
 	@param x Region3int16
 	@return string
 ]=]
-Squash.Region3int16.ser = function(x: Region3int16): string
-	return Squash.Vector3int16.ser(x.Min) .. Squash.Vector3int16.ser(x.Max)
+Squash.Region3int16.ser = function(x: Region3int16, serdes: NumberSerDes?, bytes: number?): string
+	local bytes = bytes or 2
+	return Squash.Vector3int16.ser(x.Min, serdes, bytes) .. Squash.Vector3int16.ser(x.Max, serdes, bytes)
 end
 
 --[=[
@@ -2418,8 +2422,12 @@ end
 	@param y string
 	@return Region3int16
 ]=]
-Squash.Region3int16.des = function(y: string): Region3int16
-	return Region3int16.new(Squash.Vector3int16.des(string.sub(y, 1, 6)), Squash.Vector3int16.des(string.sub(y, 7, 12)))
+Squash.Region3int16.des = function(y: string, serdes: NumberSerDes?, bytes: number?): Region3int16
+	local bytes = bytes or 2
+	return Region3int16.new(
+		Squash.Vector3int16.des(string.sub(y, 1 + 0 * bytes, 3 * bytes), serdes, bytes),
+		Squash.Vector3int16.des(string.sub(y, 1 + 3 * bytes, 6 * bytes), serdes, bytes)
+	)
 end
 
 --[=[
