@@ -9,14 +9,20 @@ enabled = true
 includeReadme = false
 
 [[home.features]]
-title = "Minimalist"
-description = "Tiny tiny"
-image = "/Scaffolding.png"
+title = "Bandwidth Optimized"
+description = "Carefully optimizes compression for each and every serializable type so that most spatially efficient representation of data is serialized. This is useful for sending data over the network or saving it to a datastore."
+image = "/bandwidth2.png"
 
 [[home.features]]
 title = "Serialization-Deserialization"
-description = "Squash Stomp"
+description = ""
 image = "/Squash.png"
+
+[[home.features]]
+title = "Fully Comprehensive"
+description = "Can serialize and deserialize all serializable Luau and Roblox types, even the obscure ones."
+image = "/comprehensive2.png"
+
 
 [docusaurus]
 onBrokenLinks = "throw"
