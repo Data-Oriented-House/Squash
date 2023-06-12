@@ -8,7 +8,7 @@ Serdes is a common abbreviation used for **Serialization Deserialization**.
 
 ### Minimizing Latency
 
-In the world of distributed systems, we often need to send data over the network and receive it on the other end. The time it takes for data to be sent across networks is proportional to how large it is. The smaller data is, the less time it takes to send it over networks. The less time it takes to send data over networks, the less latency we have. The less latency we have, the better the player experience.
+In the world of distributed systems, we often need to send data over the network and receive it on the other end. The time that takes is proportional to how large the data is. The smaller the data, the less time it takes, the less latency we have, and the better the player experience.
 
 ### Saving Space
 

@@ -10,7 +10,7 @@ includeReadme = false
 
 [[home.features]]
 title = "Bandwidth Optimized"
-description = "Carefully optimizes compression for each and every serializable type so that most spatially efficient representation of data is serialized. This is useful for sending data over the network or saving it to a datastore."
+description = "Carefully optimizes compression for every type so that they are represented in the most spatially efficient way. This is useful for sending data over the network or saving it to a datastore."
 image = "/bandwidth2.png"
 
 [[home.features]]
