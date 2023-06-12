@@ -60,7 +60,7 @@ With 1 byte, the possible values that can be represented are:
 
 Where the minimum and maximum values are:
 
-***2^7 <= Z1 <= 2^7 - 1***
+***-2^7 <= Z1 <= 2^7 - 1***
 
 With 2 bytes, the possible values that can be represented are:
 
