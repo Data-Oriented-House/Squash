@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[161],{63891:e=>{e.exports=JSON.parse('{"sourceUrl":"https://github.com/solarscuffle-bot/stew/blob/main","baseUrl":"/Stew/","classOrder":["Stew","World","Entity","Component","Collection"],"apiCategories":[]}')}}]);
