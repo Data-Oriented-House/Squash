@@ -143,8 +143,18 @@ Squash.punctuation = ' .,?!:;\'"-_' :: Alphabet
 --[=[
 	@within Squash
 	@prop filepath Alphabet
+
+	All characters that may be used in a filepath.
 ]=]
 Squash.filepath = Squash.letters .. ':/' :: Alphabet
+
+--[=[
+	@within Squash
+	@prop datastore Alphabet
+
+	All characters that will not be expanded when JSONEncoded.
+]=]
+Squash.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~'
 
 --[=[
 	@within Squash
