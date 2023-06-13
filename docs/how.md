@@ -20,7 +20,9 @@ In Luau, the `number` type is 8 bytes large, but only 52 of the bits are dedicat
 
 Unsigned integers are whole numbers that can be serialized using 1 to 8 bytes.
 
-The set of unsigned integers: ***N = { 0, 1, 2, 3, 4, 5, . . . }***
+***N = { 0, 1, 2, 3, 4, 5, . . . }***
+
+They may only be positive and can represent all possible permutations of their bits.
 
 | Bytes | Range | Min | Max |
 | - | - | - | - |
@@ -30,9 +32,13 @@ The set of unsigned integers: ***N = { 0, 1, 2, 3, 4, 5, . . . }***
 | . . . | . . . | . . . | . . . |
 | ***n*** | **{ 0, 1, 2, 3, . . . , 2^(8n) - 2, 2^(8n) - 1 }** | ***0*** | ***2^(8n) - 1*** |
 
+## Signed Integers
+
 Signed Integers are Integers that can be serialized with 1 through 8 bytes:
 
 ***Z = { ..., -2, -1, 0, 1, 2, 3, ... }***
+
+They use [2's Compliment](https://en.wikipedia.org/wiki/Two%27s_complement) to represent negative numbers. The first bit is called the *sign bit* and the rest of the bits are called the *magnitude bits*. The sign bit is 0 for positive numbers and 1 for negative numbers. The magnitude bits are the same as the magnitude bits of the unsigned integer with the same number of bytes. The sign bit is not included in the magnitude bits, so the magnitude bits are shifted to the left by 1 bit. The sign bit is then added to the front of the magnitude bits. This is called *sign extension*. This implies the range of signed integers is one power of two smaller than the range of unsigned integers with the same number of bytes, because the sign bit is not included in the magnitude bits.
 
 | Bytes | Range | Min | Max |
 | - | - | - | - |
