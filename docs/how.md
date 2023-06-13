@@ -18,67 +18,29 @@ In Luau, the `number` type is 8 bytes large, but only 52 of the bits are dedicat
 
 ## Unsigned Integers
 
-Unsigned Integers are Whole Numbers that can be serialized with 1 through 8 bytes:
+Unsigned integers are whole numbers that can be serialized using 1 to 8 bytes.
 
-***N = { 0, 1, 2, 3, 4, ... }***
+The set of unsigned integers: ***N = { 0, 1, 2, 3, 4, 5, . . . }***
 
-With 1 byte, the possible values that can be represented are:
-
-***N1 = { 0, 1, 2, 3, ..., 253, 254, 255 }***
-
-Where the minimum and maximum values are:
-
-***0 <= N1 <= 2^8 - 1***
-
-With 2 bytes, the possible values that can be represented are:
-
-***N2 = { 0, 1, 2, 3, ..., 65,533, 65,534, 65,535 }***
-
-Where the minimum and maximum values are:
-
-***0 <= N2 <= 2^16 - 1***
-
-With *n* bytes, the possible values that can be represented are:
-
-***c = 2^8n***
-
-***Nn = { 0, 1, 2, ..., c - 2, c - 1 }***
-
-Where the minimum and maximum values are:
-
-***0 <= Nn <= c - 1***
-
-## Signed Integers
+| Bytes | Range | Min | Max |
+| - | - | - | - |
+| ***1*** | **{ 0, 1, 2, 3, . . . , 253, 254, 255 }** | ***0*** | ***255*** |
+| ***2*** | **{ 0, 1, 2, 3, . . . , 65,534, 65,535 }** | ***0*** | ***65,535*** |
+| ***3*** | **{ 0, 1, 2, 3, . . . , 16,777,214, 16,777,215 }** | ***0*** | ***16,777,215*** |
+| . . . | . . . | . . . | . . . |
+| ***n*** | **{ 0, 1, 2, 3, . . . , 2^(8n) - 2, 2^(8n) - 1 }** | ***0*** | ***2^(8n) - 1*** |
 
 Signed Integers are Integers that can be serialized with 1 through 8 bytes:
 
 ***Z = { ..., -2, -1, 0, 1, 2, 3, ... }***
 
-With 1 byte, the possible values that can be represented are:
-
-***Z1 = { -128, -127, -126, ..., 125, 126, 127 }***
-
-Where the minimum and maximum values are:
-
-***-2^7 <= Z1 <= 2^7 - 1***
-
-With 2 bytes, the possible values that can be represented are:
-
-***Z2 = { -32,768, -32,767, -32,766, ..., 32,765, 32,766, 32,767 }***
-
-Where the minimum and maximum values are:
-
-***-2^15 <= Z2 <= 2^15 - 1***
-
-With *n* bytes, the possible values that can be represented are:
-
-***c = 2^(8n-1)***
-
-***Zn = { -c, -c + 1, -c + 2, ..., c - 3, c - 2, c - 1 }***
-
-Where the minimum and maximum values are:
-
-***-c <= Zn <= c - 1***
+| Bytes | Range | Min | Max |
+| - | - | - | - |
+| ***1*** | **{ -128, -127, . . . , 126, 127 }** | ***-128*** | ***127*** |
+| ***2*** | **{ -32,768, -32,767, . . . , 32,766, 32,767 }** | ***-32,768*** | ***32,767*** |
+| ***3*** | **{ -8,388,608, -8,388,607, . . . , 8,388,606, 8,388,607 }** | ***-8,388,608*** | ***8,388,607*** |
+| . . . | . . . | . . . | . . . |
+| ***n*** | **{ -2^(8n - 1), -2^(8n - 1) + 1, . . . , 2^(8n - 1) - 2, 2^(8n - 1) - 1 }** | ***-2^(8n - 1)*** | ***2^(8n - 1) - 1*** |
 
 ## Floating Point
 
