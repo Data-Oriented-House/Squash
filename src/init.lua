@@ -102,11 +102,55 @@ Squash.delimiter = string.char(0) -- \0
 
 --[=[
 	@within Squash
-	@prop digits Alphabet
+	@prop binary Alphabet
+
+	All digits in base 2.
+]=]
+Squash.binary = '01' :: Alphabet
+
+--[=[
+	@within Squash
+	@prop octal Alphabet
+
+	All digits in base 8.
+]=]
+Squash.octal = '01234567' :: Alphabet
+
+--[=[
+	@within Squash
+	@prop decimal Alphabet
 
 	All digits in base 10.
 ]=]
-Squash.digits = '0123456789' :: Alphabet
+Squash.decimal = '0123456789' :: Alphabet
+
+--[=[
+	@within Squash
+	@prop duodecimal Alphabet
+
+	All digits in base 12.
+]=]
+Squash.duodecimal = '0123456789AB' :: Alphabet
+
+--[=[
+	@within Squash
+	@prop hexadecimal Alphabet
+
+	All digits in base 16.
+]=]
+Squash.hexadecimal = '0123456789ABCDEF' :: Alphabet
+
+--[=[
+	@within Squash
+	@prop utf8 Alphabet
+
+	All digits in base 256. The UTF-8 character set.
+]=]
+local utf8Characters = table.create(255)
+for i = 0, 255 do
+	utf8Characters[i + 1] = string.char(i)
+end
+Squash.utf8 = table.concat(utf8Characters) :: Alphabet
 
 --[=[
 	@within Squash
@@ -142,6 +186,14 @@ Squash.punctuation = ' .,?!:;\'"-_' :: Alphabet
 
 --[=[
 	@within Squash
+	@prop english Alphabet
+
+	All symbols in the english language.
+]=]
+Squash.english = Squash.letters .. Squash.punctuation :: Alphabet
+
+--[=[
+	@within Squash
 	@prop filepath Alphabet
 
 	All characters that may be used in a filepath.
@@ -155,26 +207,6 @@ Squash.filepath = Squash.letters .. ':/' :: Alphabet
 	All characters that will not be expanded when JSONEncoded.
 ]=]
 Squash.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~'
-
---[=[
-	@within Squash
-	@prop english Alphabet
-
-	All symbols in the english language.
-]=]
-Squash.english = Squash.letters .. Squash.punctuation :: Alphabet
-
---[=[
-	@within Squash
-	@prop utf8 Alphabet
-
-	The UTF-8 character set, excluding the delimiter.
-]=]
-local utf8Characters = table.create(255)
-for i = 1, 255 do
-	utf8Characters[i] = string.char(i)
-end
-Squash.utf8 = table.concat(utf8Characters) :: Alphabet
 
 --* Duplication Reducers *--
 
@@ -695,9 +727,6 @@ end
 	Converts a string from one alphabet to another.
 ]=]
 Squash.string.convert = function(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet): string
-	inAlphabet = Squash.delimiter .. inAlphabet
-	outAlphabet = Squash.delimiter .. outAlphabet
-
 	local sourceDigits = {}
 	for i = 1, #inAlphabet do
 		sourceDigits[string.byte(inAlphabet, i)] = i - 1
@@ -744,7 +773,8 @@ end
 	@return string
 ]=]
 Squash.string.ser = function(x: string, alphabet: Alphabet?): string
-	return Squash.string.convert(x, alphabet or Squash.english, Squash.utf8)
+	local inAlphabet = Squash.delimiter .. (alphabet or Squash.english)
+	return Squash.string.convert(x, inAlphabet, Squash.utf8)
 end
 
 --[=[
@@ -755,7 +785,8 @@ end
 	@return string
 ]=]
 Squash.string.des = function(y: string, alphabet: Alphabet?): string
-	return Squash.string.convert(y, Squash.utf8, alphabet or Squash.english)
+	local outAlphabet = Squash.delimiter .. (alphabet or Squash.english)
+	return Squash.string.convert(y, Squash.utf8, outAlphabet)
 end
 
 --[=[
