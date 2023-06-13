@@ -13,14 +13,14 @@ In Luau, the `boolean` type is 1 byte large, but only 1 bit is actually necessar
 All of this information fits inside a single character! We can use this to serialize 8 booleans in a single byte. This is called a *byte mask*.
 
 ```lua
-local y1 = Squash.boolean.ser(true)
-print(y1) -- ☺
-
-local y2 = Squash.boolean.ser(true, false, true, false, true, true, false, true)
-print(y2) -- ╡
-
-print(Squash.boolean.des(y1)) -- true, false, false, false, false, false, false, false
-print(Squash.boolean.des(y2)) -- true, false, true, false, true, true, false, true
+local y = Squash.boolean.ser(true)
+print(y) -- ☺
+print(Squash.boolean.des(y)) -- true, false, false, false, false, false, false, false
+```
+```lua
+local y = Squash.boolean.ser(true, false, true, false, true, true, false, true)
+print(y) -- ╡
+print(Squash.boolean.des(y)) -- true, false, true, false, true, true, false, true
 ```
 
 ## Numbers
@@ -44,17 +44,19 @@ They may only be positive and can represent all possible permutations of their b
 | ***n*** | **{ 0, 1, 2, 3, . . . , 2^(8n) - 2, 2^(8n) - 1 }** | ***0*** | ***2^(8n) - 1*** |
 
 ```lua
-local y1 = Squash.uint.ser(243, 1)
-print(y1) -- ≤
-print(Squash.uint.des(y1, 1)) -- 243
-
-local y2 = Squash.uint.ser(-13, 1)
-print(y2) -- ≤
-print(Squash.uint.des(y2, 1)) -- 243
-
-local y3 = Squash.uint.ser(7365, 2)
-print(y3) -- ┼∟
-print(Squash.uint.des(y3, 2)) -- 7365
+local y = Squash.uint.ser(243, 1)
+print(y) -- ≤
+print(Squash.uint.des(y, 1)) -- 243
+```
+```lua
+local y = Squash.uint.ser(-13, 1)
+print(y) -- ≤
+print(Squash.uint.des(y, 1)) -- 243
+```
+```lua
+local y = Squash.uint.ser(7365, 2)
+print(y) -- ┼∟
+print(Squash.uint.des(y, 2)) -- 7365
 ```
 
 ### Signed Integers
@@ -74,21 +76,24 @@ They use [2's Compliment](https://en.wikipedia.org/wiki/Two%27s_complement) to r
 | ***n*** | **{ -2^(8n - 1), -2^(8n - 1) + 1, . . . , 2^(8n - 1) - 2, 2^(8n - 1) - 1 }** | ***-2^(8n - 1)*** | ***2^(8n - 1) - 1*** |
 
 ```lua
-local y1 = Squash.int.ser(127, 1)
-print(y1) -- cannot display A
-print(Squash.int.des(y1, 1)) -- 127
-
-local y2 = Squash.int.ser(-127, 1)
-print(y2) -- cannot display B
-print(Squash.int.des(y2, 1)) -- -127
-
-local y3 = Squash.int.ser(128, 1)
-print(y3) -- cannot display C
-print(Squash.int.des(y3, 1)) -- -128
-
-local y4 = Squash.int.ser(-128, 1)
-print(y4) -- cannot display C
-print(Squash.int.des(y4, 1)) -- -128
+local y = Squash.int.ser(127, 1)
+print(y) -- cannot display A
+print(Squash.int.des(y, 1)) -- 127
+```
+```lua
+local y = Squash.int.ser(-127, 1)
+print(y) -- cannot display B
+print(Squash.int.des(y, 1)) -- -127
+```
+```lua
+local y = Squash.int.ser(128, 1)
+print(y) -- cannot display C
+print(Squash.int.des(y, 1)) -- -128
+```
+```lua
+local y = Squash.int.ser(-128, 1)
+print(y) -- cannot display C
+print(Squash.int.des(y, 1)) -- -128
 ```
 
 ### Floating Point
@@ -110,13 +115,14 @@ With 8 bytes (called a `double`). The first bit is used to represent the sign of
 The formula for calculating the value of a `double` from its sign, exponent, and mantissa can be found at [this wikipedia article](https://en.wikipedia.org/wiki/Double-precision_floating-point_format).
 
 ```lua
-local y1 = Squash.float.ser(174302.923957475339573, 4)
-print(y1) -- ╗7*H
-print(Squash.float.des(y1, 4)) -- 174302.921875
-
-local y2 = Squash.float.ser(-17534840302.923957475339573, 8)
-print(y2) -- "▓╗╖íT►┬
-print(Squash.float.des(y2, 8)) -- -17534840302.923958
+local y = Squash.float.ser(174302.923957475339573, 4)
+print(y) -- ╗7*H
+print(Squash.float.des(y, 4)) -- 174302.921875
+```
+```lua
+local y = Squash.float.ser(-17534840302.923957475339573, 8)
+print(y) -- "▓╗╖íT►┬
+print(Squash.float.des(y, 8)) -- -17534840302.923958
 ```
 
 ## Strings
@@ -129,29 +135,33 @@ Strings are a bit more complicated than numbers. There are many ways to compress
 	['w'] = 11,
 }
 ```
-This allows us to now calculate a numerical value for each string using [Positional Notation](https://en.wikipedia.org/wiki/Positional_notation). The alphabet above has a radix of 11, so we can convert the string into a number with base 11. We can then use the base conversion formula, modified to work with strings, to convert the number with a radix 11 alphabet into a number with a radix 255 alphabet such as extended ASCII or UTF-8 minus the \0 character. Long story short, you can fit ***log11(255) = 2.31*** characters from the original string into a single character in the new string. This proccess is invertible and lossless, so we can convert the serialized string back into the original string when we are ready. To play with this concept for arbitrary alphabets, you can visit [zamicol's base converter](https://convert.zamicol.com/) which supports these exact operations and comes with many pre-defined alphabets.
+This allows us to now calculate a numerical value for each string using [Positional Notation](https://en.wikipedia.org/wiki/Positional_notation). The alphabet above has a radix of 11, so we can convert the string into a number with base 11. We can then use the base conversion formula, modified to work with strings, to convert the number with a radix 11 alphabet into a number with a radix 256 alphabet such as extended ASCII or UTF-8. To prevent our numbers from being shortened due to leading 0's, we have to use an extra character in our alphabet in the 0's place that we never use, such as the \0 character, making our radix 12. Long story short, you can fit ***log12(256) = 2.23*** characters from the original string into a single character in the new string. This proccess is invertible and lossless, so we can convert the serialized string back into the original string when we are ready. To play with this concept for arbitrary alphabets, you can visit [zamicol's base converter](https://convert.zamicol.com/) which supports these exact operations and comes with many pre-defined alphabets.
 ```lua
-local x1 = 'Hello, world!'
-local alphabet = Squash.string.alphabet(x1)
+local x = 'Hello, world!'
+
+local alphabet = Squash.string.alphabet(x)
 print(alphabet) -- ' !,Hdelorw'
-local y1 = Squash.string.ser(x1, alphabet)
-print(y1) --[[    <-- There is a newline character here
+
+local y = Squash.string.ser(x, alphabet)
+print(y) --[[    <-- There is a newline character here
 '��C�]]
-print(Squash.string.des(y1, alphabet)) -- 'Hello, world!'
 
-local x2 = 'great sword'
-print(Squash.lower .. ' ') -- 'abcdefghijklmnopqrstuvwxyz '
-local y2 = Squash.string.ser(x2, Squash.lower .. ' ')
-print(y2) -- ��L�,
-print(Squash.string.des(y2, Squash.lower .. '  ')) -- 'great sword'
+print(Squash.string.des(y, alphabet)) -- 'Hello, world!'
+```
+```lua
+local y = Squash.string.ser('great sword', Squash.lower .. ' ')
+print(y) -- ��L�,
 
-local x3 = 'lowercase'
-local y3 = Squash.string.convert(x3, Squash.lower, Squash.upper)
-print(y3) -- 'LOWERCASE'
-print(Squash.string.convert(y3, Squash.upper, Squash.lower)) -- 'lowercase'
+print(Squash.string.des(y, Squash.lower .. '  ')) -- 'great sword'
+```
+```lua
+local y = Squash.string.convert('lowercase', Squash.lower, Squash.upper)
+print(y) -- 'LOWERCASE'
 
-local x4 = '1936'
-local y4 = Squash.string.convert(x4, Squash.decimal, Squash.binary)
-print(y4) -- '11110010000'
-print(Squash.string.convert(y4, Squash.binary, Squash.decimal)) -- '1936'
+print(Squash.string.convert(y, Squash.upper, Squash.lower)) -- 'lowercase'
+```
+```lua
+local y = Squash.string.convert('1936', Squash.decimal, Squash.binary)
+print(y) -- '11110010000'
+print(Squash.string.convert(y, Squash.binary, Squash.decimal)) -- '1936'
 ```
