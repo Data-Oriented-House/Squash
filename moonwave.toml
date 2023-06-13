@@ -10,12 +10,12 @@ includeReadme = false
 
 [[home.features]]
 title = "Bandwidth Optimized"
-description = "Carefully optimizes compression for every type so that they are represented in the most spatially efficient way. This is useful for sending data over the network or saving it to a datastore."
+description = "Carefully optimizes compression for every type so that they are represented in the most spatially efficient way. Enables sending data over the network or saving it to a datastore cheaper."
 image = "/bandwidth2.png"
 
 [[home.features]]
 title = "Serialization-Deserialization"
-description = ""
+description = "Pure and Stateless. No funny business."
 image = "/Squash.png"
 
 [[home.features]]
