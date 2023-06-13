@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v2.3.1">
 <title data-rh="true">Squash | Squash</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://data-oriented-house.github.io/Squash/api/Squash"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="Squash | Squash"><link data-rh="true" rel="icon" href="/Squash/favicon.ico"><link data-rh="true" rel="canonical" href="https://data-oriented-house.github.io/Squash/api/Squash"><link data-rh="true" rel="alternate" href="https://data-oriented-house.github.io/Squash/api/Squash" hreflang="en"><link data-rh="true" rel="alternate" href="https://data-oriented-house.github.io/Squash/api/Squash" hreflang="x-default"><link rel="stylesheet" href="/Squash/assets/css/styles.a5aeb1da.css">
-<link rel="preload" href="/Squash/assets/js/runtime~main.2b3c9ad5.js" as="script">
-<link rel="preload" href="/Squash/assets/js/main.4e1480e6.js" as="script">
+<link rel="preload" href="/Squash/assets/js/runtime~main.8e201327.js" as="script">
+<link rel="preload" href="/Squash/assets/js/main.147d2e28.js" as="script">
 </head>
 <body class="navigation-with-keyboard">
 <script>!function(){function e(e){document.documentElement.setAttribute("data-theme",e)}var t=function(){var e=null;try{e=localStorage.getItem("theme")}catch(e){}return e}();null!==t?e(t):window.matchMedia("(prefers-color-scheme: dark)").matches?e("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,e("light"))}()</script><div id="__docusaurus">
@@ -21,26 +21,34 @@
 <p>A function that serializes a number into a string. Usually this is Squash's uint, int, or number ser methods.</p>
 </div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="NumberDes"><code style="text-decoration:none">NumberDes</code><a href="#NumberDes" class="hash-link" aria-label="Direct link to NumberDes" title="Direct link to NumberDes">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L52"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">type</code> <code>NumberDes<!-- --> = </code> <code class="purple_ieR2">(</code><div class="inset_uKQm"><code>y<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/string">string</a></code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code>bytes<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Bytes">Bytes?</a></code></div><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/number">number</a></code></div><div>
 <p>A function that deserializes a number from a string. Usually this is Squash's uint, int, or number des methods.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="NumberSerDes"><code style="text-decoration:none">NumberSerDes</code><a href="#NumberSerDes" class="hash-link" aria-label="Direct link to NumberSerDes" title="Direct link to NumberSerDes">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L60"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>NumberSerDes<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>ser<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#NumberSer">NumberSer</a></code></div><div><code>des<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#NumberDes">NumberDes</a></code></div></div><code>}</code></div><div></div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="SquashRaycastResult"><code style="text-decoration:none">SquashRaycastResult</code><a href="#SquashRaycastResult" class="hash-link" aria-label="Direct link to SquashRaycastResult" title="Direct link to SquashRaycastResult">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L2245"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>SquashRaycastResult<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>Material<!-- -->: </code><code class="blue_P4bS">Enum.Material</code></div><div><code>Distance<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/number">number</a></code></div><div><code>Position<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Vector3">Vector3</a></code></div><div><code>Normal<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Vector3">Vector3</a></code></div></div><code>}</code></div><div></div><h2 class="anchor anchorWithStickyNavbar_LWe7" id="properties">Properties<a href="#properties" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="delimiter"><code style="text-decoration:none">delimiter</code><a href="#delimiter" class="hash-link" aria-label="Direct link to delimiter" title="Direct link to delimiter">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L101"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->delimiter<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/string">string</a></code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="NumberSerDes"><code style="text-decoration:none">NumberSerDes</code><a href="#NumberSerDes" class="hash-link" aria-label="Direct link to NumberSerDes" title="Direct link to NumberSerDes">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L60"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>NumberSerDes<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>ser<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#NumberSer">NumberSer</a></code></div><div><code>des<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#NumberDes">NumberDes</a></code></div></div><code>}</code></div><div></div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="SquashRaycastResult"><code style="text-decoration:none">SquashRaycastResult</code><a href="#SquashRaycastResult" class="hash-link" aria-label="Direct link to SquashRaycastResult" title="Direct link to SquashRaycastResult">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L2276"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>SquashRaycastResult<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>Material<!-- -->: </code><code class="blue_P4bS">Enum.Material</code></div><div><code>Distance<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/number">number</a></code></div><div><code>Position<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Vector3">Vector3</a></code></div><div><code>Normal<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Vector3">Vector3</a></code></div></div><code>}</code></div><div></div><h2 class="anchor anchorWithStickyNavbar_LWe7" id="properties">Properties<a href="#properties" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="delimiter"><code style="text-decoration:none">delimiter</code><a href="#delimiter" class="hash-link" aria-label="Direct link to delimiter" title="Direct link to delimiter">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L101"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->delimiter<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/string">string</a></code></div><div>
 <p>The delimiter used to separate strings or other types in variable sized arrays and act as the 0 element for base conversions.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="digits"><code style="text-decoration:none">digits</code><a href="#digits" class="hash-link" aria-label="Direct link to digits" title="Direct link to digits">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L109"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->digits<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="binary"><code style="text-decoration:none">binary</code><a href="#binary" class="hash-link" aria-label="Direct link to binary" title="Direct link to binary">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L109"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->binary<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+<p>All digits in base 2.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="octal"><code style="text-decoration:none">octal</code><a href="#octal" class="hash-link" aria-label="Direct link to octal" title="Direct link to octal">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L117"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->octal<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+<p>All digits in base 8.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="decimal"><code style="text-decoration:none">decimal</code><a href="#decimal" class="hash-link" aria-label="Direct link to decimal" title="Direct link to decimal">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L125"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->decimal<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
 <p>All digits in base 10.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="lower"><code style="text-decoration:none">lower</code><a href="#lower" class="hash-link" aria-label="Direct link to lower" title="Direct link to lower">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L117"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->lower<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="duodecimal"><code style="text-decoration:none">duodecimal</code><a href="#duodecimal" class="hash-link" aria-label="Direct link to duodecimal" title="Direct link to duodecimal">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L133"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->duodecimal<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+<p>All digits in base 12.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="hexadecimal"><code style="text-decoration:none">hexadecimal</code><a href="#hexadecimal" class="hash-link" aria-label="Direct link to hexadecimal" title="Direct link to hexadecimal">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L141"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->hexadecimal<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+<p>All digits in base 16.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="utf8"><code style="text-decoration:none">utf8</code><a href="#utf8" class="hash-link" aria-label="Direct link to utf8" title="Direct link to utf8">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L149"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->utf8<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+<p>All digits in base 256. The UTF-8 character set.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="lower"><code style="text-decoration:none">lower</code><a href="#lower" class="hash-link" aria-label="Direct link to lower" title="Direct link to lower">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L161"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->lower<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
 <p>All lowercase letters in the english language.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="upper"><code style="text-decoration:none">upper</code><a href="#upper" class="hash-link" aria-label="Direct link to upper" title="Direct link to upper">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L125"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->upper<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="upper"><code style="text-decoration:none">upper</code><a href="#upper" class="hash-link" aria-label="Direct link to upper" title="Direct link to upper">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L169"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->upper<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
 <p>All uppercase letters in the english language.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="letters"><code style="text-decoration:none">letters</code><a href="#letters" class="hash-link" aria-label="Direct link to letters" title="Direct link to letters">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L133"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->letters<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="letters"><code style="text-decoration:none">letters</code><a href="#letters" class="hash-link" aria-label="Direct link to letters" title="Direct link to letters">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L177"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->letters<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
 <p>All letters in the english language.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="punctuation"><code style="text-decoration:none">punctuation</code><a href="#punctuation" class="hash-link" aria-label="Direct link to punctuation" title="Direct link to punctuation">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L141"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->punctuation<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="punctuation"><code style="text-decoration:none">punctuation</code><a href="#punctuation" class="hash-link" aria-label="Direct link to punctuation" title="Direct link to punctuation">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L185"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->punctuation<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
 <p>All punctuation symbols in the english language.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="filepath"><code style="text-decoration:none">filepath</code><a href="#filepath" class="hash-link" aria-label="Direct link to filepath" title="Direct link to filepath">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L149"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->filepath<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
-<p>All characters that may be used in a filepath.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="datastore"><code style="text-decoration:none">datastore</code><a href="#datastore" class="hash-link" aria-label="Direct link to datastore" title="Direct link to datastore">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L157"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->datastore<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
-<p>All characters that will not be expanded when JSONEncoded.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="english"><code style="text-decoration:none">english</code><a href="#english" class="hash-link" aria-label="Direct link to english" title="Direct link to english">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L165"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->english<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="english"><code style="text-decoration:none">english</code><a href="#english" class="hash-link" aria-label="Direct link to english" title="Direct link to english">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L193"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->english<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
 <p>All symbols in the english language.</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="utf8"><code style="text-decoration:none">utf8</code><a href="#utf8" class="hash-link" aria-label="Direct link to utf8" title="Direct link to utf8">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L173"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->utf8<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
-<p>The UTF-8 character set, excluding the delimiter.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="filepath"><code style="text-decoration:none">filepath</code><a href="#filepath" class="hash-link" aria-label="Direct link to filepath" title="Direct link to filepath">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L201"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->filepath<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+<p>All characters that may be used in a filepath.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="datastore"><code style="text-decoration:none">datastore</code><a href="#datastore" class="hash-link" aria-label="Direct link to datastore" title="Direct link to datastore">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Data-Oriented-House/Squash/blob/main/src/init.lua#L209"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Squash<!-- -->.<!-- -->datastore<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/Squash/api/Squash#Alphabet">Alphabet</a></code></div><div>
+<p>All characters that will not be expanded when JSONEncoded.</p>
 </div></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
     &quot;functions&quot;: [],
     &quot;properties&quot;: [
@@ -54,11 +62,56 @@
             }
         },
         {
-            &quot;name&quot;: &quot;digits&quot;,
-            &quot;desc&quot;: &quot;All digits in base 10.&quot;,
+            &quot;name&quot;: &quot;binary&quot;,
+            &quot;desc&quot;: &quot;All digits in base 2.&quot;,
             &quot;lua_type&quot;: &quot;Alphabet&quot;,
             &quot;source&quot;: {
                 &quot;line&quot;: 109,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;octal&quot;,
+            &quot;desc&quot;: &quot;All digits in base 8.&quot;,
+            &quot;lua_type&quot;: &quot;Alphabet&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 117,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;decimal&quot;,
+            &quot;desc&quot;: &quot;All digits in base 10.&quot;,
+            &quot;lua_type&quot;: &quot;Alphabet&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 125,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;duodecimal&quot;,
+            &quot;desc&quot;: &quot;All digits in base 12.&quot;,
+            &quot;lua_type&quot;: &quot;Alphabet&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 133,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;hexadecimal&quot;,
+            &quot;desc&quot;: &quot;All digits in base 16.&quot;,
+            &quot;lua_type&quot;: &quot;Alphabet&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 141,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;utf8&quot;,
+            &quot;desc&quot;: &quot;All digits in base 256. The UTF-8 character set.&quot;,
+            &quot;lua_type&quot;: &quot;Alphabet&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 149,
                 &quot;path&quot;: &quot;src/init.lua&quot;
             }
         },
@@ -67,7 +120,7 @@
             &quot;desc&quot;: &quot;All lowercase letters in the english language.&quot;,
             &quot;lua_type&quot;: &quot;Alphabet&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 117,
+                &quot;line&quot;: 161,
                 &quot;path&quot;: &quot;src/init.lua&quot;
             }
         },
@@ -76,7 +129,7 @@
             &quot;desc&quot;: &quot;All uppercase letters in the english language.&quot;,
             &quot;lua_type&quot;: &quot;Alphabet&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 125,
+                &quot;line&quot;: 169,
                 &quot;path&quot;: &quot;src/init.lua&quot;
             }
         },
@@ -85,7 +138,7 @@
             &quot;desc&quot;: &quot;All letters in the english language.&quot;,
             &quot;lua_type&quot;: &quot;Alphabet&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 133,
+                &quot;line&quot;: 177,
                 &quot;path&quot;: &quot;src/init.lua&quot;
             }
         },
@@ -94,25 +147,7 @@
             &quot;desc&quot;: &quot;All punctuation symbols in the english language.&quot;,
             &quot;lua_type&quot;: &quot;Alphabet&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 141,
-                &quot;path&quot;: &quot;src/init.lua&quot;
-            }
-        },
-        {
-            &quot;name&quot;: &quot;filepath&quot;,
-            &quot;desc&quot;: &quot;All characters that may be used in a filepath.&quot;,
-            &quot;lua_type&quot;: &quot;Alphabet&quot;,
-            &quot;source&quot;: {
-                &quot;line&quot;: 149,
-                &quot;path&quot;: &quot;src/init.lua&quot;
-            }
-        },
-        {
-            &quot;name&quot;: &quot;datastore&quot;,
-            &quot;desc&quot;: &quot;All characters that will not be expanded when JSONEncoded.&quot;,
-            &quot;lua_type&quot;: &quot;Alphabet&quot;,
-            &quot;source&quot;: {
-                &quot;line&quot;: 157,
+                &quot;line&quot;: 185,
                 &quot;path&quot;: &quot;src/init.lua&quot;
             }
         },
@@ -121,16 +156,25 @@
             &quot;desc&quot;: &quot;All symbols in the english language.&quot;,
             &quot;lua_type&quot;: &quot;Alphabet&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 165,
+                &quot;line&quot;: 193,
                 &quot;path&quot;: &quot;src/init.lua&quot;
             }
         },
         {
-            &quot;name&quot;: &quot;utf8&quot;,
-            &quot;desc&quot;: &quot;The UTF-8 character set, excluding the delimiter.&quot;,
+            &quot;name&quot;: &quot;filepath&quot;,
+            &quot;desc&quot;: &quot;All characters that may be used in a filepath.&quot;,
             &quot;lua_type&quot;: &quot;Alphabet&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 173,
+                &quot;line&quot;: 201,
+                &quot;path&quot;: &quot;src/init.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;datastore&quot;,
+            &quot;desc&quot;: &quot;All characters that will not be expanded when JSONEncoded.&quot;,
+            &quot;lua_type&quot;: &quot;Alphabet&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 209,
                 &quot;path&quot;: &quot;src/init.lua&quot;
             }
         }
@@ -227,7 +271,7 @@
                 }
             ],
             &quot;source&quot;: {
-                &quot;line&quot;: 2245,
+                &quot;line&quot;: 2276,
                 &quot;path&quot;: &quot;src/init.lua&quot;
             }
         }
@@ -238,8 +282,8 @@
         &quot;line&quot;: 6,
         &quot;path&quot;: &quot;src/init.lua&quot;
     }
-}</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a><ul><li><a href="#Alphabet" class="table-of-contents__link toc-highlight">Alphabet</a></li><li><a href="#Bytes" class="table-of-contents__link toc-highlight">Bytes</a></li><li><a href="#FloatBytes" class="table-of-contents__link toc-highlight">FloatBytes</a></li><li><a href="#NumberDes" class="table-of-contents__link toc-highlight">NumberDes</a></li><li><a href="#NumberSer" class="table-of-contents__link toc-highlight">NumberSer</a></li><li><a href="#NumberSerDes" class="table-of-contents__link toc-highlight">NumberSerDes</a></li><li><a href="#SquashRaycastResult" class="table-of-contents__link toc-highlight">SquashRaycastResult</a></li></ul></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a><ul><li><a href="#datastore" class="table-of-contents__link toc-highlight">datastore</a></li><li><a href="#delimiter" class="table-of-contents__link toc-highlight">delimiter</a></li><li><a href="#digits" class="table-of-contents__link toc-highlight">digits</a></li><li><a href="#english" class="table-of-contents__link toc-highlight">english</a></li><li><a href="#filepath" class="table-of-contents__link toc-highlight">filepath</a></li><li><a href="#letters" class="table-of-contents__link toc-highlight">letters</a></li><li><a href="#lower" class="table-of-contents__link toc-highlight">lower</a></li><li><a href="#punctuation" class="table-of-contents__link toc-highlight">punctuation</a></li><li><a href="#upper" class="table-of-contents__link toc-highlight">upper</a></li><li><a href="#utf8" class="table-of-contents__link toc-highlight">utf8</a></li></ul></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2023 SolarScuffle-Bot. Built with Moonwave and Docusaurus</div></div></div></footer></div>
-<script src="/Squash/assets/js/runtime~main.2b3c9ad5.js"></script>
-<script src="/Squash/assets/js/main.4e1480e6.js"></script>
+}</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a><ul><li><a href="#Alphabet" class="table-of-contents__link toc-highlight">Alphabet</a></li><li><a href="#Bytes" class="table-of-contents__link toc-highlight">Bytes</a></li><li><a href="#FloatBytes" class="table-of-contents__link toc-highlight">FloatBytes</a></li><li><a href="#NumberDes" class="table-of-contents__link toc-highlight">NumberDes</a></li><li><a href="#NumberSer" class="table-of-contents__link toc-highlight">NumberSer</a></li><li><a href="#NumberSerDes" class="table-of-contents__link toc-highlight">NumberSerDes</a></li><li><a href="#SquashRaycastResult" class="table-of-contents__link toc-highlight">SquashRaycastResult</a></li></ul></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a><ul><li><a href="#binary" class="table-of-contents__link toc-highlight">binary</a></li><li><a href="#datastore" class="table-of-contents__link toc-highlight">datastore</a></li><li><a href="#decimal" class="table-of-contents__link toc-highlight">decimal</a></li><li><a href="#delimiter" class="table-of-contents__link toc-highlight">delimiter</a></li><li><a href="#duodecimal" class="table-of-contents__link toc-highlight">duodecimal</a></li><li><a href="#english" class="table-of-contents__link toc-highlight">english</a></li><li><a href="#filepath" class="table-of-contents__link toc-highlight">filepath</a></li><li><a href="#hexadecimal" class="table-of-contents__link toc-highlight">hexadecimal</a></li><li><a href="#letters" class="table-of-contents__link toc-highlight">letters</a></li><li><a href="#lower" class="table-of-contents__link toc-highlight">lower</a></li><li><a href="#octal" class="table-of-contents__link toc-highlight">octal</a></li><li><a href="#punctuation" class="table-of-contents__link toc-highlight">punctuation</a></li><li><a href="#upper" class="table-of-contents__link toc-highlight">upper</a></li><li><a href="#utf8" class="table-of-contents__link toc-highlight">utf8</a></li></ul></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2023 SolarScuffle-Bot. Built with Moonwave and Docusaurus</div></div></div></footer></div>
+<script src="/Squash/assets/js/runtime~main.8e201327.js"></script>
+<script src="/Squash/assets/js/main.147d2e28.js"></script>
 </body>
 </html>
