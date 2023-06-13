@@ -46,7 +46,8 @@ The results are measured from the client's Network Stats window. These are usefu
 
 | Value | Bandwidth (KB/s) | Notes | Conclusions |
 |-|-|-|-|
-| noise | 0.16 | Noise from environment | Roblox is constantly sending data in the background |
+| noise | ±0.02 | Noise from environment and other factors |
+| baseline | 0.16 | | Roblox is constantly sending data in the background |
 | `()` | 0.85 | Testing if remote event has a cost | Yes |
 | `(nil)` | 0.91 | Testing if nil is the same as void | No. |
 | `(true)`, `(false)`, `('')` | 0.97 | Testing if value changes cost | No. Only serialize 2 or more booleans for optimal results |
