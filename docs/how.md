@@ -8,7 +8,7 @@ Every character in a string can represent 256 possible values, since there are 2
 
 ## Booleans
 
-In Luau, the `boolean` type is 1 byte large, but only 1 bit is actually necessary to store the contents of a boolean. This means we can actually serialize not just 1, but 8 booleans in a single byte. This is a common strategy called [*bit masking*](https://en.wikipedia.org/wiki/Mask_(computing)).
+In Luau, the `boolean` type is 1 byte large, but only 1 bit is actually necessary to store the contents of a boolean. This means we can actually serialize not just 1, but 8 booleans in a single byte. This is a common strategy called *bit packing* to implement [*bit fields*](https://en.wikipedia.org/wiki/Bit_field).
 
 | Happy | Confused | Irritated | Concerned | Angry | Humber | Dazed | Nage |
 | - | - | - | - | - | - | - | - |
