@@ -146,7 +146,7 @@ Squash.hexadecimal = '0123456789ABCDEF' :: Alphabet
 
 	All digits in base 256. The UTF-8 character set.
 ]=]
-local utf8Characters = table.create(255)
+local utf8Characters = table.create(256)
 for i = 0, 255 do
 	utf8Characters[i + 1] = string.char(i)
 end
