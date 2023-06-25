@@ -1,0 +1,4 @@
+*.webp filter=lfs diff=lfs merge=lfs -text
+*.rbxm filter=lfs diff=lfs merge=lfs -text
+*.rbxl filter=lfs diff=lfs merge=lfs -text
+sourcemap.json filter=lfs diff=lfs merge=lfs -text
