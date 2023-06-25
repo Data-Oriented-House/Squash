@@ -49,741 +49,741 @@ To generate a JSON file of the test below results you can download [this place f
 
 ### ()
 
-![()](/benchmarks/().webp)
+![()](/benchmarks/1.webp)
 
 ### ('')
 
-![('')](/benchmarks/('').webp)
+![('')](/benchmarks/84.webp)
 
 ### (true)
 
-![(true)](/benchmarks/(true).webp)
+![(true)](/benchmarks/80.webp)
 
 ### (false)
 
-![(false)](/benchmarks/(false).webp)
+![(false)](/benchmarks/77.webp)
 
 ### ({})
 
-![({})](/benchmarks/({}).webp)
+![({})](/benchmarks/0.webp)
 
 ### ('A')
 
-![('A')](/benchmarks/('a').webp)
+![('A')](/benchmarks/131.webp)
 
 ### (string.char(255))
 
-![(string_char(255))](/benchmarks/(string_char(255)).webp)
+![(string_char(255))](/benchmarks/133.webp)
 
 ### ('a')
 
-![('a')](/benchmarks/('a').webp)
+![('a')](/benchmarks/160.webp)
 
 ### (string.char(0))
 
-![(string_char(0))](/benchmarks/(string_char(0)).webp)
+![(string_char(0))](/benchmarks/111.webp)
 
 ### ({true})
 
-![({true})](/benchmarks/({true}).webp)
+![({true})](/benchmarks/79.webp)
 
 ### ('aa')
 
-![('aa')](/benchmarks/('aa').webp)
+![('aa')](/benchmarks/126.webp)
 
 ### (true, false)
 
-![(true, false)](/benchmarks/(true,_false).webp)
+![(true, false)](/benchmarks/78.webp)
 
 ### ({''})
 
-![({''})](/benchmarks/({''}).webp)
+![({''})](/benchmarks/86.webp)
 
 ### ('', '')
 
-![('', '')](/benchmarks/('',_'').webp)
+![('', '')](/benchmarks/95.webp)
 
 ### (Vector2int16.new(1, -3))
 
-![(Vector2int16_new(1, -3))](/benchmarks/(vector2int16_new(1,_-3)).webp)
+![(Vector2int16_new(1, -3))](/benchmarks/105.webp)
 
 ### (Vector2int16.new(-1, -3))
 
-![(Vector2int16_new(-1, -3))](/benchmarks/(vector2int16_new(-1,_-3)).webp)
+![(Vector2int16_new(-1, -3))](/benchmarks/109.webp)
 
 ### (Vector2int16.new(-1, 3))
 
-![(Vector2int16_new(-1, 3))](/benchmarks/(vector2int16_new(-1,_3)).webp)
+![(Vector2int16_new(-1, 3))](/benchmarks/104.webp)
 
 ### ('aaa')
 
-![('aaa')](/benchmarks/('aaa').webp)
+![('aaa')](/benchmarks/120.webp)
 
 ### (Vector2int16.new(1, 3))
 
-![(Vector2int16_new(1, 3))](/benchmarks/(vector2int16_new(1,_3)).webp)
+![(Vector2int16_new(1, 3))](/benchmarks/102.webp)
 
 ### (true, false, true)
 
-![(true, false, true)](/benchmarks/(true,_false,_true).webp)
+![(true, false, true)](/benchmarks/75.webp)
 
 ### ('aaaa')
 
-![('aaaa')](/benchmarks/('aaaa').webp)
+![('aaaa')](/benchmarks/134.webp)
 
 ### ('', '', '')
 
-![('', '', '')](/benchmarks/('',_'',_'').webp)
+![('', '', '')](/benchmarks/90.webp)
 
 ### ({'', ''})
 
-![({'', ''})](/benchmarks/({'',_''}).webp)
+![({'', ''})](/benchmarks/100.webp)
 
 ### ({true, false})
 
-![({true, false})](/benchmarks/({true,_false}).webp)
+![({true, false})](/benchmarks/81.webp)
 
 ### ('a', 'a')
 
-![('a', 'a')](/benchmarks/('a',_'a').webp)
+![('a', 'a')](/benchmarks/60.webp)
 
 ### ({Vector2int16.new(-1, 3)})
 
-![({Vector2int16_new(-1, 3)})](/benchmarks/({vector2int16_new(-1,_3)}).webp)
+![({Vector2int16_new(-1, 3)})](/benchmarks/103.webp)
 
 ### (Vector3int16.new(1, 3, 5))
 
-![(Vector3int16_new(1, 3, 5))](/benchmarks/(vector3int16_new(1,_3,_5)).webp)
+![(Vector3int16_new(1, 3, 5))](/benchmarks/41.webp)
 
 ### (Vector3int16.new(-1, 3, -5))
 
-![(Vector3int16_new(-1, 3, -5))](/benchmarks/(vector3int16_new(-1,_3,_-5)).webp)
+![(Vector3int16_new(-1, 3, -5))](/benchmarks/36.webp)
 
 ### (Vector3int16.new(1, -3, 5))
 
-![(Vector3int16_new(1, -3, 5))](/benchmarks/(vector3int16_new(1,_-3,_5)).webp)
+![(Vector3int16_new(1, -3, 5))](/benchmarks/39.webp)
 
 ### (Vector3int16.new(-1, -3, -5))
 
-![(Vector3int16_new(-1, -3, -5))](/benchmarks/(vector3int16_new(-1,_-3,_-5)).webp)
+![(Vector3int16_new(-1, -3, -5))](/benchmarks/38.webp)
 
 ### ('aaaaa')
 
-![('aaaaa')](/benchmarks/('aaaaa').webp)
+![('aaaaa')](/benchmarks/119.webp)
 
 ### ({'a', 'a'})
 
-![({'a', 'a'})](/benchmarks/({'a',_'a'}).webp)
+![({'a', 'a'})](/benchmarks/61.webp)
 
 ### ('', '', '', '')
 
-![('', '', '', '')](/benchmarks/('',_'',_'',_'').webp)
+![('', '', '', '')](/benchmarks/87.webp)
 
 ### (true, false, true, false)
 
-![(true, false, true, false)](/benchmarks/(true,_false,_true,_false).webp)
+![(true, false, true, false)](/benchmarks/69.webp)
 
 ### ('aaaaaa')
 
-![('aaaaaa')](/benchmarks/('aaaaaa').webp)
+![('aaaaaa')](/benchmarks/158.webp)
 
 ### ({true, false, true})
 
-![({true, false, true})](/benchmarks/({true,_false,_true}).webp)
+![({true, false, true})](/benchmarks/71.webp)
 
 ### ({'', '', ''})
 
-![({'', '', ''})](/benchmarks/({'',_'',_''}).webp)
+![({'', '', ''})](/benchmarks/99.webp)
 
 ### (Vector2.zero)
 
-![(Vector2_zero)](/benchmarks/(vector2_zero).webp)
+![(Vector2_zero)](/benchmarks/31.webp)
 
 ### (0)
 
-![(0)](/benchmarks/(0).webp)
+![(0)](/benchmarks/9.webp)
 
 ### (18375)
 
-![(18375)](/benchmarks/(18375).webp)
+![(18375)](/benchmarks/17.webp)
 
 ### ({Vector3int16.new(-1, 3, -5)})
 
-![({Vector3int16_new(-1, 3, -5)})](/benchmarks/({vector3int16_new(-1,_3,_-5)}).webp)
+![({Vector3int16_new(-1, 3, -5)})](/benchmarks/40.webp)
 
 ### (Vector2.new(-1, 2.5))
 
-![(Vector2_new(-1, 2_5))](/benchmarks/(vector2_new(-1,_2_5)).webp)
+![(Vector2_new(-1, 2_5))](/benchmarks/28.webp)
 
 ### ('a', 'a', 'a')
 
-![('a', 'a', 'a')](/benchmarks/('a',_'a',_'a').webp)
+![('a', 'a', 'a')](/benchmarks/58.webp)
 
 ### (Vector2.new(-1, -2.73))
 
-![(Vector2_new(-1, -2_73))](/benchmarks/(vector2_new(-1,_-2_73)).webp)
+![(Vector2_new(-1, -2_73))](/benchmarks/25.webp)
 
 ### ('aaaaaaa')
 
-![('aaaaaaa')](/benchmarks/('aaaaaaa').webp)
+![('aaaaaaa')](/benchmarks/161.webp)
 
 ### (-18375)
 
-![(-18375)](/benchmarks/(-18375).webp)
+![(-18375)](/benchmarks/14.webp)
 
 ### (Vector2.new(1, -2))
 
-![(Vector2_new(1, -2))](/benchmarks/(vector2_new(1,_-2)).webp)
+![(Vector2_new(1, -2))](/benchmarks/29.webp)
 
 ### (Vector2.one)
 
-![(Vector2_one)](/benchmarks/(vector2_one).webp)
+![(Vector2_one)](/benchmarks/24.webp)
 
 ### (Vector2.new(1, 2))
 
-![(Vector2_new(1, 2))](/benchmarks/(vector2_new(1,_2)).webp)
+![(Vector2_new(1, 2))](/benchmarks/22.webp)
 
 ### (Vector2int16.new(-1, 3), Vector2int16.new(-1, 3))
 
-![(Vector2int16_new(-1, 3), Vector2int16_new(-1, 3))](/benchmarks/(vector2int16_new(-1,_3),_vector2int16_new(-1,_3)).webp)
+![(Vector2int16_new(-1, 3), Vector2int16_new(-1, 3))](/benchmarks/106.webp)
 
 ### ('aaaaaaaa')
 
-![('aaaaaaaa')](/benchmarks/('aaaaaaaa').webp)
+![('aaaaaaaa')](/benchmarks/113.webp)
 
 ### ({true, false, true, false})
 
-![({true, false, true, false})](/benchmarks/({true,_false,_true,_false}).webp)
+![({true, false, true, false})](/benchmarks/67.webp)
 
 ### ({'', '', '', ''})
 
-![({'', '', '', ''})](/benchmarks/({'',_'',_'',_''}).webp)
+![({'', '', '', ''})](/benchmarks/92.webp)
 
 ### ('', '', '', '', '')
 
-![('', '', '', '', '')](/benchmarks/('',_'',_'',_'',_'').webp)
+![('', '', '', '', '')](/benchmarks/98.webp)
 
 ### (true, false, true, false, true)
 
-![(true, false, true, false, true)](/benchmarks/(true,_false,_true,_false,_true).webp)
+![(true, false, true, false, true)](/benchmarks/70.webp)
 
 ### ('aaaaaaaaa')
 
-![('aaaaaaaaa')](/benchmarks/('aaaaaaaaa').webp)
+![('aaaaaaaaa')](/benchmarks/117.webp)
 
 ### ({0})
 
-![({0})](/benchmarks/({0}).webp)
+![({0})](/benchmarks/18.webp)
 
 ### ({'a', 'a', 'a'})
 
-![({'a', 'a', 'a'})](/benchmarks/({'a',_'a',_'a'}).webp)
+![({'a', 'a', 'a'})](/benchmarks/54.webp)
 
 ### ({Vector2.new(1, 2)})
 
-![({Vector2_new(1, 2)})](/benchmarks/({vector2_new(1,_2)}).webp)
+![({Vector2_new(1, 2)})](/benchmarks/23.webp)
 
 ### ({Vector2int16.new(-1, 3), Vector2int16.new(-1, 3)})
 
-![({Vector2int16_new(-1, 3), Vector2int16_new(-1, 3)})](/benchmarks/({vector2int16_new(-1,_3),_vector2int16_new(-1,_3)}).webp)
+![({Vector2int16_new(-1, 3), Vector2int16_new(-1, 3)})](/benchmarks/107.webp)
 
 ### ('', '', '', '', '', '')
 
-![('', '', '', '', '', '')](/benchmarks/('',_'',_'',_'',_'',_'').webp)
+![('', '', '', '', '', '')](/benchmarks/96.webp)
 
 ### ({'', '', '', '', ''})
 
-![({'', '', '', '', ''})](/benchmarks/({'',_'',_'',_'',_''}).webp)
+![({'', '', '', '', ''})](/benchmarks/101.webp)
 
 ### ('aaaaaaaaaa')
 
-![('aaaaaaaaaa')](/benchmarks/('aaaaaaaaaa').webp)
+![('aaaaaaaaaa')](/benchmarks/140.webp)
 
 ### ('a', 'a', 'a', 'a')
 
-![('a', 'a', 'a', 'a')](/benchmarks/('a',_'a',_'a',_'a').webp)
+![('a', 'a', 'a', 'a')](/benchmarks/62.webp)
 
 ### (true, false, true, false, true, false)
 
-![(true, false, true, false, true, false)](/benchmarks/(true,_false,_true,_false,_true,_false).webp)
+![(true, false, true, false, true, false)](/benchmarks/83.webp)
 
 ### ({true, false, true, false, true})
 
-![({true, false, true, false, true})](/benchmarks/({true,_false,_true,_false,_true}).webp)
+![({true, false, true, false, true})](/benchmarks/68.webp)
 
 ### (Vector3.one)
 
-![(Vector3_one)](/benchmarks/(vector3_one).webp)
+![(Vector3_one)](/benchmarks/49.webp)
 
 ### (Vector3.zero)
 
-![(Vector3_zero)](/benchmarks/(vector3_zero).webp)
+![(Vector3_zero)](/benchmarks/45.webp)
 
 ### (Vector3.new(1, -2, 3))
 
-![(Vector3_new(1, -2, 3))](/benchmarks/(vector3_new(1,_-2,_3)).webp)
+![(Vector3_new(1, -2, 3))](/benchmarks/48.webp)
 
 ### (Vector3.new(1, 2, 3))
 
-![(Vector3_new(1, 2, 3))](/benchmarks/(vector3_new(1,_2,_3)).webp)
+![(Vector3_new(1, 2, 3))](/benchmarks/47.webp)
 
 ### (Vector3.new())
 
-![(Vector3_new())](/benchmarks/(vector3_new()).webp)
+![(Vector3_new())](/benchmarks/51.webp)
 
 ### ('aaaaaaaaaaa')
 
-![('aaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaa').webp)
+![('aaaaaaaaaaa')](/benchmarks/146.webp)
 
 ### (Vector3.new(-1, 2.5, -3.27))
 
-![(Vector3_new(-1, 2_5, -3_27))](/benchmarks/(vector3_new(-1,_2_5,_-3_27)).webp)
+![(Vector3_new(-1, 2_5, -3_27))](/benchmarks/42.webp)
 
 ### (CFrame.identity)
 
-![(CFrame_identity)](/benchmarks/(cframe_identity).webp)
+![(CFrame_identity)](/benchmarks/169.webp)
 
 ### ({true, false, true, false, true, false})
 
-![({true, false, true, false, true, false})](/benchmarks/({true,_false,_true,_false,_true,_false}).webp)
+![({true, false, true, false, true, false})](/benchmarks/76.webp)
 
 ### ('', '', '', '', '', '', '')
 
-![('', '', '', '', '', '', '')](/benchmarks/('',_'',_'',_'',_'',_'',_'').webp)
+![('', '', '', '', '', '', '')](/benchmarks/89.webp)
 
 ### ('aaaaaaaaaaaa')
 
-![('aaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaa')](/benchmarks/147.webp)
 
 ### (true, false, true, false, true, false, true)
 
-![(true, false, true, false, true, false, true)](/benchmarks/(true,_false,_true,_false,_true,_false,_true).webp)
+![(true, false, true, false, true, false, true)](/benchmarks/72.webp)
 
 ### ({'', '', '', '', '', ''})
 
-![({'', '', '', '', '', ''})](/benchmarks/({'',_'',_'',_'',_'',_''}).webp)
+![({'', '', '', '', '', ''})](/benchmarks/88.webp)
 
 ### (CFrame.new(1, -2, 3))
 
-![(CFrame_new(1, -2, 3))](/benchmarks/(cframe_new(1,_-2,_3)).webp)
+![(CFrame_new(1, -2, 3))](/benchmarks/170.webp)
 
 ### (CFrame.new(-1, 2.5, -3.27))
 
-![(CFrame_new(-1, 2_5, -3_27))](/benchmarks/(cframe_new(-1,_2_5,_-3_27)).webp)
+![(CFrame_new(-1, 2_5, -3_27))](/benchmarks/182.webp)
 
 ### (Vector3int16.new(-1, 3, -5), Vector3int16.new(-1, 3, -5))
 
-![(Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5))](/benchmarks/(vector3int16_new(-1,_3,_-5),_vector3int16_new(-1,_3,_-5)).webp)
+![(Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5))](/benchmarks/35.webp)
 
 ### (CFrame.new(1, 2, 3))
 
-![(CFrame_new(1, 2, 3))](/benchmarks/(cframe_new(1,_2,_3)).webp)
+![(CFrame_new(1, 2, 3))](/benchmarks/165.webp)
 
 ### ({'a', 'a', 'a', 'a'})
 
-![({'a', 'a', 'a', 'a'})](/benchmarks/({'a',_'a',_'a',_'a'}).webp)
+![({'a', 'a', 'a', 'a'})](/benchmarks/56.webp)
 
 ### (CFrame.new())
 
-![(CFrame_new())](/benchmarks/(cframe_new()).webp)
+![(CFrame_new())](/benchmarks/176.webp)
 
 ### ('a', 'a', 'a', 'a', 'a')
 
-![('a', 'a', 'a', 'a', 'a')](/benchmarks/('a',_'a',_'a',_'a',_'a').webp)
+![('a', 'a', 'a', 'a', 'a')](/benchmarks/59.webp)
 
 ### ({Vector3.new(1, 2, 3)})
 
-![({Vector3_new(1, 2, 3)})](/benchmarks/({vector3_new(1,_2,_3)}).webp)
+![({Vector3_new(1, 2, 3)})](/benchmarks/44.webp)
 
 ### (Vector2int16.new(-1, 3), Vector2int16.new(-1, 3), Vector2int16.new(-1, 3))
 
-![(Vector2int16_new(-1, 3), Vector2int16_new(-1, 3), Vector2int16_new(-1, 3))](/benchmarks/(vector2int16_new(-1,_3),_vector2int16_new(-1,_3),_vector2int16_new(-1,_3)).webp)
+![(Vector2int16_new(-1, 3), Vector2int16_new(-1, 3), Vector2int16_new(-1, 3))](/benchmarks/108.webp)
 
 ### ('aaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaa')](/benchmarks/157.webp)
 
 ### ({'', '', '', '', '', '', ''})
 
-![({'', '', '', '', '', '', ''})](/benchmarks/({'',_'',_'',_'',_'',_'',_''}).webp)
+![({'', '', '', '', '', '', ''})](/benchmarks/91.webp)
 
 ### ('', '', '', '', '', '', '', '')
 
-![('', '', '', '', '', '', '', '')](/benchmarks/('',_'',_'',_'',_'',_'',_'',_'').webp)
+![('', '', '', '', '', '', '', '')](/benchmarks/94.webp)
 
 ### (true, false, true, false, true, false, true, false)
 
-![(true, false, true, false, true, false, true, false)](/benchmarks/(true,_false,_true,_false,_true,_false,_true,_false).webp)
+![(true, false, true, false, true, false, true, false)](/benchmarks/74.webp)
 
 ### ('aaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaa')](/benchmarks/122.webp)
 
 ### ({true, false, true, false, true, false, true})
 
-![({true, false, true, false, true, false, true})](/benchmarks/({true,_false,_true,_false,_true,_false,_true}).webp)
+![({true, false, true, false, true, false, true})](/benchmarks/73.webp)
 
 ### ({CFrame.identity})
 
-![({CFrame_identity})](/benchmarks/({cframe_identity}).webp)
+![({CFrame_identity})](/benchmarks/183.webp)
 
 ### ({Vector3int16.new(-1, 3, -5), Vector3int16.new(-1, 3, -5)})
 
-![({Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5)})](/benchmarks/({vector3int16_new(-1,_3,_-5),_vector3int16_new(-1,_3,_-5)}).webp)
+![({Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5)})](/benchmarks/34.webp)
 
 ### ({Vector2int16.new(-1, 3), Vector2int16.new(-1, 3), Vector2int16.new(-1, 3)})
 
-![({Vector2int16_new(-1, 3), Vector2int16_new(-1, 3), Vector2int16_new(-1, 3)})](/benchmarks/({vector2int16_new(-1,_3),_vector2int16_new(-1,_3),_vector2int16_new(-1,_3)}).webp)
+![({Vector2int16_new(-1, 3), Vector2int16_new(-1, 3), Vector2int16_new(-1, 3)})](/benchmarks/110.webp)
 
 ### ('aaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaa')](/benchmarks/115.webp)
 
 ### ({'a', 'a', 'a', 'a', 'a'})
 
-![({'a', 'a', 'a', 'a', 'a'})](/benchmarks/({'a',_'a',_'a',_'a',_'a'}).webp)
+![({'a', 'a', 'a', 'a', 'a'})](/benchmarks/66.webp)
 
 ### (Vector2.new(1, 2), Vector2.new(1, 2))
 
-![(Vector2_new(1, 2), Vector2_new(1, 2))](/benchmarks/(vector2_new(1,_2),_vector2_new(1,_2)).webp)
+![(Vector2_new(1, 2), Vector2_new(1, 2))](/benchmarks/26.webp)
 
 ### ('aaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaa')](/benchmarks/143.webp)
 
 ### (0, 0)
 
-![(0, 0)](/benchmarks/(0,_0).webp)
+![(0, 0)](/benchmarks/5.webp)
 
 ### ('', '', '', '', '', '', '', '', '')
 
-![('', '', '', '', '', '', '', '', '')](/benchmarks/('',_'',_'',_'',_'',_'',_'',_'',_'').webp)
+![('', '', '', '', '', '', '', '', '')](/benchmarks/93.webp)
 
 ### ({true, false, true, false, true, false, true, false})
 
-![({true, false, true, false, true, false, true, false})](/benchmarks/({true,_false,_true,_false,_true,_false,_true,_false}).webp)
+![({true, false, true, false, true, false, true, false})](/benchmarks/82.webp)
 
 ### ({'', '', '', '', '', '', '', ''})
 
-![({'', '', '', '', '', '', '', ''})](/benchmarks/({'',_'',_'',_'',_'',_'',_'',_''}).webp)
+![({'', '', '', '', '', '', '', ''})](/benchmarks/97.webp)
 
 ### ('a', 'a', 'a', 'a', 'a', 'a')
 
-![('a', 'a', 'a', 'a', 'a', 'a')](/benchmarks/('a',_'a',_'a',_'a',_'a',_'a').webp)
+![('a', 'a', 'a', 'a', 'a', 'a')](/benchmarks/55.webp)
 
 ### ('aaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaa')](/benchmarks/151.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(1, -2, 3))
 
-![(CFrame_fromEulerAnglesYXZ(1, -2, 3))](/benchmarks/(cframe_fromeuleranglesyxz(1,_-2,_3)).webp)
+![(CFrame_fromEulerAnglesYXZ(1, -2, 3))](/benchmarks/174.webp)
 
 ### ({Vector2.new(1, 2), Vector2.new(1, 2)})
 
-![({Vector2_new(1, 2), Vector2_new(1, 2)})](/benchmarks/({vector2_new(1,_2),_vector2_new(1,_2)}).webp)
+![({Vector2_new(1, 2), Vector2_new(1, 2)})](/benchmarks/27.webp)
 
 ### ({0, 0})
 
-![({0, 0})](/benchmarks/({0,_0}).webp)
+![({0, 0})](/benchmarks/20.webp)
 
 ### ({'', '', '', '', '', '', '', '', ''})
 
-![({'', '', '', '', '', '', '', '', ''})](/benchmarks/({'',_'',_'',_'',_'',_'',_'',_'',_''}).webp)
+![({'', '', '', '', '', '', '', '', ''})](/benchmarks/85.webp)
 
 ### ({'a', 'a', 'a', 'a', 'a', 'a'})
 
-![({'a', 'a', 'a', 'a', 'a', 'a'})](/benchmarks/({'a',_'a',_'a',_'a',_'a',_'a'}).webp)
+![({'a', 'a', 'a', 'a', 'a', 'a'})](/benchmarks/63.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(1, 2, 3) + Vector3.new(1, 2, 3))
 
-![(CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3))](/benchmarks/(cframe_fromeuleranglesyxz(1,_2,_3)_+_vector3_new(1,_2,_3)).webp)
+![(CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3))](/benchmarks/163.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(-1, 2.5, -3.27) + Vector3.new(-1, -2, -3))
 
-![(CFrame_fromEulerAnglesYXZ(-1, 2_5, -3_27) + Vector3_new(-1, -2, -3))](/benchmarks/(cframe_fromeuleranglesyxz(-1,_2_5,_-3_27)_+_vector3_new(-1,_-2,_-3)).webp)
+![(CFrame_fromEulerAnglesYXZ(-1, 2_5, -3_27) + Vector3_new(-1, -2, -3))](/benchmarks/181.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(1, 2, 3))
 
-![(CFrame_fromEulerAnglesYXZ(1, 2, 3))](/benchmarks/(cframe_fromeuleranglesyxz(1,_2,_3)).webp)
+![(CFrame_fromEulerAnglesYXZ(1, 2, 3))](/benchmarks/184.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(1, -2, 3) + Vector3.new(-1, 2, 3))
 
-![(CFrame_fromEulerAnglesYXZ(1, -2, 3) + Vector3_new(-1, 2, 3))](/benchmarks/(cframe_fromeuleranglesyxz(1,_-2,_3)_+_vector3_new(-1,_2,_3)).webp)
+![(CFrame_fromEulerAnglesYXZ(1, -2, 3) + Vector3_new(-1, 2, 3))](/benchmarks/172.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(-1, 2.5, -3.27))
 
-![(CFrame_fromEulerAnglesYXZ(-1, 2_5, -3_27))](/benchmarks/(cframe_fromeuleranglesyxz(-1,_2_5,_-3_27)).webp)
+![(CFrame_fromEulerAnglesYXZ(-1, 2_5, -3_27))](/benchmarks/177.webp)
 
 ### ('aaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaa')](/benchmarks/127.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaa')](/benchmarks/132.webp)
 
 ### ('a', 'a', 'a', 'a', 'a', 'a', 'a')
 
-![('a', 'a', 'a', 'a', 'a', 'a', 'a')](/benchmarks/('a',_'a',_'a',_'a',_'a',_'a',_'a').webp)
+![('a', 'a', 'a', 'a', 'a', 'a', 'a')](/benchmarks/53.webp)
 
 ### (Vector3int16.new(-1, 3, -5), Vector3int16.new(-1, 3, -5), Vector3int16.new(-1, 3, -5))
 
-![(Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5))](/benchmarks/(vector3int16_new(-1,_3,_-5),_vector3int16_new(-1,_3,_-5),_vector3int16_new(-1,_3,_-5)).webp)
+![(Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5))](/benchmarks/37.webp)
 
 ### ({CFrame.fromEulerAnglesYXZ(1, 2, 3)})
 
-![({CFrame_fromEulerAnglesYXZ(1, 2, 3)})](/benchmarks/({cframe_fromeuleranglesyxz(1,_2,_3)}).webp)
+![({CFrame_fromEulerAnglesYXZ(1, 2, 3)})](/benchmarks/179.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaa')](/benchmarks/138.webp)
 
 ### ({Vector3int16.new(-1, 3, -5), Vector3int16.new(-1, 3, -5), Vector3int16.new(-1, 3, -5)})
 
-![({Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5)})](/benchmarks/({vector3int16_new(-1,_3,_-5),_vector3int16_new(-1,_3,_-5),_vector3int16_new(-1,_3,_-5)}).webp)
+![({Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5), Vector3int16_new(-1, 3, -5)})](/benchmarks/33.webp)
 
 ### ({'a', 'a', 'a', 'a', 'a', 'a', 'a'})
 
-![({'a', 'a', 'a', 'a', 'a', 'a', 'a'})](/benchmarks/({'a',_'a',_'a',_'a',_'a',_'a',_'a'}).webp)
+![({'a', 'a', 'a', 'a', 'a', 'a', 'a'})](/benchmarks/64.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaa')](/benchmarks/144.webp)
 
 ### ('a', 'a', 'a', 'a', 'a', 'a', 'a', 'a')
 
-![('a', 'a', 'a', 'a', 'a', 'a', 'a', 'a')](/benchmarks/('a',_'a',_'a',_'a',_'a',_'a',_'a',_'a').webp)
+![('a', 'a', 'a', 'a', 'a', 'a', 'a', 'a')](/benchmarks/57.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/152.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/124.webp)
 
 ### (Vector3.new(1, 2, 3), Vector3.new(1, 2, 3))
 
-![(Vector3_new(1, 2, 3), Vector3_new(1, 2, 3))](/benchmarks/(vector3_new(1,_2,_3),_vector3_new(1,_2,_3)).webp)
+![(Vector3_new(1, 2, 3), Vector3_new(1, 2, 3))](/benchmarks/46.webp)
 
 ### ({'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'})
 
-![({'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'})](/benchmarks/({'a',_'a',_'a',_'a',_'a',_'a',_'a',_'a'}).webp)
+![({'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'})](/benchmarks/65.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/145.webp)
 
 ### (Vector2.new(1, 2), Vector2.new(1, 2), Vector2.new(1, 2))
 
-![(Vector2_new(1, 2), Vector2_new(1, 2), Vector2_new(1, 2))](/benchmarks/(vector2_new(1,_2),_vector2_new(1,_2),_vector2_new(1,_2)).webp)
+![(Vector2_new(1, 2), Vector2_new(1, 2), Vector2_new(1, 2))](/benchmarks/30.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/135.webp)
 
 ### (0, 0, 0)
 
-![(0, 0, 0)](/benchmarks/(0,_0,_0).webp)
+![(0, 0, 0)](/benchmarks/13.webp)
 
 ### (CFrame.new(), CFrame.new())
 
-![(CFrame_new(), CFrame_new())](/benchmarks/(cframe_new(),_cframe_new()).webp)
+![(CFrame_new(), CFrame_new())](/benchmarks/167.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/129.webp)
 
 ### ({Vector3.new(1, 2, 3), Vector3.new(1, 2, 3)})
 
-![({Vector3_new(1, 2, 3), Vector3_new(1, 2, 3)})](/benchmarks/({vector3_new(1,_2,_3),_vector3_new(1,_2,_3)}).webp)
+![({Vector3_new(1, 2, 3), Vector3_new(1, 2, 3)})](/benchmarks/50.webp)
 
 ### ({0, 0, 0})
 
-![({0, 0, 0})](/benchmarks/({0,_0,_0}).webp)
+![({0, 0, 0})](/benchmarks/15.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/136.webp)
 
 ### ({Vector2.new(1, 2), Vector2.new(1, 2), Vector2.new(1, 2)})
 
-![({Vector2_new(1, 2), Vector2_new(1, 2), Vector2_new(1, 2)})](/benchmarks/({vector2_new(1,_2),_vector2_new(1,_2),_vector2_new(1,_2)}).webp)
+![({Vector2_new(1, 2), Vector2_new(1, 2), Vector2_new(1, 2)})](/benchmarks/32.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/149.webp)
 
 ### ({CFrame.identity, CFrame.identity})
 
-![({CFrame_identity, CFrame_identity})](/benchmarks/({cframe_identity,_cframe_identity}).webp)
+![({CFrame_identity, CFrame_identity})](/benchmarks/173.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/153.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/159.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/139.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/141.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/130.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/112.webp)
 
 ### (0, 0, 0, 0)
 
-![(0, 0, 0, 0)](/benchmarks/(0,_0,_0,_0).webp)
+![(0, 0, 0, 0)](/benchmarks/4.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/118.webp)
 
 ### ({0, 0, 0, 0})
 
-![({0, 0, 0, 0})](/benchmarks/({0,_0,_0,_0}).webp)
+![({0, 0, 0, 0})](/benchmarks/3.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/154.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/142.webp)
 
 ### (Vector3.new(1, 2, 3), Vector3.new(1, 2, 3), Vector3.new(1, 2, 3))
 
-![(Vector3_new(1, 2, 3), Vector3_new(1, 2, 3), Vector3_new(1, 2, 3))](/benchmarks/(vector3_new(1,_2,_3),_vector3_new(1,_2,_3),_vector3_new(1,_2,_3)).webp)
+![(Vector3_new(1, 2, 3), Vector3_new(1, 2, 3), Vector3_new(1, 2, 3))](/benchmarks/43.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(1, 2, 3), CFrame.fromEulerAnglesYXZ(1, 2, 3))
 
-![(CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3))](/benchmarks/(cframe_fromeuleranglesyxz(1,_2,_3),_cframe_fromeuleranglesyxz(1,_2,_3)).webp)
+![(CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3))](/benchmarks/168.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(1, 2, 3) + Vector3.new(1, 2, 3), CFrame.fromEulerAnglesYXZ(1, 2, 3) + Vector3.new(1, 2, 3))
 
-![(CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3))](/benchmarks/(cframe_fromeuleranglesyxz(1,_2,_3)_+_vector3_new(1,_2,_3),_cframe_fromeuleranglesyxz(1,_2,_3)_+_vector3_new(1,_2,_3)).webp)
+![(CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3))](/benchmarks/171.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/123.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/150.webp)
 
 ### ({Vector3.new(1, 2, 3), Vector3.new(1, 2, 3), Vector3.new(1, 2, 3)})
 
-![({Vector3_new(1, 2, 3), Vector3_new(1, 2, 3), Vector3_new(1, 2, 3)})](/benchmarks/({vector3_new(1,_2,_3),_vector3_new(1,_2,_3),_vector3_new(1,_2,_3)}).webp)
+![({Vector3_new(1, 2, 3), Vector3_new(1, 2, 3), Vector3_new(1, 2, 3)})](/benchmarks/52.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/148.webp)
 
 ### ({CFrame.fromEulerAnglesYXZ(1, 2, 3), CFrame.fromEulerAnglesYXZ(1, 2, 3)})
 
-![({CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3)})](/benchmarks/({cframe_fromeuleranglesyxz(1,_2,_3),_cframe_fromeuleranglesyxz(1,_2,_3)}).webp)
+![({CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3)})](/benchmarks/180.webp)
 
 ### (CFrame.new(), CFrame.new(), CFrame.new())
 
-![(CFrame_new(), CFrame_new(), CFrame_new())](/benchmarks/(cframe_new(),_cframe_new(),_cframe_new()).webp)
+![(CFrame_new(), CFrame_new(), CFrame_new())](/benchmarks/162.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/128.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/155.webp)
 
 ### ({CFrame.identity, CFrame.identity, CFrame.identity})
 
-![({CFrame_identity, CFrame_identity, CFrame_identity})](/benchmarks/({cframe_identity,_cframe_identity,_cframe_identity}).webp)
+![({CFrame_identity, CFrame_identity, CFrame_identity})](/benchmarks/166.webp)
 
 ### (0, 0, 0, 0, 0)
 
-![(0, 0, 0, 0, 0)](/benchmarks/(0,_0,_0,_0,_0).webp)
+![(0, 0, 0, 0, 0)](/benchmarks/10.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/137.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/114.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/121.webp)
 
 ### ({0, 0, 0, 0, 0})
 
-![({0, 0, 0, 0, 0})](/benchmarks/({0,_0,_0,_0,_0}).webp)
+![({0, 0, 0, 0, 0})](/benchmarks/19.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/125.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/116.webp)
 
 ### ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
-![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').webp)
+![('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')](/benchmarks/156.webp)
 
 ### (0, 0, 0, 0, 0, 0)
 
-![(0, 0, 0, 0, 0, 0)](/benchmarks/(0,_0,_0,_0,_0,_0).webp)
+![(0, 0, 0, 0, 0, 0)](/benchmarks/8.webp)
 
 ### ({0, 0, 0, 0, 0, 0})
 
-![({0, 0, 0, 0, 0, 0})](/benchmarks/({0,_0,_0,_0,_0,_0}).webp)
+![({0, 0, 0, 0, 0, 0})](/benchmarks/2.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(1, 2, 3), CFrame.fromEulerAnglesYXZ(1, 2, 3), CFrame.fromEulerAnglesYXZ(1, 2, 3))
 
-![(CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3))](/benchmarks/(cframe_fromeuleranglesyxz(1,_2,_3),_cframe_fromeuleranglesyxz(1,_2,_3),_cframe_fromeuleranglesyxz(1,_2,_3)).webp)
+![(CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3))](/benchmarks/178.webp)
 
 ### (CFrame.fromEulerAnglesYXZ(1, 2, 3) + Vector3.new(1, 2, 3), CFrame.fromEulerAnglesYXZ(1, 2, 3) + Vector3.new(1, 2, 3), CFrame.fromEulerAnglesYXZ(1, 2, 3) + Vector3.new(1, 2, 3))
 
-![(CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3))](/benchmarks/(cframe_fromeuleranglesyxz(1,_2,_3)_+_vector3_new(1,_2,_3),_cframe_fromeuleranglesyxz(1,_2,_3)_+_vector3_new(1,_2,_3),_cframe_fromeuleranglesyxz(1,_2,_3)_+_vector3_new(1,_2,_3)).webp)
+![(CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3) + Vector3_new(1, 2, 3))](/benchmarks/164.webp)
 
 ### ({CFrame.fromEulerAnglesYXZ(1, 2, 3), CFrame.fromEulerAnglesYXZ(1, 2, 3), CFrame.fromEulerAnglesYXZ(1, 2, 3)})
 
-![({CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3)})](/benchmarks/({cframe_fromeuleranglesyxz(1,_2,_3),_cframe_fromeuleranglesyxz(1,_2,_3),_cframe_fromeuleranglesyxz(1,_2,_3)}).webp)
+![({CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3), CFrame_fromEulerAnglesYXZ(1, 2, 3)})](/benchmarks/175.webp)
 
 ### (0, 0, 0, 0, 0, 0, 0)
 
-![(0, 0, 0, 0, 0, 0, 0)](/benchmarks/(0,_0,_0,_0,_0,_0,_0).webp)
+![(0, 0, 0, 0, 0, 0, 0)](/benchmarks/12.webp)
 
 ### ({0, 0, 0, 0, 0, 0, 0})
 
-![({0, 0, 0, 0, 0, 0, 0})](/benchmarks/({0,_0,_0,_0,_0,_0,_0}).webp)
+![({0, 0, 0, 0, 0, 0, 0})](/benchmarks/21.webp)
 
 ### (0, 0, 0, 0, 0, 0, 0, 0)
 
-![(0, 0, 0, 0, 0, 0, 0, 0)](/benchmarks/(0,_0,_0,_0,_0,_0,_0,_0).webp)
+![(0, 0, 0, 0, 0, 0, 0, 0)](/benchmarks/7.webp)
 
 ### ({0, 0, 0, 0, 0, 0, 0, 0})
 
-![({0, 0, 0, 0, 0, 0, 0, 0})](/benchmarks/({0,_0,_0,_0,_0,_0,_0,_0}).webp)
+![({0, 0, 0, 0, 0, 0, 0, 0})](/benchmarks/16.webp)
 
 ### (0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-![(0, 0, 0, 0, 0, 0, 0, 0, 0)](/benchmarks/(0,_0,_0,_0,_0,_0,_0,_0,_0).webp)
+![(0, 0, 0, 0, 0, 0, 0, 0, 0)](/benchmarks/11.webp)
 
 ### ({0, 0, 0, 0, 0, 0, 0, 0, 0})
 
-![({0, 0, 0, 0, 0, 0, 0, 0, 0})](/benchmarks/({0,_0,_0,_0,_0,_0,_0,_0,_0}).webp)
+![({0, 0, 0, 0, 0, 0, 0, 0, 0})](/benchmarks/6.webp)
 
