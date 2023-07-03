@@ -32,8 +32,8 @@ favicon = "/favicon.ico"
 # From git:
 organizationName = "Data-Oriented-House"
 projectName = "Squash"
-url = "https://data-oriented-house.github.io/Squash/"
-baseUrl = ""
+url = "https://data-oriented-house.github.io"
+baseUrl = "/Squash/"
 tagline = "Roblox's Comprehensive SerDes Library"
 
 [[classOrder]]
