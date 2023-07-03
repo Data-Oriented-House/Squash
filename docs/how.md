@@ -1,14 +1,14 @@
 ---
-sidebar_position: 4
+sidebar_position: 3
 ---
 
 # How To Serialize?
 
-Every character in a string can represent 256 possible values, since there are 256 characters in extended ASCII or UTF-8. This is equivalent to 8 bits, or 1 byte. Therefore, we can represent 256^2 = 65536 possible values with 2 characters, 256^3 = 16777216 possible values with 3 characters, and so on. There are many ways to interpret these bytes depending on context. Knowing how to interpret these bytes is the key to serialization.
+Every character in a string, which is equivalent to 8 bits (1 byte), can represent 256 possible values because there are 256 characters in extended ASCII and UTF-8. Therefore, we can represent 256^2 = 65536 possible values with 2 characters, 256^3 = 16777216 possible values with 3 characters, and so on. There are many ways to interpret these bytes depending on context. Knowing how to interpret these bytes is the key to serialization.
 
 ## Booleans
 
-In Luau, the `boolean` type is 1 byte large, but only 1 bit is actually necessary to store the contents of a boolean. This means we can actually serialize not just 1, but 8 booleans in a single byte. This is a common strategy called *bit packing* to implement [*bit fields*](https://en.wikipedia.org/wiki/Bit_field).
+In Luau, the `boolean` type is 1 byte large, but only 1 bit is actually necessary to store the contents of a boolean. This means we can actually serialize not just 1, but 8 booleans in a single byte. This is a common strategy called *bit-packing* to implement [*bit-fields*](https://en.wikipedia.org/wiki/Bit_field).
 
 | Happy | Confused | Irritated | Concerned | Angry | Humber | Dazed | Nage |
 | - | - | - | - | - | - | - | - |
