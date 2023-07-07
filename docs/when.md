@@ -147,8 +147,8 @@ In the special case, CFrames have rotations that are clean multiples of 90 degre
 
 Below are all of the different rotation matrices that map to each rotation id. We do not know why there are holes in the Ids.
 
-<!-- | Id | Angle | X | Y | Z |
-|-|-|-|-|-|-|-|-|-|
+| Id | Angle | X | Y | Z |
+|-|-|-|-|-|
 | 0×02 | 0 | 0 | 0 | 0 |
 | 0×03 | π/2 | 1 | 0 | 0 |
 | 0×05 | π | 1 | 0 | 0 |
@@ -172,11 +172,11 @@ Below are all of the different rotation matrices that map to each rotation id. W
 | 0×1f | 2π/3 | 1/√3 | 1/√3 | -1/√3 |
 | 0×20 | π/2 | 0 | 1 | 0 |
 | 0×22 | 2π/3 | -1/√3 | 1/√3 | 1/√3 |
-| 0×23 | π | -1/√2 | 0 | 1/√2 | -->
+| 0×23 | π | -1/√2 | 0 | 1/√2 |
 
 <!-- The above table is a key-value map of numbers to Angle-Axis rotations. Below is the rotation matrix representation of these values. -->
 
-| Id | X | Y | Z | | Id | X | Y | Z | | Id | X | Y | Z | | Id | X | Y | Z |
+<!-- | Id | X | Y | Z | | Id | X | Y | Z | | Id | X | Y | Z | | Id | X | Y | Z |
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
 |      | 1 | 0 | 0 | |      | 1 | 0 | 0 | |       | 1 | 0 | 0 | |      | 1 | 0 | 0 |
 | 0×02 | 0 | 1 | 0 | | 0×03 | 0 | 0 | -1 | | 0×05 | 0 | 0 | 1 | | 0×06 | 0 | -1 | 0 |
@@ -200,7 +200,7 @@ Below are all of the different rotation matrices that map to each rotation id. W
 |
 |      | 0 | 0 | 1 | |      | 0 | 0 | -1 | |      | 0 | -1 | 0 | |     | 0 | 0 | 1 |
 | 0×1f | 0 | 1 | 0 | | 0×20 | 0 | 0 | 1 | | 0×22 | 0 | 0 | -1 | | 0×23 | 0 | -1 | 0 |
-|      | -1 | 0 | 0 | |     | 0 | 1 | 0 | |       | 0 | 0 | 1 | |      | 1 | 0 | 0 |
+|      | -1 | 0 | 0 | |     | 0 | 1 | 0 | |       | 0 | 0 | 1 | |      | 1 | 0 | 0 | -->
 
 
 
