@@ -10,16 +10,17 @@ Strings are great for serializing data, but we need to know when to serialize. C
 
 Roblox remotes sends its data in the form of [*packets*](https://en.wikipedia.org/wiki/Network_packet). Every roblox packet is packed densely with data to reduce their size. Every byte is important and has meaning. More data types will be presented soon. To verify this information for yourself, source code and instructions on the recording process will also be available soon.
 
+
+
 #### Client To Server
 
-| Packet Type (byte) | Packet SubType (byte) | Remote Id (2 bytes) | The Enigma (9 bytes) | Enigma Delimiter (byte) | Argument Count (byte) | Data | Packet Delimiter (byte) |
+| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (9 bytes) | Enigma Delimiter 0×00 (byte) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
 |-|-|-|-|-|-|-|-|
-| 0×83 | 0×07 | ... | ... | 0×00 | ... | ... | 0×00 |
 
 #### Server To Client
-| Packet Type (byte) | Packet SubType (byte) | Remote Id (2 bytes) | The Enigma (5 bytes) | Enigma Delimiter (byte) | Argument Count (byte) | Data | Packet Delimiter (byte) |
+
+| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (5 bytes) | Enigma Delimiter 0×00 (byte) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
 |-|-|-|-|-|-|-|-|
-| 0×83 | 0×07 | ... | ... | 0×00 | ... | ... | 0×00 |
 
 Our hypothesis is that **Client To Server** spends 4 bytes to also send the player UserId.
 
@@ -35,18 +36,24 @@ Consequences of this memory layout include:
 
 - There is no difference in cost when firing remotes with different ids, or in short, the number of remotes does not affect bandwidth per packet.
 
+## Data
+
+Below are the different ways types of data are formatted in memory when packed into remotes.
+
 ### Void (Just Remote Overhead)
 
 Example remotes in a session:
+
 | Session | Remote Name | Packet Type | Packet SubType | Remote Id | The Enigma | Enigma Delimiter | Argument Count | Packet Delimiter |
 |-|-|-|-|-|-|-|-|-|
 | 1 | "R1" | 0×83 | 0×07 | 0×01f5 | 0×7109000b5001d85e0a | 0×00 | 0×00 | 0×00 |
 | 1 | "R2" | 0×83 | 0×07 | 0×01f6 | 0×7109000b5001d85e0a | 0×00 | 0×00 | 0×00 |
 | 1 | "R3" | 0×83 | 0×07 | 0×01f7 | 0×7109000b5001d85e0a | 0×00 | 0×00 | 0×00 |
-||
+| | | | | | | | | |
 | 2 | "R1" | 0×83 | 0×07 | 0×016d | 0×3d0c000b5001502a0d | 0×00 | 0×00 | 0×00 |
 | 2 | "R2" | 0×83 | 0×07 | 0×016e | 0×3d0c000b5001502a0d | 0×00 | 0×00 | 0×00 |
 | 2 | "R3" | 0×83 | 0×07 | 0×016f | 0×3d0c000b5001502a0d | 0×00 | 0×00 | 0×00 |
+
 
 ### Nil
 
@@ -54,6 +61,7 @@ Example remotes in a session:
 |-|
 
 (nil)
+
 | 1 |
 |-|
 | 0×01 |
@@ -64,16 +72,19 @@ Example remotes in a session:
 |-|-|
 
 (true)
+
 | 9 | true |
 |-|-|
 | 0×09 | 0×01 |
 
 (false)
+
 | 9 | false |
 |-|-|
 | 0×09 | 0×00 |
 
 (true, true)
+
 | 9 | true | 9 | true |
 |-|-|-|-|
 | 0×09 | 0×01 | 0×09| 0×01 |
@@ -84,16 +95,19 @@ Example remotes in a session:
 |-|-|
 
 (-5)
+
 | 12 | -5 |
 |-|-|
 | 0×0c | 0×c014000000000000 |
 
 (5)
+
 | 12 | 5 |
 |-|-|
 | 0×0c | 0×4014000000000000 |
 
 (0, 0)
+
 | 12 | 0 | 12 | 0 |
 |-|-|-|-|
 | 0×0c | 0×0000000000000000 | 0×0c | 0×0000000000000000 |
@@ -106,13 +120,89 @@ Example remotes in a session:
 ("Hello World!")
 
 | 2 | 12 | 'H' | 'e' | 'l' | 'l' | 'o' | ' ' | 'W' | 'o' | 'r' | 'l' | 'd' | '!' |
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+|---|----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
 | 0×02 | 0×0c | 0×48 | 0×65 | 0×6c | 0×6c | 0×6f | 0×20 | 0×57 | 0×6f | 0×72 | 0×6c | 0×64 | 0×21 |
 
 ("swous", "bibbity")
-| 2 | 5 | 's' | 'w' | 'o' | 'u' | 's' | 0 | 2 | 7 | 'b' | 'i' | 'b' | 'b' | 'i' | 't' | 'y' |
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
-| 0×02 | 0×05 | 0×73 | 0×77 | 0×6f | 0×75 | 0×73 | 0×00 | 0×02 | 0×07 | 0×62 | 0×69 | 0×62 | 0×62 | 0×69 | 0×74 | 0×79 |
+
+| 2 | 5 | 's' | 'w' | 'o' | 'u' | 's' | 2 | 7 | 'b' | 'i' | 'b' | 'b' | 'i' | 't' | 'y' |
+|---|---|-----|-----|-----|-----|-----|---|---|-----|-----|-----|-----|-----|-----|-----|
+| 0×02 | 0×05 | 0×73 | 0×77 | 0×6f | 0×75 | 0×73 | 0×02 | 0×07 | 0×62 | 0×69 | 0×62 | 0×62 | 0×69 | 0×74 | 0×79 |
+
+### CFrames
+
+#### General Case
+
+In the general case, CFrames have some arbitrary rotation that is not clean multiples of 90 degrees. This means that the rotation is not or cannot be enumerated, and therefore must be sent / reconstructed.
+
+| Type 0×1b (byte) | X (4 bytes) | Y (4 bytes) | Z (4 bytes) | Id 0×00 (byte) | Rotation (6 bytes) |
+|-|-|-|-|-|-|
+
+#### Special Case
+
+In the special case, CFrames have rotations that are clean multiples of 90 degrees. This means that the rotation can be enumerated, and so only this information is sent.
+
+| Type 0×1b (byte) | X (4 bytes) | Y (4 bytes) | Z (4 bytes) | Id (byte) |
+|-|-|-|-|-|
+
+Below are all of the different rotation matrices that map to each rotation id. We do not know why there are holes in the Ids.
+
+<!-- | Id | Angle | X | Y | Z |
+|-|-|-|-|-|-|-|-|-|
+| 0×02 | 0 | 0 | 0 | 0 |
+| 0×03 | π/2 | 1 | 0 | 0 |
+| 0×05 | π | 1 | 0 | 0 |
+| 0×06 | π/2 | -1 | 0 | 0 |
+| 0×07 | π | 1/√2 | 1/√2 | 0 |
+| 0×09 | 2π/3 | 1/√3 | 1/√3 | 1/√3 |
+| 0×0a | π/2 | 0 | 0 | 1 |
+| 0×0c | 2π/3 | -1/√3 | -1/√3 | 1/√3 |
+| 0×0d | 2π/3 | -1/√3 | -1/√3 | -1/√3 |
+| 0×0e | π/2 | 0 | -1 | 0 |
+| 0×10 | 2π/3 | 1/√3 | -1/√3 | 1/√3 |
+| 0×11 | π | 1/√2 | 0 | 1/√2 |
+| 0×14 | π | 0 | 1 | 0 |
+| 0×15 | π | 0 | 1/√2 | 1/√2 |
+| 0×17 | π | 0 | 0 | 1 |
+| 0×18 | π | 0 | -1/√2 | 1/√2 |
+| 0×19 | π/2 | 0 | 0 | -1 |
+| 0×1b | 2π/3 | 1/√3 | -1/√3 | -1/√3 |
+| 0×1c | π | -1/√2 | 1/√2 | 0 |
+| 0×1e | 2π/3 | -1/√3 | 1/√3 | -1/√3 |
+| 0×1f | 2π/3 | 1/√3 | 1/√3 | -1/√3 |
+| 0×20 | π/2 | 0 | 1 | 0 |
+| 0×22 | 2π/3 | -1/√3 | 1/√3 | 1/√3 |
+| 0×23 | π | -1/√2 | 0 | 1/√2 | -->
+
+<!-- The above table is a key-value map of numbers to Angle-Axis rotations. Below is the rotation matrix representation of these values. -->
+
+| Id | X | Y | Z | | Id | X | Y | Z | | Id | X | Y | Z | | Id | X | Y | Z |
+|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+|      | 1 | 0 | 0 | |      | 1 | 0 | 0 | |       | 1 | 0 | 0 | |      | 1 | 0 | 0 |
+| 0×02 | 0 | 1 | 0 | | 0×03 | 0 | 0 | -1 | | 0×05 | 0 | 0 | 1 | | 0×06 | 0 | -1 | 0 |
+|      | 0 | 0 | 1 | |      | 0 | 1 | 0 | |       | 0 | -1 | 0 | |     | 0 | 0 | -1 |
+|
+|      | -1 | 0 | 0 | |      | 0 | 0 | 1 | |       | 0 | 1 | 0 | |      | 0 | 0 | -1 |
+| 0×07 | 0 | -1 | 0 | | 0×09 | 0 | -1 | 0 | | 0×0a | 1 | 0 | 0 | | 0×0c | -1 | 0 | 0 |
+|      | 0 | 0 | -1 | |      | 0 | 0 | 1 | |       | 0 | 0 | 1 | |      | 0 | 0 | 1 |
+|
+|      | 0 | 0 | 1 | |      | 0 | 1 | 0 | |       | 0 | 0 | -1 | |     | 0 | -1 | 0 |
+| 0×0d | 0 | 1 | 0 | | 0×0e | 0 | 0 | -1 | | 0×10 | 0 | 1 | 0 | | 0×11 | 0 | 0 | 1 |
+|      | 1 | 0 | 0 | |      | 0 | 0 | 1 | |       | -1 | 0 | 0 | |     | 0 | 1 | 0 |
+|
+|      | 0 | 0 | 1 | |      | 0 | -1 | 0 | |      | 0 | 0 | 1 | |      | 0 | 1 | 0 |
+| 0×14 | 0 | 1 | 0 | | 0×15 | 0 | 0 | 1 | | 0×17 | 0 | -1 | 0 | | 0×18 | 0 | 0 | -1 |
+|      | -1 | 0 | 0 | |     | 0 | 0 | 1 | |       | 0 | 0 | -1 | |     | 1 | 0 | 0 |
+|
+|      | 0 | 0 | 1 | |      | 0 | -1 | 0 | |      | 0 | 0 | -1 | |     | 0 | -1 | 0 |
+| 0×19 | 0 | 1 | 0 | | 0×1b | 0 | 0 | -1 | | 0×1c | 0 | 0 | 1 | | 0×1e | 0 | 1 | 0 |
+|      | 1 | 0 | 0 | |      | 0 | 0 | 1 | |       | 0 | -1 | 0 | |     | 0 | 0 | -1 |
+|
+|      | 0 | 0 | 1 | |      | 0 | 0 | -1 | |      | 0 | -1 | 0 | |     | 0 | 0 | 1 |
+| 0×1f | 0 | 1 | 0 | | 0×20 | 0 | 0 | 1 | | 0×22 | 0 | 0 | -1 | | 0×23 | 0 | -1 | 0 |
+|      | -1 | 0 | 0 | |     | 0 | 1 | 0 | |       | 0 | 0 | 1 | |      | 1 | 0 | 0 |
+
+
 
 ## Eyeballed Lookup Table
 Below is our first attempt at measuring bandwidth before we had the binary data above. Is is an eye-measured median of the incoming kB/s from the Networking window in studio after stabilization. The code is on the server and fires a remote with the Value every task.wait().
