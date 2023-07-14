@@ -6,21 +6,32 @@ sidebar_position: 4
 
 Strings are great for serializing data, but we need to know when to serialize. Certain kinds of data is cheaper to send over the network than others. This page is *very* technical, as it introduces the raw binary format remotes use internally and discusses the overhead of each type of data. If you are looking for a more high-level overview of the topic, check out the [Why SerDes?](/docs/intro) or [How To SerDes?](/docs/how) pages.
 
-## How Are Remotes Sent And Recieved?
+## How Are Packets Sent And Recieved?
 
 Roblox remotes sends its data in the form of [*packets*](https://en.wikipedia.org/wiki/Network_packet). Every roblox packet is packed densely with data to reduce their size. Every byte is important and has meaning. More data types will be presented soon. To verify this information for yourself, source code and instructions on the recording process will also be available soon.
 
-
-
 #### Client To Server
 
-| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (9 bytes) | Enigma Delimiter 0×00 (byte) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
-|-|-|-|-|-|-|-|-|
+##### Remote Event
+
+| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (10 bytes) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
+|-|-|-|-|-|-|-|
+
+##### Remote Function
+
+| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (9 bytes) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
+|-|-|-|-|-|-|-|
 
 #### Server To Client
 
-| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (5 bytes) | Enigma Delimiter 0×00 (byte) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
-|-|-|-|-|-|-|-|-|
+##### Remote Event
+
+| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (6 bytes) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
+|-|-|-|-|-|-|-|
+
+##### Remote Function
+
+| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (4 bytes) | Enigma Delimiter 0×00 (byte) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
 
 Our hypothesis is that **Client To Server** spends 4 bytes to also send the player UserId.
 
@@ -44,15 +55,15 @@ Below are the different ways types of data are formatted in memory when packed i
 
 Example remotes in a session:
 
-| Session | Remote Name | Packet Type | Packet SubType | Remote Id | The Enigma | Enigma Delimiter | Argument Count | Packet Delimiter |
+| Session | Remote Name | Packet Type | Packet SubType | Remote Id | The Enigma | Argument Count | Packet Delimiter |
 |-|-|-|-|-|-|-|-|-|
-| 1 | "R1" | 0×83 | 0×07 | 0×01f5 | 0×7109000b5001d85e0a | 0×00 | 0×00 | 0×00 |
-| 1 | "R2" | 0×83 | 0×07 | 0×01f6 | 0×7109000b5001d85e0a | 0×00 | 0×00 | 0×00 |
-| 1 | "R3" | 0×83 | 0×07 | 0×01f7 | 0×7109000b5001d85e0a | 0×00 | 0×00 | 0×00 |
+| 1 | "R1" | 0×83 | 0×07 | 0×01f5 | 0×7109000b5001d85e0a00 | 0×00 | 0×00 |
+| 1 | "R2" | 0×83 | 0×07 | 0×01f6 | 0×7109000b5001d85e0a00 | 0×00 | 0×00 | 0×00 |
+| 1 | "R3" | 0×83 | 0×07 | 0×01f7 | 0×7109000b5001d85e0a00 | 0×00 | 0×00 | 0×00 |
 | | | | | | | | | |
-| 2 | "R1" | 0×83 | 0×07 | 0×016d | 0×3d0c000b5001502a0d | 0×00 | 0×00 | 0×00 |
-| 2 | "R2" | 0×83 | 0×07 | 0×016e | 0×3d0c000b5001502a0d | 0×00 | 0×00 | 0×00 |
-| 2 | "R3" | 0×83 | 0×07 | 0×016f | 0×3d0c000b5001502a0d | 0×00 | 0×00 | 0×00 |
+| 2 | "R1" | 0×83 | 0×07 | 0×016d | 0×3d0c000b5001502a0d00 | 0×00 | 0×00 | 0×00 |
+| 2 | "R2" | 0×83 | 0×07 | 0×016e | 0×3d0c000b5001502a0d00 | 0×00 | 0×00 | 0×00 |
+| 2 | "R3" | 0×83 | 0×07 | 0×016f | 0×3d0c000b5001502a0d00 | 0×00 | 0×00 | 0×00 |
 
 
 ### Nil
@@ -60,7 +71,7 @@ Example remotes in a session:
 | Type 0×01 (byte) |
 |-|
 
-(nil)
+`(nil)`
 
 | 1 |
 |-|
@@ -71,19 +82,19 @@ Example remotes in a session:
 | Type 0×09 (byte) | Value (byte) |
 |-|-|
 
-(true)
+`(true)`
 
 | 9 | true |
 |-|-|
 | 0×09 | 0×01 |
 
-(false)
+`(false)`
 
 | 9 | false |
 |-|-|
 | 0×09 | 0×00 |
 
-(true, true)
+`(true, true)`
 
 | 9 | true | 9 | true |
 |-|-|-|-|
@@ -94,19 +105,19 @@ Example remotes in a session:
 | Type 0×0c (byte) | Value (8 bytes) |
 |-|-|
 
-(-5)
+`(-5)`
 
 | 12 | -5 |
 |-|-|
 | 0×0c | 0×c014000000000000 |
 
-(5)
+`(5)`
 
 | 12 | 5 |
 |-|-|
 | 0×0c | 0×4014000000000000 |
 
-(0, 0)
+`(0, 0)`
 
 | 12 | 0 | 12 | 0 |
 |-|-|-|-|
@@ -117,13 +128,13 @@ Example remotes in a session:
 | Type 0×02 (byte) | Length (LEB128) | Value (Length bytes) |
 |-|-|-|
 
-("Hello World!")
+`("Hello World!")`
 
 | 2 | 12 | 'H' | 'e' | 'l' | 'l' | 'o' | ' ' | 'W' | 'o' | 'r' | 'l' | 'd' | '!' |
 |---|----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
 | 0×02 | 0×0c | 0×48 | 0×65 | 0×6c | 0×6c | 0×6f | 0×20 | 0×57 | 0×6f | 0×72 | 0×6c | 0×64 | 0×21 |
 
-("swous", "bibbity")
+`("swous", "bibbity")`
 
 | 2 | 5 | 's' | 'w' | 'o' | 'u' | 's' | 2 | 7 | 'b' | 'i' | 'b' | 'b' | 'i' | 't' | 'y' |
 |---|---|-----|-----|-----|-----|-----|---|---|-----|-----|-----|-----|-----|-----|-----|
@@ -133,19 +144,51 @@ Example remotes in a session:
 
 #### General Case
 
-In the general case, CFrames have some arbitrary rotation that is not clean multiples of 90 degrees. This means that the rotation is not or cannot be enumerated, and therefore must be sent / reconstructed.
+In the general case, CFrames have some arbitrary rotation that is not clean multiples of 90 degrees. This means that the rotation will not or cannot be enumerated, and therefore must be sent entirely. We do not understand the rotation format, but it is 6 bytes long, so forgive the elusive formatting we use.
 
 | Type 0×1b (byte) | X (4 bytes) | Y (4 bytes) | Z (4 bytes) | Id 0×00 (byte) | Rotation (6 bytes) |
 |-|-|-|-|-|-|
 
+<!-- 1b 00 00 00 00 00 00 00 00 00 00 00 00 00 54 00 93 91 a6 cc -->
+
+`(CFrame.fromEulerAnglesYXZ(5, -1, 9))`
+
+| 27 | 0 | 0 | 0 | 0 | 5, -1, 9 |
+|-|-|-|-|-|-|
+| 0×1b | 0×00000000 | 0×00000000 | 0×00000000 | 0×00 | 0×54009391a6cc |
+
+<!-- 1b bf 80 00 00 40 00 00 00 c0 75 58 10 00 6f 42 7b 6d aa 6a -->
+
+`(CFrame.fromEulerAnglesYXZ(-1, 2, 3))`
+
+| 27 | -1 | 2 | 3 | 0 | -1, 2, 3 |
+|-|-|-|-|-|-|
+| 0×1b | 0xbf800000 | 0×40000000 | 0×c0755810 | 0×00 | 0×6f427b6maa6a |
+
 #### Special Case
 
-In the special case, CFrames have rotations that are clean multiples of 90 degrees. This means that the rotation can be enumerated, and so only this information is sent.
+In the special case, CFrames have rotations that are clean multiples of 90 degrees. This means that the rotation can be enumerated, and so only the enum is sent, and the rotation is reconstructed on the other side.
 
 | Type 0×1b (byte) | X (4 bytes) | Y (4 bytes) | Z (4 bytes) | Id (byte) |
 |-|-|-|-|-|
 
-Below are all of the different rotation matrices that map to each rotation id. We do not know why there are holes in the Ids.
+<!-- 1b 00 00 00 00 00 00 00 00 00 00 00 00 02 -->
+
+`(CFrame.identity)` or `(CFrame.new())`
+
+| 27 | 0 | 0 | 0 | 2 |
+|-|-|-|-|-|
+| 0×1b | 0×00000000 | 0×00000000 | 0×00000000 | 0×02 |
+
+<!-- 1b 44 6a 80 00 00 00 00 00 c0 00 00 00 02 -->
+
+`(CFrame.new(938, 0, -2))` or `(CFrame.identity + Vector3.new(938, 0, -2))`
+
+| 27 | 938 | 0 | -2 | 2 |
+|-|-|-|-|-|
+| 0×1b | 0×446a80 | 0×00000000 | 0×c0000000 | 0×02 |
+
+Below are all of the different axis-angle representation of the rotation matrices that map to each rotation id. We do not know why there are holes in the Ids but have verified through exhaustive testing that these are the only Ids.
 
 | Id | Angle | X | Y | Z |
 |-|-|-|-|-|
@@ -173,6 +216,7 @@ Below are all of the different rotation matrices that map to each rotation id. W
 | 0×20 | π/2 | 0 | 1 | 0 |
 | 0×22 | 2π/3 | -1/√3 | 1/√3 | 1/√3 |
 | 0×23 | π | -1/√2 | 0 | 1/√2 |
+
 
 <!-- The above table is a key-value map of numbers to Angle-Axis rotations. Below is the rotation matrix representation of these values. -->
 
@@ -202,6 +246,61 @@ Below are all of the different rotation matrices that map to each rotation id. W
 | 0×1f | 0 | 1 | 0 | | 0×20 | 0 | 0 | 1 | | 0×22 | 0 | 0 | -1 | | 0×23 | 0 | -1 | 0 |
 |      | -1 | 0 | 0 | |     | 0 | 1 | 0 | |       | 0 | 0 | 1 | |      | 1 | 0 | 0 | -->
 
+### Tables
+
+Tables are separated into two types: Arrays and Dictionaries. This is because internally they use different types. This allows them to optimize how they read each case, at the cost of less flexibility of what the table can contain. Arrays may only have numerical indices, and must be contiguous. If you send an array with a hole, it will stop reading at the first hole. Dictionaries may only have string indices, and don't have an internal order; holes don't exist in dictionaries. Using any other kind of key will result in an error.
+
+#### Arrays
+
+| Type 0×1e (byte) | Element Count (LEB128) | Element 1 | Element 2 | ... |
+|-|-|-|-|-|
+
+`({})`
+
+| 30 | 0 |
+|-|-|
+| 0×1e | 0×00 |
+
+`({true})`
+
+| 30 | 1 | 9 | true |
+|-|-|-|-|
+| 0×1e | 0×01 | 0×09 | 0×01 |
+
+`({[1] = true, [3] = false})`
+
+The array is cut off at the first nil value.
+
+| 30 | 1 | 9 | true |
+|-|-|-|-|
+| 0×1e | 0×01 | 0×09 | 0×01 |
+
+`({"sofa is ", 8})`
+
+| 30 | 2 | 2 | 8 | 's' | 'o' | 'f' | 'a' | ' ' | 'i' | 's' | ' ' | 12 | 8 |
+|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+| 0×1e | 0×02 | 0×02 | 0×08 | 0×73 | 0×6f | 0×66 | 0×61 | 0×20 | 0×69 | 0×73 | 0×20 | 0×0c | 0×4020000000000000 |
+
+#### Dictionaries
+
+| Type 0×1f (byte) | Pair Count (LEB128) | Key 1 | Value 1 | Key 2 | Value 2 | ... |
+|-|-|-|-|-|-|-|
+
+<!-- 1f 01 05 73 77 6f 72 64 09 01 -->
+
+`({sword = true})`
+
+| 31 | 1 | 5 | 's' | 'w' | 'o' | 'r' | 'd' | 9 | true |
+|-|-|-|-|-|-|-|-|-|-|
+| 0×1f | 0×01 | 0×05 | 0×73 | 0×77 | 0×6f | 0×72 | 0×64 | 0×09 | 0×01 |
+
+<!-- 1f 02 07 73 74 61 6d 69 6e 61 02 04 68 69 67 68 06 68 65 61 6c 74 68 0c 40 54 86 66 66 66 66 66 -->
+
+`({stamina = "high", ["health"] = 82.1})`
+
+| 31 | 2 | 7 | 's' | 't' | 'a' | 'm' | 'i' | 'n' | 'a' | 2 | 4 | 'h' | 'e' | 'a' | 'l' | 't' | 'h' | 6 | 'h' | 'e' | 'a' | 'l' | 't' | 'h' | 12 | 82.1 |
+|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+| 0×1f | 0×02 | 0×07 | 0×73 | 0×74 | 0×61 | 0×6d | 0×69 | 0×6e | 0×61 | 0×02 | 0×04 | 0×68 | 0×65 | 0×61 | 0×6c | 0×74 | 0×68 | 0×06 | 0×68 | 0×65 | 0×61 | 0×6c | 0×74 | 0×68 | 0×0c | 0×4054866666666666 |
 
 
 ## Eyeballed Lookup Table
