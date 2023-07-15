@@ -182,7 +182,7 @@ After | "F" | 0×83 | 0×0701 | 0×76c309 | 0×000b | 0×7b | 0×02 | 0×01c5b60
 
 ### Strings
 
-| Type 0×02 (byte) | Length (LEB128) | Value (Length bytes) |
+| Type 0×02 (byte) | Length (VLQ) | Value (Length bytes) |
 |-|-|-|
 
 `("Hello World!")`
@@ -197,11 +197,77 @@ After | "F" | 0×83 | 0×0701 | 0×76c309 | 0×000b | 0×7b | 0×02 | 0×01c5b60
 |---|---|-----|-----|-----|-----|-----|---|---|-----|-----|-----|-----|-----|-----|-----|
 | 0×02 | 0×05 | 0×73 | 0×77 | 0×6f | 0×75 | 0×73 | 0×02 | 0×07 | 0×62 | 0×69 | 0×62 | 0×62 | 0×69 | 0×74 | 0×79 |
 
+### Vector2int16s
+
+| Type 0×18 (byte) | X (2 bytes) | Y (2 bytes) |
+|-|-|-|
+
+`(Vector2int16.new())`
+
+| 24 | 0 | 0 |
+|-|-|-|
+| 0×18 | 0×0000 | 0×0000 |
+
+`(Vector2int16.new(-5, 7))`
+
+| 24 | -5 | 7 |
+|-|-|-|
+| 0×18 | 0xfffb | 0×0007 |
+
+### Vector2s
+
+| Type 0×15 (byte) | X (4 bytes) | Y (4 bytes) |
+|-|-|-|
+
+`(Vector2.zero)` or `(Vector2.new())`
+
+| 21 | 0 | 0 |
+|-|-|-|
+| 0×15 | 0×00000000 | 0×00000000 |
+
+`(Vector2.new(5, -1))`
+
+| 21 | 5 | -1 |
+|-|-|-|
+| 0×15 | 0×40a00000 | 0×bf800000 |
+
+### Vector3int16s
+
+| Type 0×19 (byte) | X (2 bytes) | Y (2 bytes) | Z (2 bytes) |
+
+`(Vector3int16.new())`
+
+| 25 | 0 | 0 | 0 |
+|-|-|-|-|
+| 0×19 | 0×0000 | 0×0000 | 0×0000 |
+
+`(Vector3int16.new(-5, 7, 9))`
+
+| 25 | -5 | 7 | 9 |
+|-|-|-|-|
+| 0×19 | 0xfffb | 0×0007 | 0×0009 |
+
+### Vector3s
+
+| Type 0×16 (byte) | X (4 bytes) | Y (4 bytes) | Z (4 bytes) |
+
+`(Vector3.zero)` or `(Vector3.new())`
+
+| 22 | 0 | 0 | 0 |
+|-|-|-|-|
+| 0×16 | 0×00000000 | 0×00000000 | 0×00000000 |
+
+`(Vector3.new(59.2, -1.101, 9.3))`
+
+| 22 | 59.2 | -1.101 | 9.3 |
+|-|-|-|-|
+| 0×16 | 0x426ccccd | 0xbf8ced91 | 0x4114cccd
+
 ### CFrames
 
 #### General Case
 
-In the general case, CFrames have some arbitrary rotation that is not clean multiples of 90 degrees. This means that the rotation will not or cannot be enumerated, and therefore must be sent entirely. We do not understand the rotation format, but it is 6 bytes long, so forgive the elusive formatting we use.
+In the general case, CFrames have some arbitrary rotation that is not clean multiples of 90 degrees. This means that the rotation will not or cannot be enumerated, and therefore must be sent entirely. We do not understand the rotation format, but it is 6 bytes long, so forgive the elusive formatting we use. If you would like to help us figure out the rotation format, you may download the packet viewer, run the tests you need to, and make a pull request improving [Squash's documentation](https://github.com/Data-Oriented-House/Squash)!
 
 | Type 0×1b (byte) | X (4 bytes) | Y (4 bytes) | Z (4 bytes) | Id 0×00 (byte) | Rotation (6 bytes) |
 |-|-|-|-|-|-|
@@ -216,11 +282,11 @@ In the general case, CFrames have some arbitrary rotation that is not clean mult
 
 <!-- 1b bf 80 00 00 40 00 00 00 c0 75 58 10 00 6f 42 7b 6d aa 6a -->
 
-`(CFrame.fromEulerAnglesYXZ(-1, 2, 3))`
+`(CFrame.fromEulerAnglesYXZ(-1, 2, 3) + Vector3.new(-1, 2, -3))`
 
-| 27 | -1 | 2 | 3 | 0 | -1, 2, 3 |
+| 27 | -1 | 2 | -3 | 0 | -1, 2, 3 |
 |-|-|-|-|-|-|
-| 0×1b | 0xbf800000 | 0×40000000 | 0×c0755810 | 0×00 | 0×6f427b6maa6a |
+| 0×1b | 0×bf800000 | 0×40000000 | 0×c0400000 | 0×00 | 0×1c1d16b1de9e |
 
 #### Special Case
 
@@ -309,7 +375,7 @@ Tables are separated into two types: Arrays and Dictionaries. This is because in
 
 #### Arrays
 
-| Type 0×1e (byte) | Element Count (LEB128) | Element 1 | Element 2 | ... |
+| Type 0×1e (byte) | Element Count (VLQ) | Element 1 | Element 2 | ... |
 |-|-|-|-|-|
 
 `({})`
@@ -340,7 +406,7 @@ The array is cut off at the first nil value.
 
 #### Dictionaries
 
-| Type 0×1f (byte) | Pair Count (LEB128) | Key 1 | Value 1 | Key 2 | Value 2 | ... |
+| Type 0×1f (byte) | Pair Count (VLQ) | Key 1 | Value 1 | Key 2 | Value 2 | ... |
 |-|-|-|-|-|-|-|
 
 <!-- 1f 01 05 73 77 6f 72 64 09 01 -->
