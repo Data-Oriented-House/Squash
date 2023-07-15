@@ -8,44 +8,66 @@ Strings are great for serializing data, but we need to know when to serialize. C
 
 ## How Are Packets Sent And Recieved?
 
-Roblox remotes sends its data in the form of [*packets*](https://en.wikipedia.org/wiki/Network_packet). Every roblox packet is packed densely with data to reduce their size. Every byte is important and has meaning. More data types will be presented soon. To verify this information for yourself, source code and instructions on the recording process will also be available soon.
+Roblox remotes sends its data in the form of [*packets*](https://en.wikipedia.org/wiki/Network_packet). Every roblox packet is packed densely with data to reduce their size. Every byte is important and has meaning. To verify this information for yourself, source code and instructions on the hooking process are provided in [this ZIP folder](./PacketViewerSource.zip).
+
+### Variable Length Quantities
+
+Many of the values packets use can scale in size drastically, but still need to be kept as small as possible. There is a common format or strategy for doing this called [*Variable Length Quantities*](https://en.wikipedia.org/wiki/Variable-length_quantity) that only use as much space as they need to represent a number. This is used for the length of strings, the number of arguments in a remote call, and the number of remotes in a session. It is labeled with the acronym **VLQ** in parenthesis since it takes the place of a size. We know these are VLQs and not just regular numbers because we have tested them with numbers that are too big to fit in their initial size and looked at the binary; they scale in size as the number grows.
+
+### The Enigmas
+
+Even after literally days of looking at the binary, we still can't quite figure out some of the meanings behind some of the bytes. We have appropriately called these bytes "Enigmas". Over time these enigma bytes have been reduced, but they aren't quite gone yet. If you would like to help identify these bytes, you may download the packet viewer, run the tests you need to, and make a pull request improving [Squash's documentation](https://github.com/Data-Oriented-House/Squash)!
+
+### Packet Structure
+
+| Packet Type 0×83 (byte) | Packet Data 1 | Packet Data 2 | ... | Packet Delimiter 0×00 (byte) |
+|-|-|-|-|-|
+
+Every packet of **Packet Type 0×83** ends with a **Packet Delimiter 0×00** (null) byte, but not all packet types do this.
+
+#### Single Remote Optimization Strategy
+
+When multiple packet datas are sent within a short enough time period using the same remote, they are merged into a single packet in the format above. This is why the packet delimiter is important; it says when to stop reading the packet. This is a strategy used to reduce packet overhead, such as the packet type, delimiter, and header necessary due to internet protocols.
+
+It is a strategy to use only one remote and funnel all data through it, appending all packet datas into a single packet. This is why we recommend using a single remote for all data, and not using multiple remotes for different kinds of data.
+
+### Packet Data Types
 
 #### Client To Server
 
 ##### Remote Event
 
-| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (10 bytes) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
-|-|-|-|-|-|-|-|
+Packet SubType 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Client To Server Id 0×70 (byte) | User Information (5 bytes) | Argument Count (byte) | Data 1 | Data 2 | ... |
+|-|-|-|-|-|-|-|-|-|
+
+When creating remotes in studio before starting a session, each remote gets an incrementing **Remote Id** starting from an unpredictable number. This number is 3 bytes long. When creating remotes in a session, each remote gets a **Remote Id** that increments at different rates, and starts from a different value.
+
+We are unsure of the format of the User Information, or what it actually contains. We hypothesize that it contains the player's UserId, but we have not been able to verify this.
+
+The maximum **Argument Count** is 255 because the argument count is a single byte. This happens to also align with the maximum number of arguments a function can have in Luau.
+
+There is no difference in size when firing remotes with different ids, or in short, the number of remotes does not affect bandwidth per packet.
 
 ##### Remote Function
 
-| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (9 bytes) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
-|-|-|-|-|-|-|-|
+Packet SubType 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Client To Server Id 0×7b (byte) | Call Count (VLQ) | User Information (5 bytes) | Argument Count (byte) | Data 1 | Data 2 | ... |
+|-|-|-|-|-|-|-|-|-|-|
+
+The **Call Count** is the number of times the remote function has been invoked since the start of the session. It increments by 2 every invocation, and is sent both ways from the `Server -> Client -> Server` or `Client -> Server -> Client`. We hypothesize that this is used to prevent duplicate packets from being processed, to prevent packets from being processed out of order, or to know if a packet was dropped.
 
 #### Server To Client
 
 ##### Remote Event
 
-| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (6 bytes) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
-|-|-|-|-|-|-|-|
+Packet SubType 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Server To Client Id 0×6f (byte) | Argument Count (byte) | Data 1 | Data 2 | ... |
+|-|-|-|-|-|-|-|-|
 
 ##### Remote Function
 
-| Packet Type 0×83 (byte) | Packet SubType 0×07 (byte) | Remote Id (2 bytes) | The Enigma (4 bytes) | Enigma Delimiter 0×00 (byte) | Argument Count (byte) | Data | Packet Delimiter 0×00 (byte) |
+<!-- 07 01 7c c1 04 00 0b 79 06 00 -->
 
-Our hypothesis is that **Client To Server** spends 4 bytes to also send the player UserId.
-
-Consequences of this memory layout include:
-
-- Every packet of type 0×8307 ends with a 0×00 (null) byte
-
-- The enigma portion of each packet is a mystery to us, but it changes size depending on if the client or server is sending, and changes value depending on the remote being sent.
-
-- The maximum number of arguments a remote can have is 255 because the argument count is a single byte.
-
-- The maximum number of remotes a session can have is 65535 because the remote id is 2 bytes.
-
-- There is no difference in cost when firing remotes with different ids, or in short, the number of remotes does not affect bandwidth per packet.
+Packet SubType 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Server To Client Id 0×79 (byte) | Call Count (VLQ) | Argument Count (byte) | Data 1 | Data 2 | ... |
+|-|-|-|-|-|-|-|-|-|
 
 ## Data
 
@@ -55,16 +77,33 @@ Below are the different ways types of data are formatted in memory when packed i
 
 Example remotes in a session:
 
-| Session | Remote Name | Packet Type | Packet SubType | Remote Id | The Enigma | Argument Count | Packet Delimiter |
-|-|-|-|-|-|-|-|-|-|
-| 1 | "R1" | 0×83 | 0×07 | 0×01f5 | 0×7109000b5001d85e0a00 | 0×00 | 0×00 |
-| 1 | "R2" | 0×83 | 0×07 | 0×01f6 | 0×7109000b5001d85e0a00 | 0×00 | 0×00 | 0×00 |
-| 1 | "R3" | 0×83 | 0×07 | 0×01f7 | 0×7109000b5001d85e0a00 | 0×00 | 0×00 | 0×00 |
-| | | | | | | | | |
-| 2 | "R1" | 0×83 | 0×07 | 0×016d | 0×3d0c000b5001502a0d00 | 0×00 | 0×00 | 0×00 |
-| 2 | "R2" | 0×83 | 0×07 | 0×016e | 0×3d0c000b5001502a0d00 | 0×00 | 0×00 | 0×00 |
-| 2 | "R3" | 0×83 | 0×07 | 0×016f | 0×3d0c000b5001502a0d00 | 0×00 | 0×00 | 0×00 |
+Session | Created During | From | Remote Name | Packet Type | Packet Subtype | Remote Id | Enigma | Server To Client Id | Argument Count | Packet Delimiter |
+|-|-|-|-|-|-|-|-|-|-|-|
+1 | Before | Server | "A" | 0×83 | 0×0701 | 0×7f6d11 | 0×000b | 0×6f | 0×00 | 0×00
+1 | Before | Server | "B" | 0×83 | 0×0701 | 0×7d6d11 | 0×000b | 0×6f | 0×00 | 0×00
+1 | Before | Server | "C" | 0×83 | 0×0701 | 0×7e6d11 | 0×000b | 0×6f | 0×00 | 0×00
+1 | After | Server | "D" | 0×83 | 0×0701 | 0×430d19 | 0×000b | 0×6f | 0×00 | 0×00
+1 | After | Server | "E" | 0×83 | 0×0701 | 0×470d19 | 0×000b | 0×6f | 0×00 | 0×00
+1 | After | Server | "F" | 0×83 | 0×0701 | 0×4a0d19 | 0×000b | 0×6f | 0×00 | 0×00
+|
+2 | Before | Server | "A" | 0×83 | 0×0701 | 0×23d719 | 0×000b | 0×6f | 0×00 | 0×00
+2 | Before | Server | "B" | 0×83 | 0×0701 | 0×21d719 | 0×000b | 0×6f | 0×00 | 0×00
+2 | Before | Server | "C" | 0×83 | 0×0701 | 0×22d719 | 0×000b | 0×6f | 0×00 | 0×00
+2 | After | Server | "D" | 0×83 | 0×0701 | 0×07da1b | 0×000b | 0×6f | 0×00 | 0×00
+2 | After | Server | "E" | 0×83 | 0×0701 | 0×0bda1b | 0×000b | 0×6f | 0×00 | 0×00
+2 | After | Server | "F" | 0×83 | 0×0701 | 0×0eda1b | 0×000b | 0×6f | 0×00 | 0×00
 
+Session | Created During | From | Remote Name | Packet Type | Packet Subtype | Remote Id | Enigma | Client To Server Id | User Information | Argument Count | Packet Delimiter |
+|-|-|-|-|-|-|-|-|-|-|-|-|
+3 | Before | Client | "A" | 0×83 | 0×0701 | 0×6d9109 | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
+3 | Before | Client | "B" | 0×83 | 0×0701 | 0×6b9109 | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
+3 | Before | Client | "C" | 0×83 | 0×0701 | 0×6c9109 | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
+
+<!--
+	D 83 07 01 67 96 0b 00 0b 70 01 59 89 0a 00 00 00
+	E 83 07 01 6b 96 0b 00 0b 70 01 59 89 0a 00 00 00
+	F 83 07 01 6e 96 0b 00 0b 70 01 59 89 0a 00 00 00
+ -->
 
 ### Nil
 
