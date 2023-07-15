@@ -17,3 +17,11 @@ https://data-oriented-house.github.io/Squash/
 	- Run `wally install` in your terminal
 	- ???
 	- Profit
+
+# How Do I Contribute?
+
+- Fork the repository
+- Make your changes
+- Submit a pull request
+- ¿¿¿
+- Profit
