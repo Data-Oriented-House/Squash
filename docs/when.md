@@ -37,7 +37,7 @@ It is a strategy to use only one remote and funnel all data through it, appendin
 
 ##### Remote Event
 
-Packet SubType 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Client To Server Id 0×70 (byte) | User Information (5 bytes) | Argument Count (byte) | Data 1 | Data 2 | ... |
+Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Client To Server Id 0×70 (byte) | User Information (5 bytes) | Argument Count (byte) | Data 1 | Data 2 | ... |
 |-|-|-|-|-|-|-|-|-|
 
 When creating remotes in studio before starting a session, each remote gets an incrementing **Remote Id** starting from an unpredictable number. This number is 3 bytes long. When creating remotes in a session, each remote gets a **Remote Id** that increments at different rates, and starts from a different value.
@@ -50,7 +50,7 @@ There is no difference in size when firing remotes with different ids, or in sho
 
 ##### Remote Function
 
-Packet SubType 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Client To Server Id 0×7b (byte) | Call Count (VLQ) | User Information (5 bytes) | Argument Count (byte) | Data 1 | Data 2 | ... |
+Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Client To Server Id 0×7b (byte) | Call Count (VLQ) | User Information (5 bytes) | Argument Count (byte) | Data 1 | Data 2 | ... |
 |-|-|-|-|-|-|-|-|-|-|
 
 The **Call Count** is the number of times the remote function has been invoked since the start of the session. It increments by 2 every invocation, and is sent both ways from the `Server -> Client -> Server` or `Client -> Server -> Client`. We hypothesize that this is used to prevent duplicate packets from being processed, to prevent packets from being processed out of order, or to know if a packet was dropped.
@@ -59,14 +59,14 @@ The **Call Count** is the number of times the remote function has been invoked s
 
 ##### Remote Event
 
-Packet SubType 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Server To Client Id 0×6f (byte) | Argument Count (byte) | Data 1 | Data 2 | ... |
+Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Server To Client Id 0×6f (byte) | Argument Count (byte) | Data 1 | Data 2 | ... |
 |-|-|-|-|-|-|-|-|
 
 ##### Remote Function
 
 <!-- 07 01 7c c1 04 00 0b 79 06 00 -->
 
-Packet SubType 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Server To Client Id 0×79 (byte) | Call Count (VLQ) | Argument Count (byte) | Data 1 | Data 2 | ... |
+Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Server To Client Id 0×79 (byte) | Call Count (VLQ) | Argument Count (byte) | Data 1 | Data 2 | ... |
 |-|-|-|-|-|-|-|-|-|
 
 ## Data
@@ -75,35 +75,53 @@ Below are the different ways types of data are formatted in memory when packed i
 
 ### Void (Just Remote Overhead)
 
-Example remotes in a session:
+#### Server -> Client
 
-Session | Created During | From | Remote Name | Packet Type | Packet Subtype | Remote Id | Enigma | Server To Client Id | Argument Count | Packet Delimiter |
+##### Remote Events
+
+Created | Remote Name | Packet Type | Packet Subtype | Remote Id | Enigma | Server To Client Id | Argument Count | Packet Delimiter |
+|-|-|-|-|-|-|-|-|-|
+Before | "A" | 0×83 | 0×0701 | 0×7f6d11 | 0×000b | 0×6f | 0×00 | 0×00
+Before | "B" | 0×83 | 0×0701 | 0×7d6d11 | 0×000b | 0×6f | 0×00 | 0×00
+Before | "C" | 0×83 | 0×0701 | 0×7e6d11 | 0×000b | 0×6f | 0×00 | 0×00
+After | "D" | 0×83 | 0×0701 | 0×430d19 | 0×000b | 0×6f | 0×00 | 0×00
+After | "E" | 0×83 | 0×0701 | 0×470d19 | 0×000b | 0×6f | 0×00 | 0×00
+After | "F" | 0×83 | 0×0701 | 0×4a0d19 | 0×000b | 0×6f | 0×00 | 0×00
+
+##### Remote Functions
+
+Created | Remote Name | Packet Type | Packet Subtype | Remote Id | Enigma | Server To Client Id | Call Count | Argument Count | Packet Delimiter |
+|-|-|-|-|-|-|-|-|-|-|
+Before | "A" | 0×83 | 0×0701 | 0×9ef104 | 0×000b | 0×79 | 0×02 | 0×00 | 0×00
+Before | "B" | 0×83 | 0×0701 | 0×9ff104 | 0×000b | 0×79 | 0×02 | 0×00 | 0×00
+Before | "C" | 0×83 | 0×0701 | 0×a0f104 | 0×000b | 0×79 | 0×02 | 0×00 | 0×00
+After | "D" | 0×83 | 0×0701 | 0×27f506 | 0×000b | 0×79 | 0×02 | 0×00 | 0×00
+After | "E" | 0×83 | 0×0701 | 0×2bf506 | 0×000b | 0×79 | 0×02 | 0×00 | 0×00
+After | "F" | 0×83 | 0×0701 | 0×2ef506 | 0×000b | 0×79 | 0×02 | 0×00 | 0×00
+
+#### Client -> Server
+
+##### Remote Events
+
+Created | Remote Name | Packet Type | Packet Subtype | Remote Id | Enigma | Client To Server Id | User Information | Argument Count | Packet Delimiter |
+|-|-|-|-|-|-|-|-|-|-|
+Before | "A" | 0×83 | 0×0701 | 0×6d9109 | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
+Before | "B" | 0×83 | 0×0701 | 0×6b9109 | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
+Before | "C" | 0×83 | 0×0701 | 0×6c9109 | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
+After | "D" | 0×83 | 0×0701 | 0×67960b | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
+After | "E" | 0×83 | 0×0701 | 0×6b960b | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
+After | "F" | 0×83 | 0×0701 | 0×6e960b | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
+
+##### Remote Functions
+
+Created | Remote Name | Packet Type | Packet Subtype | Remote Id | Enigma | Client To Server Id | Call Count | User Information | Argument Count | Packet Delimiter |
 |-|-|-|-|-|-|-|-|-|-|-|
-1 | Before | Server | "A" | 0×83 | 0×0701 | 0×7f6d11 | 0×000b | 0×6f | 0×00 | 0×00
-1 | Before | Server | "B" | 0×83 | 0×0701 | 0×7d6d11 | 0×000b | 0×6f | 0×00 | 0×00
-1 | Before | Server | "C" | 0×83 | 0×0701 | 0×7e6d11 | 0×000b | 0×6f | 0×00 | 0×00
-1 | After | Server | "D" | 0×83 | 0×0701 | 0×430d19 | 0×000b | 0×6f | 0×00 | 0×00
-1 | After | Server | "E" | 0×83 | 0×0701 | 0×470d19 | 0×000b | 0×6f | 0×00 | 0×00
-1 | After | Server | "F" | 0×83 | 0×0701 | 0×4a0d19 | 0×000b | 0×6f | 0×00 | 0×00
-|
-2 | Before | Server | "A" | 0×83 | 0×0701 | 0×23d719 | 0×000b | 0×6f | 0×00 | 0×00
-2 | Before | Server | "B" | 0×83 | 0×0701 | 0×21d719 | 0×000b | 0×6f | 0×00 | 0×00
-2 | Before | Server | "C" | 0×83 | 0×0701 | 0×22d719 | 0×000b | 0×6f | 0×00 | 0×00
-2 | After | Server | "D" | 0×83 | 0×0701 | 0×07da1b | 0×000b | 0×6f | 0×00 | 0×00
-2 | After | Server | "E" | 0×83 | 0×0701 | 0×0bda1b | 0×000b | 0×6f | 0×00 | 0×00
-2 | After | Server | "F" | 0×83 | 0×0701 | 0×0eda1b | 0×000b | 0×6f | 0×00 | 0×00
-
-Session | Created During | From | Remote Name | Packet Type | Packet Subtype | Remote Id | Enigma | Client To Server Id | User Information | Argument Count | Packet Delimiter |
-|-|-|-|-|-|-|-|-|-|-|-|-|
-3 | Before | Client | "A" | 0×83 | 0×0701 | 0×6d9109 | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
-3 | Before | Client | "B" | 0×83 | 0×0701 | 0×6b9109 | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
-3 | Before | Client | "C" | 0×83 | 0×0701 | 0×6c9109 | 0×000b | 70 | 0×0159890a00 | 0×00 | 0×00
-
-<!--
-	D 83 07 01 67 96 0b 00 0b 70 01 59 89 0a 00 00 00
-	E 83 07 01 6b 96 0b 00 0b 70 01 59 89 0a 00 00 00
-	F 83 07 01 6e 96 0b 00 0b 70 01 59 89 0a 00 00 00
- -->
+Before | "A" | 0×83 | 0×0701 | 0×d9be07 | 0×000b | 0×7b | 0×02 | 0×01c5b60800 | 0×00 | 0×00
+Before | "B" | 0×83 | 0×0701 | 0×dabe07 | 0×000b | 0×7b | 0×02 | 0×01c5b60800 | 0×00 | 0×00
+Before | "C" | 0×83 | 0×0701 | 0×dbbe07 | 0×000b | 0×7b | 0×02 | 0×01c5b60800 | 0×00 | 0×00
+After | "D" | 0×83 | 0×0701 | 0×6fc309 | 0×000b | 0×7b | 0×02 | 0×01c5b60800 | 0×00 | 0×00
+After | "E" | 0×83 | 0×0701 | 0×73c309 | 0×000b | 0×7b | 0×02 | 0×01c5b60800 | 0×00 | 0×00
+After | "F" | 0×83 | 0×0701 | 0×76c309 | 0×000b | 0×7b | 0×02 | 0×01c5b60800 | 0×00 | 0×00
 
 ### Nil
 
