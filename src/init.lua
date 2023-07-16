@@ -1,4 +1,5 @@
 --!strict
+--!optimize 2
 
 --[=[
 	@class Squash
@@ -1042,7 +1043,7 @@ Squash.CFrame.ser = function(x: CFrame, serdes: NumberSerDes?, posBytes: Bytes?)
 	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
 	local posBytes = posBytes or 4
 
-	local rx, ry, rz = x:ToOrientation()
+	local rx, ry, rz = x:ToEulerAnglesYXZ()
 	local px, py, pz = x.Position.X, x.Position.Y, x.Position.Z
 
 	return serAngle(rx) .. serAngle(ry) .. serAngle(rz) .. ser(px, posBytes) .. ser(py, posBytes) .. ser(pz, posBytes)
