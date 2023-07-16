@@ -544,11 +544,63 @@ Squash.uint.ser = function(x: number, bytes: Bytes?): string
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
-	local chars = {}
-	for i = 1, bytes do
-		chars[i] = math.floor(x * 256 ^ (1 - i)) % 256
+	--? Compared to a simple for loop, this is about 10x faster.
+	--? The order of these if statements is attempted to be optimized for performance, with the most common cases first.
+	if bytes == 4 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256
+		)
+	elseif bytes == 8 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256,
+			math.floor(x * 256 ^ 4) % 256,
+			math.floor(x * 256 ^ 5) % 256,
+			math.floor(x * 256 ^ 6) % 256,
+			math.floor(x * 256 ^ 7) % 256
+		)
+	elseif bytes == 2 then
+		return string.char(math.floor(x * 256 ^ 0) % 256, math.floor(x * 256 ^ 1) % 256)
+	elseif bytes == 1 then
+		return string.char(math.floor(x * 256 ^ 0) % 256)
+	elseif bytes == 3 then
+		return string.char(math.floor(x * 256 ^ 0) % 256, math.floor(x * 256 ^ 1) % 256, math.floor(x * 256 ^ 2) % 256)
+	elseif bytes == 5 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256,
+			math.floor(x * 256 ^ 4) % 256
+		)
+	elseif bytes == 6 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256,
+			math.floor(x * 256 ^ 4) % 256,
+			math.floor(x * 256 ^ 5) % 256
+		)
+	elseif bytes == 7 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256,
+			math.floor(x * 256 ^ 4) % 256,
+			math.floor(x * 256 ^ 5) % 256,
+			math.floor(x * 256 ^ 6) % 256
+		)
 	end
-	return string.char(table.unpack(chars))
+
+	--? Should never get called because of the bytesAssert at the top of the function. This is just to make the typechecker happy.
+	error('Invalid bytes: ' .. bytes)
 end
 
 --[=[
@@ -562,11 +614,54 @@ Squash.uint.des = function(y: string, bytes: Bytes?): number
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
-	local sum = 0
-	for i = 1, bytes do
-		sum += string.byte(y, i) * 256 ^ (i - 1)
+	--? The order of these if statements is attempted to be optimized for performance, with the most common cases first.
+	if bytes == 4 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+	elseif bytes == 8 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+			+ math.floor(string.byte(y, 5) * 256 ^ 4)
+			+ math.floor(string.byte(y, 6) * 256 ^ 5)
+			+ math.floor(string.byte(y, 7) * 256 ^ 6)
+			+ math.floor(string.byte(y, 8) * 256 ^ 7)
+	elseif bytes == 2 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0) + math.floor(string.byte(y, 2) * 256 ^ 1)
+	elseif bytes == 1 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+	elseif bytes == 3 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+	elseif bytes == 5 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+			+ math.floor(string.byte(y, 5) * 256 ^ 4)
+	elseif bytes == 6 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+			+ math.floor(string.byte(y, 5) * 256 ^ 4)
+			+ math.floor(string.byte(y, 6) * 256 ^ 5)
+	elseif bytes == 7 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+			+ math.floor(string.byte(y, 5) * 256 ^ 4)
+			+ math.floor(string.byte(y, 6) * 256 ^ 5)
+			+ math.floor(string.byte(y, 7) * 256 ^ 6)
 	end
-	return sum
+
+	--? Should never get called because of the bytesAssert at the top of the function. This is just to make the typechecker happy.
+	error('Invalid bytes: ' .. bytes)
 end
 
 --[=[
