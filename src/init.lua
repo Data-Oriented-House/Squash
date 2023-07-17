@@ -446,7 +446,6 @@ end
 
 --? Done this way because roblox luau does not support constant folding. This has been benchmarked.
 
-local n2_1  = 2 ^ 1
 local n2_2 = 2 ^ 2
 local n2_3 = 2 ^ 3
 local n2_4 = 2 ^ 4
@@ -501,7 +500,7 @@ Squash.boolean.ser = function(
 ): string
 	return string.char(
 		(if x1 then 1 else 0)
-			+ (if x2 then n2_1  else 0)
+			+ (if x2 then 2  else 0)
 			+ (if x3 then n2_2 else 0)
 			+ (if x4 then n2_3 else 0)
 			+ (if x5 then n2_4 else 0)
@@ -519,7 +518,7 @@ end
 ]=]
 Squash.boolean.des = function(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = string.byte(y)
-	return x % 2 >= 1,
+	return x % 1 >= 1,
 		(x * n2_1_) % 2 >= 1,
 		(x * n2_2_) % 2 >= 1,
 		(x * n2_3_) % 2 >= 1,
