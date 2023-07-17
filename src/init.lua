@@ -376,9 +376,16 @@ local getByteSize = function(x: number): number
 	return math.ceil(math.log(x, 2 ^ 8))
 end
 
-local getItemData = function<T>(array: { T }): { items: { T }, bits: number, bytes: number }
+local getItemData = function<T>(array: { T }): { items: { T }, lookup: { [T]: number }, bits: number, bytes: number }
+	local lookup = {}
+
+	for i, v in array do
+		lookup[v] = i
+	end
+
 	return {
 		items = array,
+		lookup = lookup,
 		bits = getBitSize(#array),
 		bytes = getByteSize(#array),
 	}
@@ -402,8 +409,8 @@ local packBits = function(x: { number }, bits: number): string
 	local count = 0
 	for i = 1, #x do
 		for b = bits - 1, 0, -1 do
-			byte = byte * 2 + math.floor(x[i] / 2 ^ b) % 2
-			count = count + 1
+			byte = byte * 2 + math.floor(x[i] * 2 ^ -b) % 2
+			count += 1
 			if count == 8 then
 				table.insert(packed, string.char(byte))
 				byte = 0
@@ -425,8 +432,8 @@ local unpackBits = function(y: string, bits: number): { number }
 	for i = 1, #y do
 		local byte = string.byte(y, i)
 		for b = 7, 0, -1 do
-			value = value * 2 + math.floor(byte / 2 ^ b) % 2
-			count = count + 1
+			value = value * 2 + math.floor(byte * 2 ^ -b) % 2
+			count += 1
 			if count == bits then
 				table.insert(x, value)
 				value = 0
@@ -1210,7 +1217,7 @@ Squash.Enum = {}
 	@return string
 ]=]
 Squash.Enum.ser = function(x: Enum): string
-	local enumId = table.find(enumData.items, x) :: number
+	local enumId = enumData.lookup[x] :: number
 	return Squash.uint.ser(enumId, enumData.bytes)
 end
 
@@ -1254,7 +1261,7 @@ Squash.EnumItem = {}
 ]=]
 Squash.EnumItem.ser = function(enumItem: EnumItem, enum: Enum): string
 	local enumData = enumItemData[enum]
-	local enumItemId = table.find(enumData.items, enumItem) :: number
+	local enumItemId = enumData.lookup[enumItem] :: number
 	return Squash.uint.ser(enumItemId, enumData.bytes)
 end
 
