@@ -10,6 +10,8 @@ Strings are great for serializing data, but we need to know when to serialize. C
 
 Roblox remotes sends its data in the form of [*packets*](https://en.wikipedia.org/wiki/Network_packet). Every roblox packet is packed densely with data to reduce their size. Every byte is important and has meaning. To verify this information for yourself, source code and instructions on the hooking process are provided in [this ZIP folder](/PacketViewerSource.zip).
 
+After writing this documentation, we've discovered [rbx-dom](https://dom.rojo.space/), a site dedicated to serialization and deserialization implementations. Sadly, it does not contain any information about remotes, but some information found in the other specifications has been very encouraging as they support our findings.
+
 ### Variable Length Quantities
 
 Many of the values packets use can scale in size drastically, but still need to be kept as small as possible. There is a common format or strategy for doing this called [*Variable Length Quantities*](https://en.wikipedia.org/wiki/Variable-length_quantity) that only use as much space as they need to represent a number. This is used for the length of strings, the number of arguments in a remote call, and the number of remotes in a session. It is labeled with the acronym **VLQ** in parenthesis since it takes the place of a size. We know these are VLQs and not just regular numbers because we have tested them with numbers that are too big to fit in their initial size and looked at the binary; they scale in size as the number grows.
@@ -42,15 +44,15 @@ Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes
 
 When creating remotes in studio before starting a session, each remote gets an incrementing **Remote Id** starting from an unpredictable number. This number is 3 bytes long. When creating remotes in a session, each remote gets a **Remote Id** that increments at different rates, and starts from a different value.
 
-We are unsure of the format of the User Information, or what it actually contains. We hypothesize that it contains the player's UserId, but we have not been able to verify this.
+We are unsure of the format of the **User Information**, or what it actually contains. We hypothesize that it contains the player's UserId, but we have not been able to verify this.
 
 The maximum **Argument Count** is 255 because the argument count is a single byte. This happens to also align with the maximum number of arguments a function can have in Luau.
 
-There is no difference in size when firing remotes with different ids, or in short, the number of remotes does not affect bandwidth per packet.
+There is no difference in size when firing remotes with different ids, or in short, the number of remotes does not affect the size of packets.
 
 #### Remote Function
 
-Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Client To Server Id 0×7b (byte) | Call Count (VLQ) | User Information (5 bytes) | Argument Count (byte) | Data 1 | Data 2 | ... |
+Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Client To Server Id 0×7b (byte) | Call Count (VLQ = 2) | User Information (5 bytes) | Argument Count (byte) | Data 1 | Data 2 | ... |
 |-|-|-|-|-|-|-|-|-|-|
 
 The **Call Count** is the number of times the remote function has been invoked since the start of the session. It increments by 2 every invocation, and is sent both ways from the `Server -> Client -> Server` or `Client -> Server -> Client`. We hypothesize that this is used to prevent duplicate packets from being processed, to prevent packets from being processed out of order, or to know if a packet was dropped.
@@ -66,7 +68,7 @@ Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes
 
 <!-- 07 01 7c c1 04 00 0b 79 06 00 -->
 
-Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Server To Client Id 0×79 (byte) | Call Count (VLQ) | Argument Count (byte) | Data 1 | Data 2 | ... |
+Packet Subtype 0×0701 (2 bytes) | Remote Id (3 bytes) | Enigma 0×000b (2 bytes) | Server To Client Id 0×79 (byte) | Call Count (VLQ = 2) | Argument Count (byte) | Data 1 | Data 2 | ... |
 |-|-|-|-|-|-|-|-|-|
 
 ## Data
@@ -182,7 +184,7 @@ After | "F" | 0×83 | 0×0701 | 0×76c309 | 0×000b | 0×7b | 0×02 | 0×01c5b60
 
 ### Strings
 
-| Type 0×02 (byte) | Length (VLQ) | Value (Length bytes) |
+| Type 0×02 (byte) | Length (VLQ = 1) | Value (Length bytes) |
 |-|-|-|
 
 `("Hello World!")`
@@ -313,63 +315,34 @@ In the special case, CFrames have rotations that are clean multiples of 90 degre
 |-|-|-|-|-|
 | 0×1b | 0×446a80 | 0×00000000 | 0×c0000000 | 0×02 |
 
-Below are all of the different axis-angle representation of the rotation matrices that map to each rotation id. We do not know why there are holes in the Ids but have verified through exhaustive testing that these are the only Ids.
+Below are all of the different axis-angle representation of the rotation matrices that map to each rotation id. We do not know why there are holes in the Ids but have verified through exhaustive testing that these are the only Ids. Below are the orientations using **EulerAnglesYXZ** in degrees. These values are supported by [Rojo's documentation of the RBXM file format](https://dom.rojo.space/binary.html#cframe). It has a slightly different format than packets, but these specific values are the same.
 
-| Id | Angle | X | Y | Z |
-|-|-|-|-|-|
-| 0×02 | 0 | 0 | 0 | 0 |
-| 0×03 | π/2 | 1 | 0 | 0 |
-| 0×05 | π | 1 | 0 | 0 |
-| 0×06 | π/2 | -1 | 0 | 0 |
-| 0×07 | π | 1/√2 | 1/√2 | 0 |
-| 0×09 | 3π/2 | 1/√3 | 1/√3 | 1/√3 |
-| 0×0a | π/2 | 0 | 0 | 1 |
-| 0×0c | 3π/2 | -1/√3 | -1/√3 | 1/√3 |
-| 0×0d | 3π/2 | -1/√3 | -1/√3 | -1/√3 |
-| 0×0e | π/2 | 0 | -1 | 0 |
-| 0×10 | 3π/2 | 1/√3 | -1/√3 | 1/√3 |
-| 0×11 | π | 1/√2 | 0 | 1/√2 |
-| 0×14 | π | 0 | 1 | 0 |
-| 0×15 | π | 0 | 1/√2 | 1/√2 |
-| 0×17 | π | 0 | 0 | 1 |
-| 0×18 | π | 0 | -1/√2 | 1/√2 |
-| 0×19 | π/2 | 0 | 0 | -1 |
-| 0×1b | 3π/2 | 1/√3 | -1/√3 | -1/√3 |
-| 0×1c | π | -1/√2 | 1/√2 | 0 |
-| 0×1e | 3π/2 | -1/√3 | 1/√3 | -1/√3 |
-| 0×1f | 3π/2 | 1/√3 | 1/√3 | -1/√3 |
-| 0×20 | π/2 | 0 | 1 | 0 |
-| 0×22 | 3π/2 | -1/√3 | 1/√3 | 1/√3 |
-| 0×23 | π | -1/√2 | 0 | 1/√2 |
-
-
-<!-- The above table is a key-value map of numbers to Angle-Axis rotations. Below is the rotation matrix representation of these values. -->
-
-<!-- | Id | X | Y | Z | | Id | X | Y | Z | | Id | X | Y | Z | | Id | X | Y | Z |
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
-|      | 1 | 0 | 0 | |      | 1 | 0 | 0 | |       | 1 | 0 | 0 | |      | 1 | 0 | 0 |
-| 0×02 | 0 | 1 | 0 | | 0×03 | 0 | 0 | -1 | | 0×05 | 0 | 0 | 1 | | 0×06 | 0 | -1 | 0 |
-|      | 0 | 0 | 1 | |      | 0 | 1 | 0 | |       | 0 | -1 | 0 | |     | 0 | 0 | -1 |
-|
-|      | -1 | 0 | 0 | |      | 0 | 0 | 1 | |       | 0 | 1 | 0 | |      | 0 | 0 | -1 |
-| 0×07 | 0 | -1 | 0 | | 0×09 | 0 | -1 | 0 | | 0×0a | 1 | 0 | 0 | | 0×0c | -1 | 0 | 0 |
-|      | 0 | 0 | -1 | |      | 0 | 0 | 1 | |       | 0 | 0 | 1 | |      | 0 | 0 | 1 |
-|
-|      | 0 | 0 | 1 | |      | 0 | 1 | 0 | |       | 0 | 0 | -1 | |     | 0 | -1 | 0 |
-| 0×0d | 0 | 1 | 0 | | 0×0e | 0 | 0 | -1 | | 0×10 | 0 | 1 | 0 | | 0×11 | 0 | 0 | 1 |
-|      | 1 | 0 | 0 | |      | 0 | 0 | 1 | |       | -1 | 0 | 0 | |     | 0 | 1 | 0 |
-|
-|      | 0 | 0 | 1 | |      | 0 | -1 | 0 | |      | 0 | 0 | 1 | |      | 0 | 1 | 0 |
-| 0×14 | 0 | 1 | 0 | | 0×15 | 0 | 0 | 1 | | 0×17 | 0 | -1 | 0 | | 0×18 | 0 | 0 | -1 |
-|      | -1 | 0 | 0 | |     | 0 | 0 | 1 | |       | 0 | 0 | -1 | |     | 1 | 0 | 0 |
-|
-|      | 0 | 0 | 1 | |      | 0 | -1 | 0 | |      | 0 | 0 | -1 | |     | 0 | -1 | 0 |
-| 0×19 | 0 | 1 | 0 | | 0×1b | 0 | 0 | -1 | | 0×1c | 0 | 0 | 1 | | 0×1e | 0 | 1 | 0 |
-|      | 1 | 0 | 0 | |      | 0 | 0 | 1 | |       | 0 | -1 | 0 | |     | 0 | 0 | -1 |
-|
-|      | 0 | 0 | 1 | |      | 0 | 0 | -1 | |      | 0 | -1 | 0 | |     | 0 | 0 | 1 |
-| 0×1f | 0 | 1 | 0 | | 0×20 | 0 | 0 | 1 | | 0×22 | 0 | 0 | -1 | | 0×23 | 0 | -1 | 0 |
-|      | -1 | 0 | 0 | |     | 0 | 1 | 0 | |       | 0 | 0 | 1 | |      | 1 | 0 | 0 | -->
+| Id | X | Y | Z |
+|-|-|-|-|
+| 0×02 | 0 | 0 | 0 |
+| 0×03 | 90 | 0 | 0 |
+| 0×05 | 0 | 180 | 180 |
+| 0×06 | -90 | 0 | 0 |
+| 0×07 | 0 | 90 | 90 |
+| 0×09 | 0 | 90 | 90 |
+| 0×0a | 0 | 0 | 90 |
+| 0×0c | 0 | -90 | 90 |
+| 0×0d | -90 | -90 | 0 |
+| 0×0e | 0 | -90 | 0 |
+| 0×10 | 90 | -90 | 0 |
+| 0×11 | 0 | 90 | 180 |
+| 0×14 | 0 | 180 | 0 |
+| 0×15 | -90 | -180 | 0 |
+| 0×17 | 0 | 0 | 180 |
+| 0×18 | 90 | 180 | 0 |
+| 0×19 | 0 | 0 | -90 |
+| 0×1b | 0 | -90 | -90 |
+| 0×1c | 0 | -180 | -90 |
+| 0×1e | 0 | 90 | -90 |
+| 0×1f | 90 | 90 | 0 |
+| 0×20 | 0 | 90 | 0 |
+| 0×22 | -90 | 90 | 0 |
+| 0×23 | 0 | -90 | 180 |
 
 ### Tables
 
@@ -377,7 +350,7 @@ Tables are separated into two types: Arrays and Dictionaries. This is because in
 
 #### Arrays
 
-| Type 0×1e (byte) | Element Count (VLQ) | Element 1 | Element 2 | ... |
+| Type 0×1e (byte) | Element Count (VLQ = 1) | Element 1 | Element 2 | ... |
 |-|-|-|-|-|
 
 `({})`
@@ -426,3 +399,24 @@ The array is cut off at the first nil value.
 | 31 | 2 | 7 | 's' | 't' | 'a' | 'm' | 'i' | 'n' | 'a' | 2 | 4 | 'h' | 'e' | 'a' | 'l' | 't' | 'h' | 6 | 'h' | 'e' | 'a' | 'l' | 't' | 'h' | 12 | 82.1 |
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
 | 0×1f | 0×02 | 0×07 | 0×73 | 0×74 | 0×61 | 0×6d | 0×69 | 0×6e | 0×61 | 0×02 | 0×04 | 0×68 | 0×65 | 0×61 | 0×6c | 0×74 | 0×68 | 0×06 | 0×68 | 0×65 | 0×61 | 0×6c | 0×74 | 0×68 | 0×0c | 0×4054866666666666 |
+
+### Instances
+
+Instances seem to use an Id system which is shared across the client-server boundary. There isn't much we can say about them other than [rbx-dom's mention of Referents](https://dom.rojo.space/binary.html#referent).
+
+| Type 0×1c (byte) | Instance Id (5 bytes) |
+|-|-|
+
+`(workspace)`
+
+<!-- 1c 01 90 c8 06 00 -->
+
+| 28 | 0×0190c80600 |
+|-|-|
+
+`(game.ReplicatedStorage.Part)`
+
+<!-- 1c 01 54 6b 09 00 -->
+
+| 28 | 0×01546b0900 |
+|-|-|
