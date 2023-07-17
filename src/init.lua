@@ -376,9 +376,16 @@ local getByteSize = function(x: number): number
 	return math.ceil(math.log(x, 2 ^ 8))
 end
 
-local getItemData = function<T>(array: { T }): { items: { T }, bits: number, bytes: number }
+local getItemData = function<T>(array: { T }): { items: { T }, lookup: { [T]: number }, bits: number, bytes: number }
+	local lookup = {}
+
+	for i, v in array do
+		lookup[v] = i
+	end
+
 	return {
 		items = array,
+		lookup = lookup,
 		bits = getBitSize(#array),
 		bytes = getByteSize(#array),
 	}
@@ -402,8 +409,8 @@ local packBits = function(x: { number }, bits: number): string
 	local count = 0
 	for i = 1, #x do
 		for b = bits - 1, 0, -1 do
-			byte = byte * 2 + math.floor(x[i] / 2 ^ b) % 2
-			count = count + 1
+			byte = byte * 2 + math.floor(x[i] * 2 ^ -b) % 2
+			count += 1
 			if count == 8 then
 				table.insert(packed, string.char(byte))
 				byte = 0
@@ -425,8 +432,8 @@ local unpackBits = function(y: string, bits: number): { number }
 	for i = 1, #y do
 		local byte = string.byte(y, i)
 		for b = 7, 0, -1 do
-			value = value * 2 + math.floor(byte / 2 ^ b) % 2
-			count = count + 1
+			value = value * 2 + math.floor(byte * 2 ^ -b) % 2
+			count += 1
 			if count == bits then
 				table.insert(x, value)
 				value = 0
@@ -544,11 +551,63 @@ Squash.uint.ser = function(x: number, bytes: Bytes?): string
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
-	local chars = {}
-	for i = 1, bytes do
-		chars[i] = math.floor(x * 256 ^ (1 - i)) % 256
+	--? Compared to a simple for loop, this is about 10x faster.
+	--? The order of these if statements is attempted to be optimized for performance, with the most common cases first.
+	if bytes == 4 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256
+		)
+	elseif bytes == 8 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256,
+			math.floor(x * 256 ^ 4) % 256,
+			math.floor(x * 256 ^ 5) % 256,
+			math.floor(x * 256 ^ 6) % 256,
+			math.floor(x * 256 ^ 7) % 256
+		)
+	elseif bytes == 2 then
+		return string.char(math.floor(x * 256 ^ 0) % 256, math.floor(x * 256 ^ 1) % 256)
+	elseif bytes == 1 then
+		return string.char(math.floor(x * 256 ^ 0) % 256)
+	elseif bytes == 3 then
+		return string.char(math.floor(x * 256 ^ 0) % 256, math.floor(x * 256 ^ 1) % 256, math.floor(x * 256 ^ 2) % 256)
+	elseif bytes == 5 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256,
+			math.floor(x * 256 ^ 4) % 256
+		)
+	elseif bytes == 6 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256,
+			math.floor(x * 256 ^ 4) % 256,
+			math.floor(x * 256 ^ 5) % 256
+		)
+	elseif bytes == 7 then
+		return string.char(
+			math.floor(x * 256 ^ 0) % 256,
+			math.floor(x * 256 ^ 1) % 256,
+			math.floor(x * 256 ^ 2) % 256,
+			math.floor(x * 256 ^ 3) % 256,
+			math.floor(x * 256 ^ 4) % 256,
+			math.floor(x * 256 ^ 5) % 256,
+			math.floor(x * 256 ^ 6) % 256
+		)
 	end
-	return string.char(table.unpack(chars))
+
+	--? Should never get called because of the bytesAssert at the top of the function. This is just to make the typechecker happy.
+	error('Invalid bytes: ' .. bytes)
 end
 
 --[=[
@@ -562,11 +621,54 @@ Squash.uint.des = function(y: string, bytes: Bytes?): number
 	local bytes = bytes or 4
 	bytesAssert(bytes)
 
-	local sum = 0
-	for i = 1, bytes do
-		sum += string.byte(y, i) * 256 ^ (i - 1)
+	--? The order of these if statements is attempted to be optimized for performance, with the most common cases first.
+	if bytes == 4 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+	elseif bytes == 8 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+			+ math.floor(string.byte(y, 5) * 256 ^ 4)
+			+ math.floor(string.byte(y, 6) * 256 ^ 5)
+			+ math.floor(string.byte(y, 7) * 256 ^ 6)
+			+ math.floor(string.byte(y, 8) * 256 ^ 7)
+	elseif bytes == 2 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0) + math.floor(string.byte(y, 2) * 256 ^ 1)
+	elseif bytes == 1 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+	elseif bytes == 3 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+	elseif bytes == 5 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+			+ math.floor(string.byte(y, 5) * 256 ^ 4)
+	elseif bytes == 6 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+			+ math.floor(string.byte(y, 5) * 256 ^ 4)
+			+ math.floor(string.byte(y, 6) * 256 ^ 5)
+	elseif bytes == 7 then
+		return math.floor(string.byte(y, 1) * 256 ^ 0)
+			+ math.floor(string.byte(y, 2) * 256 ^ 1)
+			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+			+ math.floor(string.byte(y, 5) * 256 ^ 4)
+			+ math.floor(string.byte(y, 6) * 256 ^ 5)
+			+ math.floor(string.byte(y, 7) * 256 ^ 6)
 	end
-	return sum
+
+	--? Should never get called because of the bytesAssert at the top of the function. This is just to make the typechecker happy.
+	error('Invalid bytes: ' .. bytes)
 end
 
 --[=[
@@ -1115,7 +1217,7 @@ Squash.Enum = {}
 	@return string
 ]=]
 Squash.Enum.ser = function(x: Enum): string
-	local enumId = table.find(enumData.items, x) :: number
+	local enumId = enumData.lookup[x] :: number
 	return Squash.uint.ser(enumId, enumData.bytes)
 end
 
@@ -1159,7 +1261,7 @@ Squash.EnumItem = {}
 ]=]
 Squash.EnumItem.ser = function(enumItem: EnumItem, enum: Enum): string
 	local enumData = enumItemData[enum]
-	local enumItemId = table.find(enumData.items, enumItem) :: number
+	local enumItemId = enumData.lookup[enumItem] :: number
 	return Squash.uint.ser(enumItemId, enumData.bytes)
 end
 
