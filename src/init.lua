@@ -369,11 +369,11 @@ local desAngle = function(y: string): number
 end
 
 local getBitSize = function(x: number): number
-	return math.ceil(math.log(x, 2 ^ 1))
+	return math.ceil(math.log(x, 2))
 end
 
 local getByteSize = function(x: number): number
-	return math.ceil(math.log(x, 2 ^ 8))
+	return math.ceil(math.log(x, 256))
 end
 
 local getItemData = function<T>(array: { T }): { items: { T }, lookup: { [T]: number }, bits: number, bytes: number }
@@ -444,6 +444,31 @@ local unpackBits = function(y: string, bits: number): { number }
 	return x
 end
 
+--? Done this way because roblox luau does not support constant folding. This has been benchmarked.
+
+local n2_1  = 2 ^ 1
+local n2_2 = 2 ^ 2
+local n2_3 = 2 ^ 3
+local n2_4 = 2 ^ 4
+local n2_5 = 2 ^ 5
+local n2_6 = 2 ^ 6
+local n2_7 = 2 ^ 7
+
+local n2_1_  = 2 ^ -1
+local n2_2_  = 2 ^ -2
+local n2_3_  = 2 ^ -3
+local n2_4_  = 2 ^ -4
+local n2_5_  = 2 ^ -5
+local n2_6_  = 2 ^ -6
+local n2_7_  = 2 ^ -7
+
+local n256_2 = 256 ^ 2
+local n256_3 = 256 ^ 3
+local n256_4 = 256 ^ 4
+local n256_5 = 256 ^ 5
+local n256_6 = 256 ^ 6
+local n256_7 = 256 ^ 7
+
 --* Actual API *--
 
 --[=[
@@ -475,14 +500,14 @@ Squash.boolean.ser = function(
 	x8: boolean?
 ): string
 	return string.char(
-		(if x1 then 2 ^ 0 else 0)
-			+ (if x2 then 2 ^ 1 else 0)
-			+ (if x3 then 2 ^ 2 else 0)
-			+ (if x4 then 2 ^ 3 else 0)
-			+ (if x5 then 2 ^ 4 else 0)
-			+ (if x6 then 2 ^ 5 else 0)
-			+ (if x7 then 2 ^ 6 else 0)
-			+ (if x8 then 2 ^ 7 else 0)
+		(if x1 then 1 else 0)
+			+ (if x2 then n2_1  else 0)
+			+ (if x3 then n2_2 else 0)
+			+ (if x4 then n2_3 else 0)
+			+ (if x5 then n2_4 else 0)
+			+ (if x6 then n2_5 else 0)
+			+ (if x7 then n2_6 else 0)
+			+ (if x8 then n2_7 else 0)
 	)
 end
 
@@ -494,14 +519,14 @@ end
 ]=]
 Squash.boolean.des = function(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = string.byte(y)
-	return (x * 2 ^ -0) % 2 >= 1,
-		(x * 2 ^ -1) % 2 >= 1,
-		(x * 2 ^ -2) % 2 >= 1,
-		(x * 2 ^ -3) % 2 >= 1,
-		(x * 2 ^ -4) % 2 >= 1,
-		(x * 2 ^ -5) % 2 >= 1,
-		(x * 2 ^ -6) % 2 >= 1,
-		(x * 2 ^ -7) % 2 >= 1
+	return x % 2 >= 1,
+		(x * n2_1_) % 2 >= 1,
+		(x * n2_2_) % 2 >= 1,
+		(x * n2_3_) % 2 >= 1,
+		(x * n2_4_) % 2 >= 1,
+		(x * n2_5_) % 2 >= 1,
+		(x * n2_6_) % 2 >= 1,
+		(x * n2_7_) % 2 >= 1
 end
 
 --[=[
@@ -555,54 +580,54 @@ Squash.uint.ser = function(x: number, bytes: Bytes?): string
 	--? The order of these if statements is attempted to be optimized for performance, with the most common cases first.
 	if bytes == 4 then
 		return string.char(
-			math.floor(x * 256 ^ 0) % 256,
-			math.floor(x * 256 ^ 1) % 256,
-			math.floor(x * 256 ^ 2) % 256,
-			math.floor(x * 256 ^ 3) % 256
+			math.floor(x) % 256,
+			math.floor(x * 256) % 256,
+			math.floor(x * n256_2) % 256,
+			math.floor(x * n256_3) % 256
 		)
 	elseif bytes == 8 then
 		return string.char(
-			math.floor(x * 256 ^ 0) % 256,
-			math.floor(x * 256 ^ 1) % 256,
-			math.floor(x * 256 ^ 2) % 256,
-			math.floor(x * 256 ^ 3) % 256,
-			math.floor(x * 256 ^ 4) % 256,
-			math.floor(x * 256 ^ 5) % 256,
-			math.floor(x * 256 ^ 6) % 256,
-			math.floor(x * 256 ^ 7) % 256
+			math.floor(x) % 256,
+			math.floor(x * 256) % 256,
+			math.floor(x * n256_2) % 256,
+			math.floor(x * n256_3) % 256,
+			math.floor(x * n256_4) % 256,
+			math.floor(x * n256_5) % 256,
+			math.floor(x * n256_6) % 256,
+			math.floor(x * n256_7) % 256
 		)
 	elseif bytes == 2 then
-		return string.char(math.floor(x * 256 ^ 0) % 256, math.floor(x * 256 ^ 1) % 256)
+		return string.char(math.floor(x) % 256, math.floor(x * 256) % 256)
 	elseif bytes == 1 then
-		return string.char(math.floor(x * 256 ^ 0) % 256)
+		return string.char(math.floor(x) % 256)
 	elseif bytes == 3 then
-		return string.char(math.floor(x * 256 ^ 0) % 256, math.floor(x * 256 ^ 1) % 256, math.floor(x * 256 ^ 2) % 256)
+		return string.char(math.floor(x) % 256, math.floor(x * 256) % 256, math.floor(x * n256_2) % 256)
 	elseif bytes == 5 then
 		return string.char(
-			math.floor(x * 256 ^ 0) % 256,
-			math.floor(x * 256 ^ 1) % 256,
-			math.floor(x * 256 ^ 2) % 256,
-			math.floor(x * 256 ^ 3) % 256,
-			math.floor(x * 256 ^ 4) % 256
+			math.floor(x) % 256,
+			math.floor(x * 256) % 256,
+			math.floor(x * n256_2) % 256,
+			math.floor(x * n256_3) % 256,
+			math.floor(x * n256_4) % 256
 		)
 	elseif bytes == 6 then
 		return string.char(
-			math.floor(x * 256 ^ 0) % 256,
-			math.floor(x * 256 ^ 1) % 256,
-			math.floor(x * 256 ^ 2) % 256,
-			math.floor(x * 256 ^ 3) % 256,
-			math.floor(x * 256 ^ 4) % 256,
-			math.floor(x * 256 ^ 5) % 256
+			math.floor(x) % 256,
+			math.floor(x * 256) % 256,
+			math.floor(x * n256_2) % 256,
+			math.floor(x * n256_3) % 256,
+			math.floor(x * n256_4) % 256,
+			math.floor(x * n256_5) % 256
 		)
 	elseif bytes == 7 then
 		return string.char(
-			math.floor(x * 256 ^ 0) % 256,
-			math.floor(x * 256 ^ 1) % 256,
-			math.floor(x * 256 ^ 2) % 256,
-			math.floor(x * 256 ^ 3) % 256,
-			math.floor(x * 256 ^ 4) % 256,
-			math.floor(x * 256 ^ 5) % 256,
-			math.floor(x * 256 ^ 6) % 256
+			math.floor(x) % 256,
+			math.floor(x * 256) % 256,
+			math.floor(x * n256_2) % 256,
+			math.floor(x * n256_3) % 256,
+			math.floor(x * n256_4) % 256,
+			math.floor(x * n256_5) % 256,
+			math.floor(x * n256_6) % 256
 		)
 	end
 
@@ -623,48 +648,48 @@ Squash.uint.des = function(y: string, bytes: Bytes?): number
 
 	--? The order of these if statements is attempted to be optimized for performance, with the most common cases first.
 	if bytes == 4 then
-		return math.floor(string.byte(y, 1) * 256 ^ 0)
-			+ math.floor(string.byte(y, 2) * 256 ^ 1)
-			+ math.floor(string.byte(y, 3) * 256 ^ 2)
-			+ math.floor(string.byte(y, 4) * 256 ^ 3)
+		return math.floor(string.byte(y, 1))
+			+ math.floor(string.byte(y, 2) * 256)
+			+ math.floor(string.byte(y, 3) * n256_2)
+			+ math.floor(string.byte(y, 4) * n256_3)
 	elseif bytes == 8 then
-		return math.floor(string.byte(y, 1) * 256 ^ 0)
-			+ math.floor(string.byte(y, 2) * 256 ^ 1)
-			+ math.floor(string.byte(y, 3) * 256 ^ 2)
-			+ math.floor(string.byte(y, 4) * 256 ^ 3)
-			+ math.floor(string.byte(y, 5) * 256 ^ 4)
-			+ math.floor(string.byte(y, 6) * 256 ^ 5)
-			+ math.floor(string.byte(y, 7) * 256 ^ 6)
-			+ math.floor(string.byte(y, 8) * 256 ^ 7)
+		return math.floor(string.byte(y, 1))
+			+ math.floor(string.byte(y, 2) * 256)
+			+ math.floor(string.byte(y, 3) * n256_2)
+			+ math.floor(string.byte(y, 4) * n256_3)
+			+ math.floor(string.byte(y, 5) * n256_4)
+			+ math.floor(string.byte(y, 6) * n256_5)
+			+ math.floor(string.byte(y, 7) * n256_6)
+			+ math.floor(string.byte(y, 8) * n256_7)
 	elseif bytes == 2 then
-		return math.floor(string.byte(y, 1) * 256 ^ 0) + math.floor(string.byte(y, 2) * 256 ^ 1)
+		return math.floor(string.byte(y, 1)) + math.floor(string.byte(y, 2) * 256)
 	elseif bytes == 1 then
-		return math.floor(string.byte(y, 1) * 256 ^ 0)
+		return math.floor(string.byte(y, 1))
 	elseif bytes == 3 then
-		return math.floor(string.byte(y, 1) * 256 ^ 0)
-			+ math.floor(string.byte(y, 2) * 256 ^ 1)
-			+ math.floor(string.byte(y, 3) * 256 ^ 2)
+		return math.floor(string.byte(y, 1))
+			+ math.floor(string.byte(y, 2) * 256)
+			+ math.floor(string.byte(y, 3) * n256_2)
 	elseif bytes == 5 then
-		return math.floor(string.byte(y, 1) * 256 ^ 0)
-			+ math.floor(string.byte(y, 2) * 256 ^ 1)
-			+ math.floor(string.byte(y, 3) * 256 ^ 2)
-			+ math.floor(string.byte(y, 4) * 256 ^ 3)
-			+ math.floor(string.byte(y, 5) * 256 ^ 4)
+		return math.floor(string.byte(y, 1))
+			+ math.floor(string.byte(y, 2) * 256)
+			+ math.floor(string.byte(y, 3) * n256_2)
+			+ math.floor(string.byte(y, 4) * n256_3)
+			+ math.floor(string.byte(y, 5) * n256_4)
 	elseif bytes == 6 then
-		return math.floor(string.byte(y, 1) * 256 ^ 0)
-			+ math.floor(string.byte(y, 2) * 256 ^ 1)
-			+ math.floor(string.byte(y, 3) * 256 ^ 2)
-			+ math.floor(string.byte(y, 4) * 256 ^ 3)
-			+ math.floor(string.byte(y, 5) * 256 ^ 4)
-			+ math.floor(string.byte(y, 6) * 256 ^ 5)
+		return math.floor(string.byte(y, 1))
+			+ math.floor(string.byte(y, 2) * 256)
+			+ math.floor(string.byte(y, 3) * n256_2)
+			+ math.floor(string.byte(y, 4) * n256_3)
+			+ math.floor(string.byte(y, 5) * n256_4)
+			+ math.floor(string.byte(y, 6) * n256_5)
 	elseif bytes == 7 then
-		return math.floor(string.byte(y, 1) * 256 ^ 0)
-			+ math.floor(string.byte(y, 2) * 256 ^ 1)
-			+ math.floor(string.byte(y, 3) * 256 ^ 2)
-			+ math.floor(string.byte(y, 4) * 256 ^ 3)
-			+ math.floor(string.byte(y, 5) * 256 ^ 4)
-			+ math.floor(string.byte(y, 6) * 256 ^ 5)
-			+ math.floor(string.byte(y, 7) * 256 ^ 6)
+		return math.floor(string.byte(y, 1))
+			+ math.floor(string.byte(y, 2) * 256)
+			+ math.floor(string.byte(y, 3) * n256_2)
+			+ math.floor(string.byte(y, 4) * n256_3)
+			+ math.floor(string.byte(y, 5) * n256_4)
+			+ math.floor(string.byte(y, 6) * n256_5)
+			+ math.floor(string.byte(y, 7) * n256_6)
 	end
 
 	--? Should never get called because of the bytesAssert at the top of the function. This is just to make the typechecker happy.
