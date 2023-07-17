@@ -1,11 +1,11 @@
 [package]
 name = "data-oriented-house/squash"
-version = "1.1.0"
+version = "1.1.1"
 registry = "https://github.com/UpliftGames/wally-index"
 licence = "MIT"
 authors = ["Sona"]
 
-description = "A comprehensive and flat library for compressing and decompressing data optimized for bandwidth minimization."
+description = "A comprehensive and flat library for compressing and decompressing data optimized for minimizing bandwidth."
 
 realm = "shared"
 
