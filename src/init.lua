@@ -301,7 +301,7 @@ local serArrayVector = function<T, U>(serializer: VectorSerDes<T, U>)
 	local ser = serializer.ser
 	return function(x: { T }, serdes: NumberSerDes?, bytes: Bytes?): string
 		local bytes = bytes or 4
-		local encoding = serdes or Squash.int
+		local encoding = serdes or Squash.number
 
 		local y = {}
 		for i, v in x do
@@ -315,7 +315,7 @@ local desArrayVector = function<T, U>(deserializer: VectorSerDes<T, U>, elements
 	local des = deserializer.des
 	return function(y: string, serdes: NumberSerDes?, bytes: Bytes?): { U }
 		local bytes = bytes or 4
-		local decoding = serdes or Squash.int
+		local decoding = serdes or Squash.number
 
 		local size = offsetBytes + elements * bytes
 		local x = {}
@@ -1217,7 +1217,7 @@ Squash.CFrame.serarr = serArrayVector(Squash.CFrame)
 	@return { CFrame }
 ]=]
 Squash.CFrame.desarr = function(y: string, posBytes: number, serdes: NumberSerDes?): { CFrame }
-	local decoding = serdes or Squash.int
+	local decoding = serdes or Squash.number
 	local bytes = 7 + 3 * posBytes
 
 	local x = {}
