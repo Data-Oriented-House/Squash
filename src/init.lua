@@ -301,7 +301,7 @@ local serArrayVector = function<T, U>(serializer: VectorSerDes<T, U>)
 	local ser = serializer.ser
 	return function(x: { T }, serdes: NumberSerDes?, bytes: Bytes?): string
 		local bytes = bytes or 4
-		local encoding = serdes or Squash.int
+		local encoding = serdes or Squash.number
 
 		local y = {}
 		for i, v in x do
@@ -315,7 +315,7 @@ local desArrayVector = function<T, U>(deserializer: VectorSerDes<T, U>, elements
 	local des = deserializer.des
 	return function(y: string, serdes: NumberSerDes?, bytes: Bytes?): { U }
 		local bytes = bytes or 4
-		local decoding = serdes or Squash.int
+		local decoding = serdes or Squash.number
 
 		local size = offsetBytes + elements * bytes
 		local x = {}
@@ -453,13 +453,13 @@ local n2_5 = 2 ^ 5
 local n2_6 = 2 ^ 6
 local n2_7 = 2 ^ 7
 
-local n2_1_  = 2 ^ -1
-local n2_2_  = 2 ^ -2
-local n2_3_  = 2 ^ -3
-local n2_4_  = 2 ^ -4
-local n2_5_  = 2 ^ -5
-local n2_6_  = 2 ^ -6
-local n2_7_  = 2 ^ -7
+local n2_1_ = 2 ^ -1
+local n2_2_ = 2 ^ -2
+local n2_3_ = 2 ^ -3
+local n2_4_ = 2 ^ -4
+local n2_5_ = 2 ^ -5
+local n2_6_ = 2 ^ -6
+local n2_7_ = 2 ^ -7
 
 local n256_2 = 256 ^ 2
 local n256_3 = 256 ^ 3
@@ -500,7 +500,7 @@ Squash.boolean.ser = function(
 ): string
 	return string.char(
 		(if x1 then 1 else 0)
-			+ (if x2 then 2  else 0)
+			+ (if x2 then 2 else 0)
 			+ (if x3 then n2_2 else 0)
 			+ (if x4 then n2_3 else 0)
 			+ (if x5 then n2_4 else 0)
@@ -518,7 +518,7 @@ end
 ]=]
 Squash.boolean.des = function(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = string.byte(y)
-	return x % 1 >= 1,
+	return x % 2 >= 1,
 		(x * n2_1_) % 2 >= 1,
 		(x * n2_2_) % 2 >= 1,
 		(x * n2_3_) % 2 >= 1,
@@ -960,7 +960,7 @@ Squash.Vector2 = {}
 	@return string
 ]=]
 Squash.Vector2.ser = function(x: Vector2, serdes: NumberSerDes?, bytes: Bytes?): string
-	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
+	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.X, bytes) .. ser(x.Y, bytes)
 end
@@ -974,7 +974,7 @@ end
 	@return Vector2
 ]=]
 Squash.Vector2.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Vector2
-	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
+	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 	return Vector2.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, 1 + bytes, 2 * bytes), bytes))
 end
@@ -1013,7 +1013,7 @@ Squash.Vector3 = {}
 	@return string
 ]=]
 Squash.Vector3.ser = function(x: Vector3, serdes: NumberSerDes?, bytes: Bytes?): string
-	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
+	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.X, bytes) .. ser(x.Y, bytes) .. ser(x.Z, bytes)
 end
@@ -1027,7 +1027,7 @@ end
 	@return Vector3
 ]=]
 Squash.Vector3.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): Vector3
-	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
+	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 	return Vector3.new(
 		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
@@ -1166,7 +1166,7 @@ Squash.CFrame = {}
 	@return string
 ]=]
 Squash.CFrame.ser = function(x: CFrame, serdes: NumberSerDes?, posBytes: Bytes?): string
-	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
+	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local posBytes = posBytes or 4
 
 	local rx, ry, rz = x:ToEulerAnglesYXZ()
@@ -1184,7 +1184,7 @@ end
 	@return CFrame
 ]=]
 Squash.CFrame.des = function(y: string, serdes: NumberSerDes?, posBytes: number?): CFrame
-	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
+	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local posBytes = posBytes or 4
 
 	local rx = desAngle(string.sub(y, 1, 2))
@@ -1217,7 +1217,7 @@ Squash.CFrame.serarr = serArrayVector(Squash.CFrame)
 	@return { CFrame }
 ]=]
 Squash.CFrame.desarr = function(y: string, posBytes: number, serdes: NumberSerDes?): { CFrame }
-	local decoding = serdes or Squash.int
+	local decoding = serdes or Squash.number
 	local bytes = 7 + 3 * posBytes
 
 	local x = {}
@@ -1942,7 +1942,7 @@ Squash.NumberRange = {}
 	@param bytes Bytes?
 ]=]
 Squash.NumberRange.ser = function(x: NumberRange, serdes: NumberSerDes?, bytes: Bytes?): string
-	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
+	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.Min, bytes) .. ser(x.Max, bytes)
 end
@@ -1956,7 +1956,7 @@ end
 	@return NumberRange
 ]=]
 Squash.NumberRange.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): NumberRange
-	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
+	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 	return NumberRange.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
 end
@@ -2266,7 +2266,7 @@ Squash.PhysicalProperties = {}
 	@return string
 ]=]
 Squash.PhysicalProperties.ser = function(x: PhysicalProperties, serdes: NumberSerDes?, bytes: Bytes?): string
-	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
+	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.Density, bytes)
 		.. ser(x.Friction, bytes)
@@ -2286,7 +2286,7 @@ end
 	The minimum density is 0.009999999776482582, so if the serialization rounds down to 0, it will be set to 0.009999999776482582 when deserialized.
 ]=]
 Squash.PhysicalProperties.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): PhysicalProperties
-	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
+	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 	return PhysicalProperties.new(
 		des(string.sub(y, 1 + 0 * bytes, 1 * bytes), bytes),
@@ -2716,7 +2716,7 @@ Squash.UDim = {}
 	@return string
 ]=]
 Squash.UDim.ser = function(x: UDim, serdes: NumberSerDes?, bytes: Bytes?): string
-	local ser = if serdes then serdes.ser else Squash.int.ser :: NumberSer
+	local ser = if serdes then serdes.ser else Squash.number.ser :: NumberSer
 	local bytes = bytes or 4
 	return ser(x.Scale, bytes) .. ser(x.Offset, bytes)
 end
@@ -2730,7 +2730,7 @@ end
 	@return UDim
 ]=]
 Squash.UDim.des = function(y: string, serdes: NumberSerDes?, bytes: Bytes?): UDim
-	local des = if serdes then serdes.des else Squash.int.des :: NumberDes
+	local des = if serdes then serdes.des else Squash.number.des :: NumberDes
 	local bytes = bytes or 4
 	return UDim.new(des(string.sub(y, 1, bytes), bytes), des(string.sub(y, bytes + 1, 2 * bytes), bytes))
 end
