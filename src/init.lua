@@ -518,7 +518,7 @@ end
 ]=]
 Squash.boolean.des = function(y: string): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = string.byte(y)
-	return x % 1 >= 1,
+	return x % 2 >= 1,
 		(x * n2_1_) % 2 >= 1,
 		(x * n2_2_) % 2 >= 1,
 		(x * n2_3_) % 2 >= 1,
