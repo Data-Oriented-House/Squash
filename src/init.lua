@@ -453,13 +453,13 @@ local n2_5 = 2 ^ 5
 local n2_6 = 2 ^ 6
 local n2_7 = 2 ^ 7
 
-local n2_1_  = 2 ^ -1
-local n2_2_  = 2 ^ -2
-local n2_3_  = 2 ^ -3
-local n2_4_  = 2 ^ -4
-local n2_5_  = 2 ^ -5
-local n2_6_  = 2 ^ -6
-local n2_7_  = 2 ^ -7
+local n2_1_ = 2 ^ -1
+local n2_2_ = 2 ^ -2
+local n2_3_ = 2 ^ -3
+local n2_4_ = 2 ^ -4
+local n2_5_ = 2 ^ -5
+local n2_6_ = 2 ^ -6
+local n2_7_ = 2 ^ -7
 
 local n256_2 = 256 ^ 2
 local n256_3 = 256 ^ 3
@@ -500,7 +500,7 @@ Squash.boolean.ser = function(
 ): string
 	return string.char(
 		(if x1 then 1 else 0)
-			+ (if x2 then 2  else 0)
+			+ (if x2 then 2 else 0)
 			+ (if x3 then n2_2 else 0)
 			+ (if x4 then n2_3 else 0)
 			+ (if x5 then n2_4 else 0)
