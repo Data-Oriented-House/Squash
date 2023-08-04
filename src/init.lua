@@ -468,6 +468,14 @@ local n256_5 = 256 ^ 5
 local n256_6 = 256 ^ 6
 local n256_7 = 256 ^ 7
 
+local n256_1_ = 256 ^ -1
+local n256_2_ = 256 ^ -2
+local n256_3_ = 256 ^ -3
+local n256_4_ = 256 ^ -4
+local n256_5_ = 256 ^ -5
+local n256_6_ = 256 ^ -6
+local n256_7_ = 256 ^ -7
+
 --* Actual API *--
 
 --[=[
@@ -580,53 +588,53 @@ Squash.uint.ser = function(x: number, bytes: Bytes?): string
 	if bytes == 4 then
 		return string.char(
 			math.floor(x) % 256,
-			math.floor(x * 256) % 256,
-			math.floor(x * n256_2) % 256,
-			math.floor(x * n256_3) % 256
+			math.floor(x * n256_1_) % 256,
+			math.floor(x * n256_2_) % 256,
+			math.floor(x * n256_3_) % 256
 		)
 	elseif bytes == 8 then
 		return string.char(
-			math.floor(x) % 256,
-			math.floor(x * 256) % 256,
-			math.floor(x * n256_2) % 256,
-			math.floor(x * n256_3) % 256,
-			math.floor(x * n256_4) % 256,
-			math.floor(x * n256_5) % 256,
-			math.floor(x * n256_6) % 256,
-			math.floor(x * n256_7) % 256
+			math.floor(x * 1) % 256,
+			math.floor(x * n256_1_) % 256,
+			math.floor(x * n256_2_) % 256,
+			math.floor(x * n256_3_) % 256,
+			math.floor(x * n256_4_) % 256,
+			math.floor(x * n256_5_) % 256,
+			math.floor(x * n256_6_) % 256,
+			math.floor(x * n256_7_) % 256
 		)
 	elseif bytes == 2 then
-		return string.char(math.floor(x) % 256, math.floor(x * 256) % 256)
+		return string.char(math.floor(x) % 256, math.floor(x * n256_1_) % 256)
 	elseif bytes == 1 then
 		return string.char(math.floor(x) % 256)
 	elseif bytes == 3 then
-		return string.char(math.floor(x) % 256, math.floor(x * 256) % 256, math.floor(x * n256_2) % 256)
+		return string.char(math.floor(x) % 256, math.floor(x * n256_1_) % 256, math.floor(x * n256_2_) % 256)
 	elseif bytes == 5 then
 		return string.char(
 			math.floor(x) % 256,
-			math.floor(x * 256) % 256,
-			math.floor(x * n256_2) % 256,
-			math.floor(x * n256_3) % 256,
-			math.floor(x * n256_4) % 256
+			math.floor(x * n256_1_) % 256,
+			math.floor(x * n256_2_) % 256,
+			math.floor(x * n256_3_) % 256,
+			math.floor(x * n256_4_) % 256
 		)
 	elseif bytes == 6 then
 		return string.char(
 			math.floor(x) % 256,
-			math.floor(x * 256) % 256,
-			math.floor(x * n256_2) % 256,
-			math.floor(x * n256_3) % 256,
-			math.floor(x * n256_4) % 256,
-			math.floor(x * n256_5) % 256
+			math.floor(x * n256_1_) % 256,
+			math.floor(x * n256_2_) % 256,
+			math.floor(x * n256_3_) % 256,
+			math.floor(x * n256_4_) % 256,
+			math.floor(x * n256_5_) % 256
 		)
 	elseif bytes == 7 then
 		return string.char(
 			math.floor(x) % 256,
-			math.floor(x * 256) % 256,
-			math.floor(x * n256_2) % 256,
-			math.floor(x * n256_3) % 256,
-			math.floor(x * n256_4) % 256,
-			math.floor(x * n256_5) % 256,
-			math.floor(x * n256_6) % 256
+			math.floor(x * n256_1_) % 256,
+			math.floor(x * n256_2_) % 256,
+			math.floor(x * n256_3_) % 256,
+			math.floor(x * n256_4_) % 256,
+			math.floor(x * n256_5_) % 256,
+			math.floor(x * n256_6_) % 256
 		)
 	end
 
