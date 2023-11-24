@@ -539,6 +539,7 @@ end
 --[=[
 	@within boolean
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { boolean }
 	@return string
 ]=]
@@ -706,6 +707,7 @@ end
 --[=[
 	@within uint
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { number }
 	@param bytes Bytes?
 	@return string
@@ -759,6 +761,7 @@ end
 --[=[
 	@within int
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { number }
 	@param bytes Bytes?
 	@return string
@@ -809,6 +812,7 @@ end
 --[=[
 	@within number
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { number }
 	@param bytes FloatBytes?
 	@return string
@@ -927,6 +931,7 @@ end
 --[=[
 	@within string
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { string }
 	@param alphabet Alphabet?
 	@return string
@@ -990,6 +995,7 @@ end
 --[=[
 	@within Vector2
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Vector2 }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -1047,6 +1053,7 @@ end
 --[=[
 	@within Vector3
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Vector3 }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -1097,6 +1104,7 @@ end
 --[=[
 	@within Vector2int16
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Vector2int16 }
 	@return string
 ]=]
@@ -1147,6 +1155,7 @@ end
 --[=[
 	@within Vector3int16
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Vector3int16 }
 	@return string
 ]=]
@@ -1209,6 +1218,7 @@ end
 --[=[
 	@within CFrame
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { CFrame }
 	@param serdes NumberSerDes?
 	@param posBytes number?
@@ -1267,6 +1277,7 @@ end
 --[=[
 	@within Enum
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Enum }
 	@return string
 ]=]
@@ -1313,6 +1324,7 @@ end
 --[=[
 	@within EnumItem
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { EnumItem }
 	@return string
 ]=]
@@ -1380,6 +1392,7 @@ end
 --[=[
 	@within Axes
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully @
 	@param x { Axes }
 	@return string
 ]=]
@@ -1421,6 +1434,7 @@ end
 --[=[
 	@within BrickColor
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { BrickColor }
 	@return string
 ]=]
@@ -1462,6 +1476,7 @@ end
 --[=[
 	@within Color3
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Color3 }
 	@return string
 ]=]
@@ -1568,6 +1583,7 @@ end
 --[=[
 	@within CatalogSearchParams
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { CatalogSearchParams }
 	@param alphabet Alphabet?
 	@return string
@@ -1613,6 +1629,7 @@ end
 --[=[
 	@within DateTime
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { DateTime }
 	@return string
 ]=]
@@ -1668,6 +1685,7 @@ end
 --[=[
 	@within DockWidgetPluginGuiInfo
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { DockWidgetPluginGuiInfo }
 	@return string
 ]=]
@@ -1709,6 +1727,7 @@ end
 --[=[
 	@within ColorSequenceKeypoint
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { ColorSequenceKeypoint }
 	@return string
 ]=]
@@ -1750,6 +1769,7 @@ end
 --[=[
 	@within ColorSequence
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { ColorSequence }
 	@return string
 ]=]
@@ -1799,6 +1819,7 @@ end
 --[=[
 	@within Faces
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Faces }
 	@return string
 ]=]
@@ -1866,6 +1887,7 @@ end
 --[=[
 	@within FloatCurveKey
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { FloatCurveKey }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -1924,6 +1946,7 @@ end
 --[=[
 	@within Font
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Font }
 	@return string
 ]=]
@@ -1972,6 +1995,7 @@ end
 --[=[
 	@within NumberRange
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { NumberRange }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2029,6 +2053,7 @@ end
 --[=[
 	@within NumberSequenceKeypoint
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { NumberSequenceKeypoint }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2080,6 +2105,7 @@ end
 --[=[
 	@within NumberSequence
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { NumberSequence }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2139,6 +2165,7 @@ end
 --[=[
 	@within OverlapParams
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { OverlapParams }
 	@return string
 ]=]
@@ -2189,6 +2216,7 @@ end
 --[=[
 	@within RaycastParams
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { RaycastParams }
 	@return string
 ]=]
@@ -2243,6 +2271,7 @@ end
 --[=[
 	@within PathWaypoint
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { PathWaypoint }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2308,6 +2337,7 @@ end
 --[=[
 	@within PhysicalProperties
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { PhysicalProperties }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2362,6 +2392,7 @@ end
 --[=[
 	@within Ray
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Ray }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2449,6 +2480,7 @@ end
 --[=[
 	@within RaycastResult
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { RaycastResult }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2506,6 +2538,7 @@ end
 --[=[
 	@within Rect
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Rect }
 	@param bytes Bytes?
 	@return string
@@ -2558,6 +2591,7 @@ end
 --[=[
 	@within Region3
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Region3 }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2609,6 +2643,7 @@ end
 --[=[
 	@within Region3int16
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Region3int16 }
 	@return string
 ]=]
@@ -2689,6 +2724,7 @@ end
 --[=[
 	@within TweenInfo
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { TweenInfo }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2746,6 +2782,7 @@ end
 --[=[
 	@within UDim
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { UDim }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
@@ -2800,6 +2837,7 @@ end
 --[=[
 	@within UDim2
 	@function serarr
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { UDim2 }
 	@param serdes NumberSerDes?
 	@param bytes Bytes?
