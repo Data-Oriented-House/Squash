@@ -1392,7 +1392,7 @@ end
 --[=[
 	@within Axes
 	@function serarr
-	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully @
+	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
 	@param x { Axes }
 	@return string
 ]=]
