@@ -567,7 +567,7 @@ do
 
 	function bytes1.ser(x0: number)
 		local y0 = buffer.create(1)
-		buffer.writeu8(y0, 0, x0 % 256)
+		buffer.writeu8(y0, 0, x0)
 		return y0
 	end
 
@@ -578,8 +578,7 @@ do
 	function bytes1.serarr(xs: { number })
 		local ys = buffer.create(#xs)
 		for i, x0 in ipairs(xs) do
-			print(i - 1, x0 % 256)
-			buffer.writeu8(ys, i - 1, x0 % 256)
+			buffer.writeu8(ys, i - 1, x0)
 		end
 		return ys
 	end
@@ -601,7 +600,7 @@ do
 
 	function bytes2.ser(x0: number)
 		local y0 = buffer.create(2)
-		buffer.writeu16(y0, 0, x0 % 256 ^ 2)
+		buffer.writeu16(y0, 0, x0)
 		return y0
 	end
 
@@ -612,7 +611,7 @@ do
 	function bytes2.serarr(xs: { number })
 		local ys = buffer.create(#xs * 2)
 		for i, x0 in ipairs(xs) do
-			buffer.writeu16(ys, (i - 1) * 2, x0 % 256 ^ 2)
+			buffer.writeu16(ys, (i - 1) * 2, x0)
 		end
 		return ys
 	end
@@ -673,7 +672,7 @@ do
 
 	function bytes4.ser(x0: number)
 		local y0 = buffer.create(4)
-		buffer.writeu32(y0, 0, x0 % 256 ^ 4)
+		buffer.writeu32(y0, 0, x0)
 		return y0
 	end
 
@@ -684,7 +683,7 @@ do
 	function bytes4.serarr(xs: { number })
 		local ys = buffer.create(#xs * 4)
 		for i, x0 in ipairs(xs) do
-			buffer.writeu32(ys, (i - 1) * 4, x0 % 256 ^ 4)
+			buffer.writeu32(ys, (i - 1) * 4, x0)
 		end
 		return ys
 	end
@@ -862,8 +861,6 @@ do
 		return cache[bytes]
 	end
 end
-
-Squash.uint(8).ser(938)
 
 -- --[=[
 -- 	@class boolean
