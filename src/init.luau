@@ -212,16 +212,12 @@ Squash.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[
 
 --* Duplication Reducers *--
 
-local bytesAssert = function(bytes: number)
-	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 8 then
-		error(`Expected 1, 2, 3, 4, 5, 6, 7, 8 bytes. Invalid number of bytes for integer: {bytes}`)
-	end
+local bytesAssert = function(bytes: number): never
+	error(`Expected 1, 2, 3, 4, 5, 6, 7, 8 bytes. Invalid number of bytes for integer: {bytes}`)
 end
 
-local floatAssert = function(bytes: number)
-	if bytes ~= 4 and bytes ~= 8 then
-		error(`Expected 4 or 8 bytes. Invalid number of bytes for floating point: {bytes}`)
-	end
+local floatAssert = function(bytes: number): never
+	error(`Expected 4 or 8 bytes. Invalid number of bytes for floating point: {bytes}`)
 end
 
 -- local serArrayNumber = function<T>(ser: (x: T, bytes: Bytes?) -> string)
@@ -866,8 +862,7 @@ do
 
 	function Squash.uint(bytes: number?)
 		local bytes = bytes or 4
-		bytesAssert(bytes)
-		return cache[bytes]
+		return cache[bytes] or bytesAssert(bytes)
 	end
 end
 
@@ -1192,8 +1187,7 @@ do
 
 	function Squash.int(bytes: number?)
 		local bytes = bytes or 4
-		bytesAssert(bytes)
-		return cache[bytes]
+		return cache[bytes] or bytesAssert(bytes)
 	end
 end
 
@@ -1270,8 +1264,7 @@ do
 
 	function Squash.number(bytes: number?)
 		local bytes = bytes or 4
-		floatAssert(bytes)
-		return cache[bytes]
+		return cache[bytes] or floatAssert(bytes)
 	end
 end
 -- --[=[
