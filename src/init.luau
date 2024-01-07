@@ -1190,13 +1190,90 @@ do
 		return xs
 	end
 
-	function Squash.int(bytes: number)
+	function Squash.int(bytes: number?)
 		local bytes = bytes or 4
 		bytesAssert(bytes)
 		return cache[bytes]
 	end
 end
 
+do
+	local bytes4 = {}
+	local bytes8 = {}
+	local cache = { bytes4, bytes8 }
+
+	-- 4
+
+	function bytes4.size(x0: number)
+		return 4
+	end
+
+	function bytes4.ser(x0: number)
+		local y0 = buffer.create(4)
+		buffer.writef32(y0, 0, x0)
+		return y0
+	end
+
+	function bytes4.des(y0: buffer)
+		return buffer.readf32(y0, 0)
+	end
+
+	function bytes4.serarr(xs: { number })
+		local ys = buffer.create(#xs * 4)
+		for i, x0 in ipairs(xs) do
+			buffer.writef32(ys, (i - 1) * 4, x0)
+		end
+		return ys
+	end
+
+	function bytes4.desarr(ys: buffer)
+		local len = buffer.len(ys) / 4
+		local xs = table.create(len)
+		for i = 1, len do
+			xs[i] = buffer.readf32(ys, (i - 1) * 4)
+		end
+		return xs
+	end
+
+	-- 8
+
+	function bytes8.size(x0: number)
+		return 8
+	end
+
+	function bytes8.ser(x0: number)
+		local y0 = buffer.create(8)
+		buffer.writef64(y0, 0, x0)
+		return y0
+	end
+
+	function bytes8.des(y0: buffer)
+		return buffer.readf64(y0, 0)
+	end
+
+	function bytes8.serarr(xs: { number })
+		local ys = buffer.create(#xs * 8)
+		for i, x0 in ipairs(xs) do
+			buffer.writef64(ys, (i - 1) * 8, x0)
+		end
+		return ys
+	end
+
+	function bytes8.desarr(ys: buffer)
+		local len = buffer.len(ys) / 8
+		local xs = table.create(len)
+		for i = 1, len do
+			xs[i] = buffer.readf64(ys, (i - 1) * 8)
+		end
+		return xs
+	end
+
+	function Squash.number(bytes: number?)
+		local bytes = bytes or 4
+		floatAssert(bytes)
+		return cache[bytes]
+	end
+end
 -- --[=[
 -- 	@class boolean
 -- ]=]
