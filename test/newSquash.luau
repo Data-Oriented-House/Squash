@@ -150,7 +150,7 @@ do
 end
 
 do
-	local x = -54
+	local x = -54.5
 	local y = Squash.int(1).ser(x)
 	local z = Squash.int(1).des(y)
 	result('int 1', x, y, z)
@@ -243,4 +243,28 @@ do
 	local ys = Squash.int(8).serarr(xs)
 	local zs = Squash.int(8).desarr(ys)
 	resultarr('ints 8', xs, ys, zs)
+end
+
+do
+	local x = 198362.28936
+	local y = Squash.number(4).ser(x)
+	local z = Squash.number(4).des(y)
+	result('number 4', x, y, z)
+
+	local xs = { 92.2, 0, -19.9999999999999999, 8302, 93928.03986138560192358, 6, -3873.320863, -164, -123838642887.286402, -28362.02689462, 18632.29863 }
+	local ys = Squash.number(4).serarr(xs)
+	local zs = Squash.number(4).desarr(ys)
+	resultarr('numbers 4', xs, ys, zs)
+end
+
+do
+	local x = 198362.28936
+	local y = Squash.number(8).ser(x)
+	local z = Squash.number(8).des(y)
+	result('number 8', x, y, z)
+
+	local xs = { 92.2, 0, -19.9999999999999999, 8302, 93928.03986138560192358, 6, -3873.320863, -164, -123838642887.286402, -28362.02689462, 18632.29863 }
+	local ys = Squash.number(8).serarr(xs)
+	local zs = Squash.number(8).desarr(ys)
+	resultarr('numbers 8', xs, ys, zs)
 end

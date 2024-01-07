@@ -1200,7 +1200,7 @@ end
 do
 	local bytes4 = {}
 	local bytes8 = {}
-	local cache = { bytes4, bytes8 }
+	local cache = { [4] = bytes4, [8] = bytes8 }
 
 	-- 4
 
