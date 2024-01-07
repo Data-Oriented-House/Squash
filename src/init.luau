@@ -65,7 +65,8 @@ export type SerDesVar<T...> = {
 
 	The delimiter used to separate strings or other types in variable sized arrays and act as the 0 element for base conversions.
 ]=]
-Squash.delimiter = string.char(0) -- \0
+Squash.zero = string.char(0) -- \0
+Squash.delimiter = string.char(1) -- \1
 
 --[=[
 	@within Squash
@@ -512,24 +513,6 @@ do
 	end
 
 	function Squash.boolean()
-		return cache
-	end
-end
-
-do
-	local cache = {}
-
-	cache.len = math.huge
-
-	cache.ser = buffer.tostring
-
-	cache.des = buffer.fromstring
-
-	function cache.serarr() end
-
-	function cache.desarr() end
-
-	function Squash.buffer()
 		return cache
 	end
 end
