@@ -808,8 +808,7 @@ do
 		return xs
 	end
 
-	function Squash.uint(bytes: number?)
-		local bytes = bytes or 4
+	function Squash.uint(bytes: number)
 		return cache[bytes] or bytesAssert(bytes)
 	end
 end
@@ -1119,8 +1118,7 @@ do
 		return xs
 	end
 
-	function Squash.int(bytes: number?)
-		local bytes = bytes or 4
+	function Squash.int(bytes: number)
 		return cache[bytes] or bytesAssert(bytes)
 	end
 end
@@ -1192,8 +1190,7 @@ do
 		return xs
 	end
 
-	function Squash.number(bytes: number?)
-		local bytes = bytes or 4
+	function Squash.number(bytes: number)
 		return cache[bytes] or floatAssert(bytes)
 	end
 end

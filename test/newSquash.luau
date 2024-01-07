@@ -294,7 +294,7 @@ do
 end
 
 do
-	local serdes = Squash.variadic(Squash.boolean(), Squash.int(), Squash.number(8)) :: Squash.SerDesVar<boolean, number, number>
+	local serdes = Squash.variadic(Squash.boolean(), Squash.int(4), Squash.number(8)) :: Squash.SerDesVar<boolean, number, number>
 	local x = { true, -1903, 400000000000000001 }
 	local y = serdes.ser(table.unpack(x))
 	local z = { serdes.des(y) }
