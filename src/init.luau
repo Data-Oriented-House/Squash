@@ -213,8 +213,8 @@ Squash.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[
 --* Duplication Reducers *--
 
 local bytesAssert = function(bytes: number)
-	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 7 then
-		error 'bytes must one of 1, 2, 3, 4, 5, 6, 7, 8'
+	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 8 then
+		error(`Expected 1, 2, 3, 4, 5, 6, 7, 8 bytes. Invalid number of bytes for integer: {bytes}`)
 	end
 end
 
@@ -865,6 +865,332 @@ do
 	end
 
 	function Squash.uint(bytes: number?)
+		local bytes = bytes or 4
+		bytesAssert(bytes)
+		return cache[bytes]
+	end
+end
+
+do
+	local bytes1 = {}
+	local bytes2 = {}
+	local bytes3 = {}
+	local bytes4 = {}
+	local bytes5 = {}
+	local bytes6 = {}
+	local bytes7 = {}
+	local bytes8 = {}
+	local cache = { bytes1, bytes2, bytes3, bytes4, bytes5, bytes6, bytes7, bytes8 }
+
+	-- 1
+
+	function bytes1.size(x0: number)
+		return 1
+	end
+
+	function bytes1.ser(x0: number)
+		local y0 = buffer.create(1)
+		buffer.writei8(y0, 0, x0)
+		return y0
+	end
+
+	function bytes1.des(y0: buffer)
+		return buffer.readi8(y0, 0)
+	end
+
+	function bytes1.serarr(xs: { number })
+		local ys = buffer.create(#xs)
+		for i, x0 in ipairs(xs) do
+			buffer.writei8(ys, i - 1, x0)
+		end
+		return ys
+	end
+
+	function bytes1.desarr(ys: buffer)
+		local len = buffer.len(ys)
+		local xs = table.create(len)
+		for i = 1, len do
+			xs[i] = buffer.readi8(ys, i - 1)
+		end
+		return xs
+	end
+
+	-- 2
+
+	function bytes2.size(x0: number)
+		return 2
+	end
+
+	function bytes2.ser(x0: number)
+		local y0 = buffer.create(2)
+		buffer.writei16(y0, 0, x0)
+		return y0
+	end
+
+	function bytes2.des(y0: buffer)
+		return buffer.readi16(y0, 0)
+	end
+
+	function bytes2.serarr(xs: { number })
+		local ys = buffer.create(#xs * 2)
+		for i, x0 in ipairs(xs) do
+			buffer.writei16(ys, (i - 1) * 2, x0)
+		end
+		return ys
+	end
+
+	function bytes2.desarr(ys: buffer)
+		local len = buffer.len(ys) / 2
+		local xs = table.create(len)
+		for i = 1, len do
+			xs[i] = buffer.readi16(ys, (i - 1) * 2)
+		end
+		return xs
+	end
+
+	-- 3
+
+	function bytes3.size(x0: number)
+		return 3
+	end
+
+	function bytes3.ser(x0: number)
+		x0 = if x0 < 0 then x0 + 256 ^ 3 else x0
+		x0 %= 256 ^ 3
+		local y0 = buffer.create(3)
+		buffer.writeu16(y0, 0, x0 // 256 ^ 0)
+		buffer.writeu8(y0, 2, x0 // 256 ^ 2)
+		return y0
+	end
+
+	function bytes3.des(y0: buffer)
+		local x0 = buffer.readu16(y0, 0) + buffer.readu8(y0, 2) * 256 ^ 2
+		return if x0 > 256 ^ 2 * 128 then x0 - 256 ^ 3 else x0
+	end
+
+	function bytes3.serarr(xs: { number })
+		local ys = buffer.create(#xs * 3)
+		for i, x0 in ipairs(xs) do
+			x0 = if x0 < 0 then x0 + 256 ^ 3 else x0
+			x0 %= 256 ^ 3
+			local j = (i - 1) * 3
+			buffer.writeu16(ys, j + 0, x0 // 256 ^ 0)
+			buffer.writeu8(ys, j + 2, x0 // 256 ^ 2)
+		end
+		return ys
+	end
+
+	function bytes3.desarr(ys: buffer)
+		local len = buffer.len(ys) / 3
+		local xs = table.create(len)
+		for i = 1, len do
+			local j = (i - 1) * 3
+			local x0 = buffer.readu16(ys, j + 0) + buffer.readu8(ys, j + 2) * 256 ^ 2
+			xs[i] = if x0 > 256 ^ 2 * 128 then x0 - 256 ^ 3 else x0
+		end
+		return xs
+	end
+
+	-- 4
+
+	function bytes4.size(x0: number)
+		return 4
+	end
+
+	function bytes4.ser(x0: number)
+		local y0 = buffer.create(4)
+		buffer.writei32(y0, 0, x0)
+		return y0
+	end
+
+	function bytes4.des(y0: buffer)
+		return buffer.readi32(y0, 0)
+	end
+
+	function bytes4.serarr(xs: { number })
+		local ys = buffer.create(#xs * 4)
+		for i, x0 in ipairs(xs) do
+			buffer.writei32(ys, (i - 1) * 4, x0)
+		end
+		return ys
+	end
+
+	function bytes4.desarr(ys: buffer)
+		local len = buffer.len(ys) / 4
+		local xs = table.create(len)
+		for i = 1, len do
+			xs[i] = buffer.readi32(ys, (i - 1) * 4)
+		end
+		return xs
+	end
+
+	-- 5
+
+	function bytes5.size(x0: number)
+		return 5
+	end
+
+	function bytes5.ser(x0: number)
+		x0 = if x0 < 0 then x0 + 256 ^ 5 else x0
+		x0 %= 256 ^ 5
+		local y0 = buffer.create(5)
+		buffer.writeu32(y0, 0, x0 // 256 ^ 0)
+		buffer.writeu8(y0, 4, x0 // 256 ^ 4)
+		return y0
+	end
+
+	function bytes5.des(y0: buffer)
+		local x0 = buffer.readu32(y0, 0) + buffer.readu8(y0, 4) * 256 ^ 4
+		return if x0 > 256 ^ 4 * 128 then x0 - 256 ^ 5 else x0
+	end
+
+	function bytes5.serarr(xs: { number })
+		local ys = buffer.create(#xs * 5)
+		for i, x0 in ipairs(xs) do
+			x0 = if x0 < 0 then x0 + 256 ^ 5 else x0
+			x0 %= 256 ^ 5
+			local j = (i - 1) * 5
+			buffer.writeu32(ys, j + 0, x0 // 256 ^ 0)
+			buffer.writeu8(ys, j + 4, x0 // 256 ^ 4)
+		end
+		return ys
+	end
+
+	function bytes5.desarr(ys: buffer)
+		local len = buffer.len(ys) / 5
+		local xs = table.create(len)
+		for i = 1, len do
+			local j = (i - 1) * 5
+			local x0 = buffer.readu32(ys, j + 0) + buffer.readu8(ys, j + 4) * 256 ^ 4
+			xs[i] = if x0 > 256 ^ 4 * 128 then x0 - 256 ^ 5 else x0
+		end
+		return xs
+	end
+
+	-- 6
+
+	function bytes6.size(x0: number)
+		return 6
+	end
+
+	function bytes6.ser(x0: number)
+		x0 = if x0 < 0 then x0 + 256 ^ 6 else x0
+		x0 %= 256 ^ 6
+		local y0 = buffer.create(6)
+		buffer.writeu32(y0, 0, x0 // 256 ^ 0)
+		buffer.writeu16(y0, 4, x0 // 256 ^ 4)
+		return y0
+	end
+
+	function bytes6.des(y0: buffer)
+		local x0 = buffer.readu32(y0, 0) + buffer.readu16(y0, 4) * 256 ^ 4
+		return if x0 > 256 ^ 4 * 128 then x0 - 256 ^ 6 else x0
+	end
+
+	function bytes6.serarr(xs: { number })
+		local ys = buffer.create(#xs * 6)
+		for i, x0 in ipairs(xs) do
+			x0 = if x0 < 0 then x0 + 256 ^ 6 else x0
+			x0 %= 256 ^ 6
+			local j = (i - 1) * 6
+			buffer.writeu32(ys, j + 0, x0 // 256 ^ 0)
+			buffer.writeu16(ys, j + 4, x0 // 256 ^ 4)
+		end
+		return ys
+	end
+
+	function bytes6.desarr(ys: buffer)
+		local len = buffer.len(ys) / 6
+		local xs = table.create(len)
+		for i = 1, len do
+			local j = (i - 1) * 6
+			local x0 = buffer.readu32(ys, j + 0) + buffer.readu16(ys, j + 4) * 256 ^ 4
+			xs[i] = if x0 > 256 ^ 4 * 128 then x0 - 256 ^ 6 else x0
+		end
+		return xs
+	end
+
+	-- 7
+
+	function bytes7.size(x0: number)
+		return 7
+	end
+
+	function bytes7.ser(x0: number)
+		x0 = if x0 < 0 then x0 + 256 ^ 7 else x0
+		x0 %= 256 ^ 7
+		local y0 = buffer.create(7)
+		buffer.writeu32(y0, 0, x0 // 256 ^ 0)
+		buffer.writeu16(y0, 4, x0 // 256 ^ 4)
+		buffer.writeu8(y0, 6, x0 // 256 ^ 6)
+		return y0
+	end
+
+	function bytes7.des(y0: buffer)
+		local x0 = buffer.readu32(y0, 0) + buffer.readu16(y0, 4) * 256 ^ 4 + buffer.readu8(y0, 6) * 256 ^ 6
+		return if x0 > 256 ^ 6 * 128 then x0 - 256 ^ 7 else x0
+	end
+
+	function bytes7.serarr(xs: { number })
+		local ys = buffer.create(#xs * 7)
+		for i, x0 in ipairs(xs) do
+			x0 = if x0 < 0 then x0 + 256 ^ 7 else x0
+			x0 %= 256 ^ 7
+			local j = (i - 1) * 7
+			buffer.writeu32(ys, j + 0, x0 // 256 ^ 0)
+			buffer.writeu16(ys, j + 4, x0 // 256 ^ 4)
+			buffer.writeu8(ys, j + 6, x0 // 256 ^ 6)
+		end
+		return ys
+	end
+
+	function bytes7.desarr(ys: buffer)
+		local len = buffer.len(ys) / 7
+		local xs = table.create(len)
+		for i = 1, len do
+			local j = (i - 1) * 7
+			local x0 = buffer.readu32(ys, j + 0) + buffer.readu16(ys, j + 4) * 256 ^ 4 + buffer.readu8(ys, j + 6) * 256 ^ 6
+			xs[i] = if x0 > 256 ^ 6 * 128 then x0 - 256 ^ 7 else x0
+		end
+		return xs
+	end
+
+	-- 8
+
+	function bytes8.size(x0: number)
+		return 8
+	end
+
+	function bytes8.ser(x0: number)
+		local y0 = buffer.create(8)
+		buffer.writei32(y0, 0, x0)
+		buffer.writei32(y0, 4, x0 // 256 ^ 4)
+		return y0
+	end
+
+	function bytes8.des(y0: buffer)
+		return buffer.readi32(y0, 0) + buffer.readi32(y0, 4) * 256 ^ 4
+	end
+
+	function bytes8.serarr(xs: { number })
+		local ys = buffer.create(#xs * 8)
+		for i, x0 in ipairs(xs) do
+			buffer.writei32(ys, (i - 1) * 8, x0)
+			buffer.writei32(ys, (i - 1) * 8 + 4, x0 // 256 ^ 4)
+		end
+		return ys
+	end
+
+	function bytes8.desarr(ys: buffer)
+		local len = buffer.len(ys) / 8
+		local xs = table.create(len)
+		for i = 1, len do
+			xs[i] = buffer.readi32(ys, (i - 1) * 8) + buffer.readi32(ys, (i - 1) * 8 + 4) * 256 ^ 4
+		end
+		return xs
+	end
+
+	function Squash.int(bytes: number)
 		local bytes = bytes or 4
 		bytesAssert(bytes)
 		return cache[bytes]

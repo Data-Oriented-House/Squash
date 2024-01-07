@@ -20,7 +20,7 @@ local function tostring(buf: buffer)
 	for i = 0, buffer.len(buf) - 1 do
 		bytes[i + 1] = toBits(buffer.readu8(buf, i))
 	end
-	return table.concat(bytes, ' ')
+	return table.concat(bytes, '-')
 end
 
 local function result<T>(name: string, x: T, y: buffer, z: T)
@@ -147,4 +147,100 @@ do
 	local ys = Squash.uint(8).serarr(xs)
 	local zs = Squash.uint(8).desarr(ys)
 	resultarr('uints 8', xs, ys, zs)
+end
+
+do
+	local x = -54
+	local y = Squash.int(1).ser(x)
+	local z = Squash.int(1).des(y)
+	result('int 1', x, y, z)
+
+	local xs = { 92, 0, -19, 8302, 93928, 6, 3873, 164, -123838642887, -28362, 18632 }
+	local ys = Squash.int(1).serarr(xs)
+	local zs = Squash.int(1).desarr(ys)
+	resultarr('ints 1', xs, ys, zs)
+end
+
+do
+	local x = -50927
+	local y = Squash.int(2).ser(x)
+	local z = Squash.int(2).des(y)
+	result('int 2', x, y, z)
+
+	local xs = { 92, 0, -19, 8302, 93928, 6, 3873, 164, -123838642887, -28362, 18632 }
+	local ys = Squash.int(2).serarr(xs)
+	local zs = Squash.int(2).desarr(ys)
+	resultarr('ints 2', xs, ys, zs)
+end
+
+do
+	local x = -5092792
+	local y = Squash.int(3).ser(x)
+	local z = Squash.int(3).des(y)
+	result('int 3', x, y, z)
+
+	local xs = { 92, 0, -19, 8302, 93928, 6, 3873, 164, -123838642887, -28362, 18632 }
+	local ys = Squash.int(3).serarr(xs)
+	local zs = Squash.int(3).desarr(ys)
+	resultarr('ints 3', xs, ys, zs)
+end
+
+do
+	local x = -509279229
+	local y = Squash.int(4).ser(x)
+	local z = Squash.int(4).des(y)
+	result('int 4', x, y, z)
+
+	local xs = { 92, 0, -19, 8302, 93928, 6, 3873, -164, -123838642887, -28362, 18632 }
+	local ys = Squash.int(4).serarr(xs)
+	local zs = Squash.int(4).desarr(ys)
+	resultarr('ints 4', xs, ys, zs)
+end
+
+do
+	local x = -509279229279
+	local y = Squash.int(5).ser(x)
+	local z = Squash.int(5).des(y)
+	result('int 5', x, y, z)
+
+	local xs = { 92, 0, -19, 8302, 93928, 6, -3873, -164, -123838642887, -28362, 18632 }
+	local ys = Squash.int(5).serarr(xs)
+	local zs = Squash.int(5).desarr(ys)
+	resultarr('ints 5', xs, ys, zs)
+end
+
+do
+	local x = -509279229279229
+	local y = Squash.int(6).ser(x)
+	local z = Squash.int(6).des(y)
+	result('int 6', x, y, z)
+
+	local xs = { 92, 0, -19, 8302, 93928, 6, -3873, -164, -123838642887, -28362, 18632 }
+	local ys = Squash.int(6).serarr(xs)
+	local zs = Squash.int(6).desarr(ys)
+	resultarr('ints 6', xs, ys, zs)
+end
+
+do
+	local x = -5092792292979229
+	local y = Squash.int(7).ser(x)
+	local z = Squash.int(7).des(y)
+	result('int 7', x, y, z)
+
+	local xs = { 92, 0, -19, 8302, 93928, 6, -3873, -164, -123838642887, -28362, 18632 }
+	local ys = Squash.int(7).serarr(xs)
+	local zs = Squash.int(7).desarr(ys)
+	resultarr('ints 7', xs, ys, zs)
+end
+
+do
+	local x = -509279229277869229
+	local y = Squash.int(8).ser(x)
+	local z = Squash.int(8).des(y)
+	result('int 8', x, y, z)
+
+	local xs = { 92, 0, -19, 8302, 93928, 6, -3873, -164, -123838642887, -28362, 18632 }
+	local ys = Squash.int(8).serarr(xs)
+	local zs = Squash.int(8).desarr(ys)
+	resultarr('ints 8', xs, ys, zs)
 end
