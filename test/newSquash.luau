@@ -31,7 +31,7 @@ local function result<T>(name: string, x: T, y: buffer, z: T)
 	print()
 end
 
-local function resultarr<T>(name: string, x: {T}, y: buffer, z: {T})
+local function resultarr<T>(name: string, x: { T }, y: buffer, z: { T })
 	print(name)
 	print(table.unpack(x))
 	print(tostring(y))
@@ -251,7 +251,19 @@ do
 	local z = Squash.number(4).des(y)
 	result('number 4', x, y, z)
 
-	local xs = { 92.2, 0, -19.9999999999999999, 8302, 93928.03986138560192358, 6, -3873.320863, -164, -123838642887.286402, -28362.02689462, 18632.29863 }
+	local xs = {
+		92.2,
+		0,
+		-19.9999999999999999,
+		8302,
+		93928.03986138560192358,
+		6,
+		-3873.320863,
+		-164,
+		-123838642887.286402,
+		-28362.02689462,
+		18632.29863,
+	}
 	local ys = Squash.number(4).serarr(xs)
 	local zs = Squash.number(4).desarr(ys)
 	resultarr('numbers 4', xs, ys, zs)
@@ -263,8 +275,79 @@ do
 	local z = Squash.number(8).des(y)
 	result('number 8', x, y, z)
 
-	local xs = { 92.2, 0, -19.9999999999999999, 8302, 93928.03986138560192358, 6, -3873.320863, -164, -123838642887.286402, -28362.02689462, 18632.29863 }
+	local xs = {
+		92.2,
+		0,
+		-19.9999999999999999,
+		8302,
+		93928.03986138560192358,
+		6,
+		-3873.320863,
+		-164,
+		-123838642887.286402,
+		-28362.02689462,
+		18632.29863,
+	}
 	local ys = Squash.number(8).serarr(xs)
 	local zs = Squash.number(8).desarr(ys)
 	resultarr('numbers 8', xs, ys, zs)
 end
+
+do
+	local serdes = Squash.variadic(Squash.boolean(), Squash.int(), Squash.number(8)) :: Squash.SerDesVar<boolean, number, number>
+	local x = { true, -1903, 400000000000000001 }
+	local y = serdes.ser(table.unpack(x))
+	local z = { serdes.des(y) }
+	resultarr('variadic boolean int', x, y, z)
+end
+
+print('zero')
+print(Squash.bytes(0))
+
+print('uint')
+print(Squash.bytes(1))
+print(Squash.bytes(2))
+print(Squash.bytes(254))
+print(Squash.bytes(255))
+print(Squash.bytes(256))
+print(Squash.bytes(257))
+print(Squash.bytes(65535))
+print(Squash.bytes(65536))
+print(Squash.bytes(65537))
+
+print('int')
+print(Squash.bytes(-1))
+print(Squash.bytes(-2))
+print(Squash.bytes(-126))
+print(Squash.bytes(-127))
+print(Squash.bytes(-128))
+print(Squash.bytes(-129))
+print(Squash.bytes(-65535))
+print(Squash.bytes(-65536))
+print(Squash.bytes(-65537))
+
+print('positive floating point')
+print(Squash.bytes(0.5))
+print(Squash.bytes(1.5))
+print(Squash.bytes(2.5))
+print(Squash.bytes(254.5))
+print(Squash.bytes(255.5))
+print(Squash.bytes(256.5))
+print(Squash.bytes(257.5))
+print(Squash.bytes(65535.5))
+print(Squash.bytes(65536.5))
+print(Squash.bytes(65537.5))
+print(Squash.bytes(123838642887.5))
+
+print('negative floating point')
+print(Squash.bytes(-0.5))
+print(Squash.bytes(-1.5))
+print(Squash.bytes(-2.5))
+print(Squash.bytes(-254.5))
+print(Squash.bytes(-255.5))
+print(Squash.bytes(-256.5))
+print(Squash.bytes(-257.5))
+print(Squash.bytes(-65535.5))
+print(Squash.bytes(-65536.5))
+print(Squash.bytes(-65537.5))
+

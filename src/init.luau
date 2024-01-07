@@ -43,53 +43,18 @@ export type FloatBytes = number
 
 	A function that serializes a number into a string. Usually this is Squash's uint, int, or number ser methods.
 ]=]
-export type NumberSer = (x: number, bytes: Bytes?) -> string
-
---[=[
-	@within Squash
-	@type NumberDes (y: string, bytes: Bytes?) -> number
-
-	A function that deserializes a number from a string. Usually this is Squash's uint, int, or number des methods.
-]=]
-export type NumberDes = (y: string, bytes: Bytes?) -> number
-
---[=[
-	@within Squash
-	@interface NumberSerDes
-	.ser NumberSer
-	.des NumberDes
-]=]
-export type NumberSerDes = {
-	ser: NumberSer,
-	des: NumberDes,
+export type SerDes<T> = {
+	len: number,
+	ser: (x0: T) -> buffer,
+	des: (y0: buffer) -> T,
+	serarr: (xs: { T }) -> buffer,
+	desarr: (ys: buffer) -> { T },
 }
 
-type VectorSer<T> = (T, NumberSerDes?, number?) -> string
-type VectorDes<T> = (string, NumberSerDes?, number?) -> T
-type VectorSerDes<T, U> = {
-	ser: VectorSer<T>,
-	des: VectorDes<U>,
-}
-
-type VectorNoCodingSer<T> = (T, number?) -> string
-type VectorNoCodingDes<T> = (string, number?) -> T
-type VectorNoCodingSerDes<T> = {
-	ser: VectorNoCodingSer<T>,
-	des: VectorNoCodingDes<T>,
-}
-
-type FixedSer<T> = (T) -> string
-type FixedDes<T> = (string) -> T
-type FixedSerDes<T> = {
-	ser: FixedSer<T>,
-	des: FixedDes<T>,
-}
-
-type VariableSer<T, U...> = (T, U...) -> string
-type VariableDes<T, U...> = (string, U...) -> T
-type VariableSerDes<T, U...> = {
-	ser: VariableSer<T, U...>,
-	des: VariableDes<T, U...>,
+export type SerDesVar<T...> = {
+	len: number,
+	ser: (T...) -> buffer,
+	des: (y0: buffer) -> T...,
 }
 
 --* Properties *--
@@ -443,12 +408,23 @@ end
 
 --* Actual API *--
 
+function Squash.bytes(x0: number)
+	if x0 == 0 then -- 0
+		return 1
+	elseif x0 ~= x0 // 1 then -- floating point
+		local x1 = string.unpack('f', string.pack('f', x0))
+		return if x0 == x1 then 4 else 8
+	elseif x0 < 1 then -- negative int
+		return math.ceil(math.log(math.abs(2 * x0), 256))
+	else -- positive uint
+		return math.ceil(math.log(math.abs(1 + x0), 256))
+	end
+end
+
 do
 	local cache = {}
 
-	function cache.size(x0: boolean)
-		return 1
-	end
+	cache.len = 1
 
 	function cache.ser(
 		x0: boolean?,
@@ -460,23 +436,28 @@ do
 		x6: boolean?,
 		x7: boolean?
 	)
+		local y = (if x0 then 1 else 0)
+			+ (if x1 then 2 else 0)
+			+ (if x2 then 4 else 0)
+			+ (if x3 then 8 else 0)
+			+ (if x4 then 16 else 0)
+			+ (if x5 then 32 else 0)
+			+ (if x6 then 64 else 0)
+			+ (if x7 then 128 else 0)
+		-- if y == 0 then
+		-- 	return buffer.create(0)
+		-- end
+
 		local y0 = buffer.create(1)
-		buffer.writeu8(
-			y0,
-			0,
-			(if x0 then 1 else 0)
-				+ (if x1 then 2 else 0)
-				+ (if x2 then 4 else 0)
-				+ (if x3 then 8 else 0)
-				+ (if x4 then 16 else 0)
-				+ (if x5 then 32 else 0)
-				+ (if x6 then 64 else 0)
-				+ (if x7 then 128 else 0)
-		)
+		buffer.writeu8(y0, 0, y)
 		return y0
 	end
 
 	function cache.des(y0: buffer)
+		-- if buffer.len(y0) == 0 then
+		-- 	return false, false, false, false, false, false, false, false
+		-- end
+
 		local x0 = buffer.readu8(y0, 0)
 		return (x0 / 1) % 2 >= 1,
 			(x0 / 2) % 2 >= 1,
@@ -538,7 +519,7 @@ end
 do
 	local cache = {}
 
-	cache.size = buffer.len
+	cache.len = math.huge
 
 	cache.ser = buffer.tostring
 
@@ -566,9 +547,7 @@ do
 
 	-- 1
 
-	function bytes1.size(x0: number)
-		return 1
-	end
+	bytes1.len = 1
 
 	function bytes1.ser(x0: number)
 		local y0 = buffer.create(1)
@@ -599,9 +578,7 @@ do
 
 	-- 2
 
-	function bytes2.size(x0: number)
-		return 2
-	end
+	bytes2.len = 2
 
 	function bytes2.ser(x0: number)
 		local y0 = buffer.create(2)
@@ -632,9 +609,7 @@ do
 
 	-- 3
 
-	function bytes3.size(x0: number)
-		return 3
-	end
+	bytes3.len = 3
 
 	function bytes3.ser(x0: number)
 		x0 %= 256 ^ 3
@@ -671,9 +646,7 @@ do
 
 	-- 4
 
-	function bytes4.size(x0: number)
-		return 4
-	end
+	bytes4.len = 4
 
 	function bytes4.ser(x0: number)
 		local y0 = buffer.create(4)
@@ -704,9 +677,7 @@ do
 
 	-- 5
 
-	function bytes5.size(x0: number)
-		return 5
-	end
+	bytes5.len = 5
 
 	function bytes5.ser(x0: number)
 		x0 %= 256 ^ 5
@@ -743,9 +714,7 @@ do
 
 	-- 6
 
-	function bytes6.size(x0: number)
-		return 6
-	end
+	bytes6.len = 6
 
 	function bytes6.ser(x0: number)
 		x0 %= 256 ^ 6
@@ -782,9 +751,7 @@ do
 
 	-- 7
 
-	function bytes7.size(x0: number)
-		return 7
-	end
+	bytes7.len = 7
 
 	function bytes7.ser(x0: number)
 		x0 %= 256 ^ 7
@@ -823,9 +790,7 @@ do
 
 	-- 8
 
-	function bytes8.size(x0: number)
-		return 8
-	end
+	bytes8.len = 8
 
 	function bytes8.ser(x0: number)
 		x0 %= 256 ^ 8
@@ -879,9 +844,7 @@ do
 
 	-- 1
 
-	function bytes1.size(x0: number)
-		return 1
-	end
+	bytes1.len = 1
 
 	function bytes1.ser(x0: number)
 		local y0 = buffer.create(1)
@@ -912,9 +875,7 @@ do
 
 	-- 2
 
-	function bytes2.size(x0: number)
-		return 2
-	end
+	bytes2.len = 2
 
 	function bytes2.ser(x0: number)
 		local y0 = buffer.create(2)
@@ -945,9 +906,7 @@ do
 
 	-- 3
 
-	function bytes3.size(x0: number)
-		return 3
-	end
+	bytes3.len = 3
 
 	function bytes3.ser(x0: number)
 		x0 = if x0 < 0 then x0 + 256 ^ 3 else x0
@@ -988,9 +947,7 @@ do
 
 	-- 4
 
-	function bytes4.size(x0: number)
-		return 4
-	end
+	bytes4.len = 4
 
 	function bytes4.ser(x0: number)
 		local y0 = buffer.create(4)
@@ -1021,9 +978,7 @@ do
 
 	-- 5
 
-	function bytes5.size(x0: number)
-		return 5
-	end
+	bytes5.len = 5
 
 	function bytes5.ser(x0: number)
 		x0 = if x0 < 0 then x0 + 256 ^ 5 else x0
@@ -1064,9 +1019,7 @@ do
 
 	-- 6
 
-	function bytes6.size(x0: number)
-		return 6
-	end
+	bytes6.len = 6
 
 	function bytes6.ser(x0: number)
 		x0 = if x0 < 0 then x0 + 256 ^ 6 else x0
@@ -1107,9 +1060,7 @@ do
 
 	-- 7
 
-	function bytes7.size(x0: number)
-		return 7
-	end
+	bytes7.len = 7
 
 	function bytes7.ser(x0: number)
 		x0 = if x0 < 0 then x0 + 256 ^ 7 else x0
@@ -1144,7 +1095,9 @@ do
 		local xs = table.create(len)
 		for i = 1, len do
 			local j = (i - 1) * 7
-			local x0 = buffer.readu32(ys, j + 0) + buffer.readu16(ys, j + 4) * 256 ^ 4 + buffer.readu8(ys, j + 6) * 256 ^ 6
+			local x0 = buffer.readu32(ys, j + 0)
+				+ buffer.readu16(ys, j + 4) * 256 ^ 4
+				+ buffer.readu8(ys, j + 6) * 256 ^ 6
 			xs[i] = if x0 > 256 ^ 6 * 128 then x0 - 256 ^ 7 else x0
 		end
 		return xs
@@ -1152,9 +1105,7 @@ do
 
 	-- 8
 
-	function bytes8.size(x0: number)
-		return 8
-	end
+	bytes8.len = 8
 
 	function bytes8.ser(x0: number)
 		local y0 = buffer.create(8)
@@ -1198,9 +1149,7 @@ do
 
 	-- 4
 
-	function bytes4.size(x0: number)
-		return 4
-	end
+	bytes4.len = 4
 
 	function bytes4.ser(x0: number)
 		local y0 = buffer.create(4)
@@ -1231,9 +1180,7 @@ do
 
 	-- 8
 
-	function bytes8.size(x0: number)
-		return 8
-	end
+	bytes8.len = 8
 
 	function bytes8.ser(x0: number)
 		local y0 = buffer.create(8)
@@ -1265,6 +1212,79 @@ do
 	function Squash.number(bytes: number?)
 		local bytes = bytes or 4
 		return cache[bytes] or floatAssert(bytes)
+	end
+end
+
+do
+	function Squash.variadic<T...>(...: SerDes<any>)
+		local args = { ... }
+
+		local serdes = {} :: SerDesVar<T...>
+
+		serdes.len = 0
+
+		for _, arg in args do
+			serdes.len += arg.len
+		end
+
+		if serdes.len == math.huge then
+			local bufs = table.create(#args)
+
+			function serdes.ser(...: T...)
+				local xs = { ... }
+
+				local size = 0
+
+				for i, arg in ipairs(args) do
+					local y0 = arg.ser(xs[i])
+					bufs[i] = y0
+					size += arg.len
+				end
+
+				local ys = buffer.create(size)
+				local offset = 0
+
+				for i, buf in ipairs(bufs) do
+					buffer.copy(ys, offset, buf)
+					offset += buffer.len(buf)
+				end
+
+				return ys
+			end
+		else
+			local buf = buffer.create(serdes.len)
+
+			function serdes.ser(...: T...)
+				local xs = { ... }
+
+				local offset = 0
+				for i, arg in ipairs(args) do
+					local y0 = arg.ser(xs[i])
+					buffer.copy(buf, offset, y0)
+					offset += arg.len
+				end
+
+				return buf
+			end
+		end
+
+		function serdes.des(ys: buffer): T...
+			local xs = table.create(#args)
+
+			local offset = 0
+			for i, arg in ipairs(args) do
+				local y0 = buffer.create(arg.len)
+				buffer.copy(y0, 0, ys, offset, arg.len)
+				offset += arg.len
+
+				local x0 = arg.des(y0)
+				table.insert(xs, x0)
+			end
+
+			return table.unpack(xs)
+		end
+
+		return serdes
 	end
 end
 -- --[=[
