@@ -6,4 +6,5 @@
 wally = "UpliftGames/wally@0.3.1"
 luau-lsp = "JohnnyMorganz/luau-lsp@1.18.1"
 stylua = "JohnnyMorganz/stylua@0.17.1"
+lune = "filiptibell/lune@0.7.11"
 # rojo = "rojo-rbx/rojo@7.3.0"

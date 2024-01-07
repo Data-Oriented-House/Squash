@@ -213,7 +213,7 @@ Squash.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[
 --* Duplication Reducers *--
 
 local bytesAssert = function(bytes: number)
-	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 8 then
+	if bytes ~= math.floor(bytes) or bytes < 1 or bytes > 7 then
 		error 'bytes must one of 1, 2, 3, 4, 5, 6, 7, 8'
 	end
 end
@@ -446,6 +446,7 @@ end
 -- end
 
 --* Actual API *--
+
 do
 	local cache = {}
 
@@ -453,25 +454,35 @@ do
 		return 1
 	end
 
-	function cache.ser(x0: boolean?, x1: boolean?, x2: boolean?, x3: boolean?, x4: boolean?, x5: boolean?, x6: boolean?, x7: boolean?)
+	function cache.ser(
+		x0: boolean?,
+		x1: boolean?,
+		x2: boolean?,
+		x3: boolean?,
+		x4: boolean?,
+		x5: boolean?,
+		x6: boolean?,
+		x7: boolean?
+	)
 		local y0 = buffer.create(1)
-		buffer.writeu8(y0, 0,
-			(if x0 then 1 else 0) +
-			(if x1 then 2 else 0) +
-			(if x2 then 4 else 0) +
-			(if x3 then 8 else 0) +
-			(if x4 then 16 else 0) +
-			(if x5 then 32 else 0) +
-			(if x6 then 64 else 0) +
-			(if x7 then 128 else 0)
+		buffer.writeu8(
+			y0,
+			0,
+			(if x0 then 1 else 0)
+				+ (if x1 then 2 else 0)
+				+ (if x2 then 4 else 0)
+				+ (if x3 then 8 else 0)
+				+ (if x4 then 16 else 0)
+				+ (if x5 then 32 else 0)
+				+ (if x6 then 64 else 0)
+				+ (if x7 then 128 else 0)
 		)
 		return y0
 	end
 
 	function cache.des(y0: buffer)
 		local x0 = buffer.readu8(y0, 0)
-		return
-			(x0 / 1) % 2 >= 1,
+		return (x0 / 1) % 2 >= 1,
 			(x0 / 2) % 2 >= 1,
 			(x0 / 4) % 2 >= 1,
 			(x0 / 8) % 2 >= 1,
@@ -487,15 +498,17 @@ do
 
 		for i = 0, len - 1 do
 			local j = i * 8
-			buffer.writeu8(ys, i,
-				(if xs[j + 1] then 1 else 0) +
-				(if xs[j + 2] then 2 else 0) +
-				(if xs[j + 3] then 4 else 0) +
-				(if xs[j + 4] then 8 else 0) +
-				(if xs[j + 5] then 16 else 0) +
-				(if xs[j + 6] then 32 else 0) +
-				(if xs[j + 7] then 64 else 0) +
-				(if xs[j + 8] then 128 else 0)
+			buffer.writeu8(
+				ys,
+				i,
+				(if xs[j + 1] then 1 else 0)
+					+ (if xs[j + 2] then 2 else 0)
+					+ (if xs[j + 3] then 4 else 0)
+					+ (if xs[j + 4] then 8 else 0)
+					+ (if xs[j + 5] then 16 else 0)
+					+ (if xs[j + 6] then 32 else 0)
+					+ (if xs[j + 7] then 64 else 0)
+					+ (if xs[j + 8] then 128 else 0)
 			)
 		end
 
@@ -535,13 +548,9 @@ do
 
 	cache.des = buffer.fromstring
 
-	function cache.serarr()
+	function cache.serarr() end
 
-	end
-
-	function cache.desarr()
-
-	end
+	function cache.desarr() end
 
 	function Squash.buffer()
 		return cache
@@ -635,7 +644,7 @@ do
 		x0 %= 256 ^ 3
 		local y0 = buffer.create(3)
 		buffer.writeu16(y0, 0, x0 // 256 ^ 0)
-		buffer.writeu8 (y0, 2, x0 // 256 ^ 2)
+		buffer.writeu8(y0, 2, x0 // 256 ^ 2)
 		return y0
 	end
 
@@ -649,7 +658,7 @@ do
 			x0 %= 256 ^ 3
 			local j = (i - 1) * 3
 			buffer.writeu16(ys, j + 0, x0 // 256 ^ 0)
-			buffer.writeu8 (ys, j + 2, x0 // 256 ^ 2)
+			buffer.writeu8(ys, j + 2, x0 // 256 ^ 2)
 		end
 		return ys
 	end
@@ -707,7 +716,7 @@ do
 		x0 %= 256 ^ 5
 		local y0 = buffer.create(5)
 		buffer.writeu32(y0, 0, x0 // 256 ^ 0)
-		buffer.writeu8 (y0, 4, x0 // 256 ^ 4)
+		buffer.writeu8(y0, 4, x0 // 256 ^ 4)
 		return y0
 	end
 
@@ -721,7 +730,7 @@ do
 			x0 %= 256 ^ 5
 			local j = (i - 1) * 5
 			buffer.writeu32(ys, j + 0, x0 // 256 ^ 0)
-			buffer.writeu8 (ys, j + 4, x0 // 256 ^ 4)
+			buffer.writeu8(ys, j + 4, x0 // 256 ^ 4)
 		end
 		return ys
 	end
@@ -786,7 +795,7 @@ do
 		local y0 = buffer.create(7)
 		buffer.writeu32(y0, 0, x0 // 256 ^ 0)
 		buffer.writeu16(y0, 4, x0 // 256 ^ 4)
-		buffer.writeu8 (y0, 6, x0 // 256 ^ 6)
+		buffer.writeu8(y0, 6, x0 // 256 ^ 6)
 		return y0
 	end
 
@@ -801,7 +810,7 @@ do
 			local j = (i - 1) * 7
 			buffer.writeu32(ys, j + 0, x0 // 256 ^ 0)
 			buffer.writeu16(ys, j + 4, x0 // 256 ^ 4)
-			buffer.writeu8 (ys, j + 6, x0 // 256 ^ 6)
+			buffer.writeu8(ys, j + 6, x0 // 256 ^ 6)
 		end
 		return ys
 	end
@@ -846,7 +855,7 @@ do
 	end
 
 	function bytes8.desarr(ys: buffer)
-		local len = buffer.len(ys)
+		local len = buffer.len(ys) / 8
 		local xs = table.create(len)
 		for i = 1, len do
 			local j = (i - 1) * 8
