@@ -1090,21 +1090,27 @@ do
 	bytes8.len = 8
 
 	function bytes8.ser(x0: number)
+		x0 = if x0 < 0 then x0 + 256 ^ 8 else x0
+		x0 %= 256 ^ 8
 		local y0 = buffer.create(8)
-		buffer.writei32(y0, 0, x0)
-		buffer.writei32(y0, 4, x0 // 256 ^ 4)
+		buffer.writeu32(y0, 0, x0 // 256 ^ 0)
+		buffer.writeu32(y0, 4, x0 // 256 ^ 4)
 		return y0
 	end
 
 	function bytes8.des(y0: buffer)
-		return buffer.readi32(y0, 0) + buffer.readi32(y0, 4) * 256 ^ 4
+		local x0 = buffer.readu32(y0, 0) + buffer.readu32(y0, 4) * 256 ^ 4
+		return if x0 > 256 ^ 7 * 128 then x0 - 256 ^ 8 else x0
 	end
 
 	function bytes8.serarr(xs: { number })
 		local ys = buffer.create(#xs * 8)
 		for i, x0 in ipairs(xs) do
-			buffer.writei32(ys, (i - 1) * 8, x0)
-			buffer.writei32(ys, (i - 1) * 8 + 4, x0 // 256 ^ 4)
+			x0 = if x0 < 0 then x0 + 256 ^ 8 else x0
+			x0 %= 256 ^ 8
+			local j = (i - 1) * 8
+			buffer.writeu32(ys, j + 0, x0 // 256 ^ 0)
+			buffer.writeu32(ys, j + 4, x0 // 256 ^ 4)
 		end
 		return ys
 	end
@@ -1113,7 +1119,9 @@ do
 		local len = buffer.len(ys) / 8
 		local xs = table.create(len)
 		for i = 1, len do
-			xs[i] = buffer.readi32(ys, (i - 1) * 8) + buffer.readi32(ys, (i - 1) * 8 + 4) * 256 ^ 4
+			local j = (i - 1) * 8
+			local x0 = buffer.readu32(ys, j + 0) + buffer.readu32(ys, j + 4) * 256 ^ 4
+			xs[i] = if x0 > 256 ^ 7 * 128 then x0 - 256 ^ 8 else x0
 		end
 		return xs
 	end
@@ -1192,6 +1200,79 @@ do
 
 	function Squash.number(bytes: number)
 		return cache[bytes] or floatAssert(bytes)
+	end
+end
+
+do
+	local cache = {}
+
+	function Squash.Vector3(encoding: SerDes<number>)
+		local cached = cache[encoding] :: SerDes<Vector3>
+		if cached then
+			return cached
+		end
+
+		local serdes = {}
+		cache[encoding] = serdes
+
+		serdes.len = 3 * encoding.len
+
+		function serdes.ser(x0: Vector3)
+			local y0 = buffer.create(serdes.len)
+			buffer.copy(y0, 0 * encoding.len, encoding.ser(x0.X))
+			buffer.copy(y0, 1 * encoding.len, encoding.ser(x0.Y))
+			buffer.copy(y0, 2 * encoding.len, encoding.ser(x0.Z))
+			return y0
+		end
+
+		function serdes.des(y0: buffer)
+			local y1 = buffer.create(encoding.len)
+			local x = encoding.des(y0)
+
+			buffer.copy(y1, 0, y0, encoding.len, encoding.len)
+			local y = encoding.des(y1)
+
+			buffer.copy(y1, 0, y0, 2 * encoding.len, encoding.len)
+			local z = encoding.des(y1)
+
+			return Vector3.new(x, y, z)
+		end
+
+		function serdes.serarr(xs: { Vector3 })
+			local ys = buffer.create(serdes.len * #xs)
+			for i, x0 in xs do
+				local j = 3 * i
+				buffer.copy(ys, j - 3, encoding.ser(x0.X))
+				buffer.copy(ys, j - 2, encoding.ser(x0.Y))
+				buffer.copy(ys, j - 1, encoding.ser(x0.Z))
+			end
+
+			return ys
+		end
+
+		function serdes.desarr(ys: buffer)
+			local len = buffer.len(ys) / serdes.len
+			local xs = table.create(len)
+			local buf = buffer.create(encoding.len)
+
+			for i = 0, len - 1 do
+				local j = 3 * i
+				buffer.copy(buf, 0, ys, (j + 0) * encoding.len, encoding.len)
+				local x = encoding.des(buf)
+
+				buffer.copy(buf, 0, ys, (j + 1) * encoding.len, encoding.len)
+				local y = encoding.des(buf)
+
+				buffer.copy(buf, 0, ys, (j + 2) * encoding.len, encoding.len)
+				local z = encoding.des(buf)
+
+				xs[i + 1] = Vector3.new(x, y, z)
+			end
+
+			return xs
+		end
+
+		return serdes
 	end
 end
 

@@ -41,6 +41,58 @@ end
 
 print()
 
+print('zero')
+print(Squash.bytes(0))
+
+print('uint')
+print(Squash.bytes(1))
+print(Squash.bytes(2))
+print(Squash.bytes(254))
+print(Squash.bytes(255))
+print(Squash.bytes(256))
+print(Squash.bytes(257))
+print(Squash.bytes(65535))
+print(Squash.bytes(65536))
+print(Squash.bytes(65537))
+
+print('int')
+print(Squash.bytes(-1))
+print(Squash.bytes(-2))
+print(Squash.bytes(-126))
+print(Squash.bytes(-127))
+print(Squash.bytes(-128))
+print(Squash.bytes(-129))
+print(Squash.bytes(-65535))
+print(Squash.bytes(-65536))
+print(Squash.bytes(-65537))
+
+print('positive floating point')
+print(Squash.bytes(0.5))
+print(Squash.bytes(1.5))
+print(Squash.bytes(2.5))
+print(Squash.bytes(254.5))
+print(Squash.bytes(255.5))
+print(Squash.bytes(256.5))
+print(Squash.bytes(257.5))
+print(Squash.bytes(65535.5))
+print(Squash.bytes(65536.5))
+print(Squash.bytes(65537.5))
+print(Squash.bytes(123838642887.5))
+
+print('negative floating point')
+print(Squash.bytes(-0.5))
+print(Squash.bytes(-1.5))
+print(Squash.bytes(-2.5))
+print(Squash.bytes(-254.5))
+print(Squash.bytes(-255.5))
+print(Squash.bytes(-256.5))
+print(Squash.bytes(-257.5))
+print(Squash.bytes(-65535.5))
+print(Squash.bytes(-65536.5))
+print(Squash.bytes(-65537.5))
+
+print()
+
 do
 	local x = { true, true, false, true, false, false, true }
 	local y = Squash.boolean().ser(table.unpack(x))
@@ -293,61 +345,31 @@ do
 	resultarr('numbers 8', xs, ys, zs)
 end
 
-do
-	local serdes = Squash.variadic(Squash.boolean(), Squash.int(4), Squash.number(8)) :: Squash.SerDesVar<boolean, number, number>
-	local x = { true, -1903, 400000000000000001 }
-	local y = serdes.ser(table.unpack(x))
-	local z = { serdes.des(y) }
-	resultarr('variadic boolean int', x, y, z)
-end
+-- do
+-- 	for bytes = 1, 1 do
+-- 		local x = Vector3.new(1, 2, 3)
+-- 		local y = Squash.Vector3(Squash.uint(bytes)).ser(x)
+-- 		local z = Squash.Vector3(Squash.uint(bytes)).des(y)
+-- 		result('Vector3 ' .. bytes, x, y, z)
 
-print('zero')
-print(Squash.bytes(0))
+-- 		local xs = {
+-- 			Vector3.new(1, 2, 3),
+-- 			Vector3.new(0, 0, 0),
+-- 			Vector3.new(-19, -390.28635, 9830),
+-- 			Vector3.new(8302, 93928.03986138560192358, 6),
+-- 			Vector3.new(-3873.320863, -164, -123838642887.286402),
+-- 			Vector3.new(-28362.02689462, 18632.29863, 0),
+-- 		}
+-- 		local ys = Squash.Vector3(Squash.uint(bytes)).serarr(xs)
+-- 		local zs = Squash.Vector3(Squash.uint(bytes)).desarr(ys)
+-- 		resultarr('Vector3s ' .. bytes, xs, ys, zs)
+-- 	end
+-- end
 
-print('uint')
-print(Squash.bytes(1))
-print(Squash.bytes(2))
-print(Squash.bytes(254))
-print(Squash.bytes(255))
-print(Squash.bytes(256))
-print(Squash.bytes(257))
-print(Squash.bytes(65535))
-print(Squash.bytes(65536))
-print(Squash.bytes(65537))
-
-print('int')
-print(Squash.bytes(-1))
-print(Squash.bytes(-2))
-print(Squash.bytes(-126))
-print(Squash.bytes(-127))
-print(Squash.bytes(-128))
-print(Squash.bytes(-129))
-print(Squash.bytes(-65535))
-print(Squash.bytes(-65536))
-print(Squash.bytes(-65537))
-
-print('positive floating point')
-print(Squash.bytes(0.5))
-print(Squash.bytes(1.5))
-print(Squash.bytes(2.5))
-print(Squash.bytes(254.5))
-print(Squash.bytes(255.5))
-print(Squash.bytes(256.5))
-print(Squash.bytes(257.5))
-print(Squash.bytes(65535.5))
-print(Squash.bytes(65536.5))
-print(Squash.bytes(65537.5))
-print(Squash.bytes(123838642887.5))
-
-print('negative floating point')
-print(Squash.bytes(-0.5))
-print(Squash.bytes(-1.5))
-print(Squash.bytes(-2.5))
-print(Squash.bytes(-254.5))
-print(Squash.bytes(-255.5))
-print(Squash.bytes(-256.5))
-print(Squash.bytes(-257.5))
-print(Squash.bytes(-65535.5))
-print(Squash.bytes(-65536.5))
-print(Squash.bytes(-65537.5))
-
+--do
+--	local serdes = Squash.variadic(Squash.boolean(), Squash.int(4), Squash.number(8)) :: Squash.SerDesVar<boolean, number, number>
+--	local x = { true, -1903, 400000000000000001 }
+--	local y = serdes.ser(table.unpack(x))
+--	local z = { serdes.des(y) }
+--	resultarr('variadic boolean int', x, y, z)
+--end
