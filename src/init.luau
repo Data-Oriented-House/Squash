@@ -512,9 +512,14 @@ do
 		return xs
 	end
 
-	function Squash.boolean()
-		return cache
-	end
+	local meta = {
+		__call = function(_)
+			return cache
+		end,
+	}
+	Squash.boolean = setmetatable({}, meta)
+
+	Squash.boolean()
 end
 
 do
@@ -808,9 +813,12 @@ do
 		return xs
 	end
 
-	function Squash.uint(bytes: number)
-		return cache[bytes] or bytesAssert(bytes)
-	end
+	local meta = {
+		__call = function(_, bytes: number)
+			return cache[bytes] or bytesAssert(bytes)
+		end,
+	}
+	Squash.uint = setmetatable({}, meta)
 end
 
 do
@@ -1126,9 +1134,12 @@ do
 		return xs
 	end
 
-	function Squash.int(bytes: number)
-		return cache[bytes] or bytesAssert(bytes)
-	end
+	local meta = {
+		__call = function(_, bytes: number)
+			return cache[bytes] or bytesAssert(bytes)
+		end,
+	}
+	Squash.int = setmetatable({}, meta)
 end
 
 do
@@ -1198,221 +1209,356 @@ do
 		return xs
 	end
 
-	function Squash.number(bytes: number)
-		return cache[bytes] or floatAssert(bytes)
-	end
+	local meta = {
+		__call = function(_, bytes: number)
+			return cache[bytes] or bytesAssert(bytes)
+		end,
+	}
+	Squash.number = setmetatable({}, meta)
+end
+
+do
+	-- 	local cache = {}
+
+	-- 	Squash.string.alphabet = function(source: string): Alphabet
+	-- 		local lookup = {}
+	-- 		local alphabet = table.create(#source)
+	-- 		for i = 1, #source do
+	-- 			local char = string.sub(source, i, i)
+	-- 			if not lookup[char] then
+	-- 				lookup[char] = true
+	-- 				table.insert(alphabet, char)
+	-- 			end
+	-- 		end
+	-- 		table.sort(alphabet)
+	-- 		return table.concat(alphabet)
+	-- 	end
+
+	-- --[=[
+	-- 	@within string
+	-- 	@function convert
+	-- 	@param x string
+	-- 	@param inAlphabet Alphabet
+	-- 	@param outAlphabet Alphabet
+	-- 	@return string
+
+	-- 	Converts a string from one alphabet to another.
+	-- ]=]
+	-- Squash.string.convert = function(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet): string
+	-- 	local sourceDigits = {}
+	-- 	for i = 1, #inAlphabet do
+	-- 		sourceDigits[string.byte(inAlphabet, i)] = i - 1
+	-- 	end
+
+	-- 	local targetDigits = {}
+	-- 	for i = 1, #outAlphabet do
+	-- 		targetDigits[i - 1] = string.byte(outAlphabet, i)
+	-- 	end
+
+	-- 	local inputDigits = {}
+	-- 	for i = 1, #x do
+	-- 		table.insert(inputDigits, sourceDigits[string.byte(x, i)])
+	-- 	end
+
+	-- 	local output = {}
+	-- 	local sourceBase = #inAlphabet
+	-- 	local targetBase = #outAlphabet
+	-- 	local carry, value
+	-- 	while #inputDigits > 0 do
+	-- 		carry = 0
+
+	-- 		for i = 1, #inputDigits do
+	-- 			value = inputDigits[i] + carry * sourceBase
+	-- 			inputDigits[i] = math.floor(value / targetBase)
+	-- 			carry = value % targetBase
+	-- 		end
+
+	-- 		while #inputDigits > 0 and inputDigits[1] == 0 do
+	-- 			table.remove(inputDigits, 1)
+	-- 		end
+
+	-- 		table.insert(output, 1, string.char(targetDigits[carry]))
+	-- 	end
+
+	-- 	return table.concat(output)
+	-- end
+
+	-- --[=[
+	-- 	@within string
+	-- 	@function ser
+	-- 	@param x string
+	-- 	@param alphabet Alphabet?
+	-- 	@return string
+	-- ]=]
+	-- Squash.string.ser = function(x: string, alphabet: Alphabet?): string
+	-- 	local inAlphabet = Squash.delimiter .. (alphabet or Squash.english)
+	-- 	return Squash.string.convert(x, inAlphabet, Squash.utf8)
+	-- end
+
+	-- --[=[
+	-- 	@within string
+	-- 	@function des
+	-- 	@param y string
+	-- 	@param alphabet Alphabet?
+	-- 	@return string
+	-- ]=]
+	-- Squash.string.des = function(y: string, alphabet: Alphabet?): string
+	-- 	local outAlphabet = Squash.delimiter .. (alphabet or Squash.english)
+	-- 	return Squash.string.convert(y, Squash.utf8, outAlphabet)
+	-- end
+
+	-- --[=[
+	-- 	@within string
+	-- 	@function serarr
+	-- 	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
+	-- 	@param x { string }
+	-- 	@param alphabet Alphabet?
+	-- 	@return string
+	-- ]=]
+	-- Squash.string.serarr = function(x: { string }, alphabet: Alphabet?)
+	-- 	local y = {}
+	-- 	for i, v in x do
+	-- 		y[i] = Squash.string.ser(v, alphabet)
+	-- 	end
+	-- 	return table.concat(y, Squash.delimiter)
+	-- end
+
+	-- --[=[
+	-- 	@within string
+	-- 	@function desarr
+	-- 	@param y string
+	-- 	@param alphabet Alphabet?
+	-- 	@return { string }
+	-- ]=]
+	-- Squash.string.desarr = function(y: string, alphabet: Alphabet?): { string }
+	-- 	local x = {}
+	-- 	for v in string.gmatch(y, '[^' .. Squash.delimiter .. ']+') do
+	-- 		table.insert(x, Squash.string.des(v, alphabet))
+	-- 	end
+	-- 	return x
+	-- end
 end
 
 do
 	local cache = {}
 
-	function Squash.Vector2(encoding: SerDes<number>)
-		local cached = cache[encoding] :: SerDes<Vector2>
-		if cached then
-			return cached
-		end
-
-		local serdes = {}
-		cache[encoding] = serdes
-
-		serdes.len = 2 * encoding.len
-
-		function serdes.ser(x0: Vector2)
-			local y0 = buffer.create(serdes.len)
-			buffer.copy(y0, 0 * encoding.len, encoding.ser(x0.X))
-			buffer.copy(y0, 1 * encoding.len, encoding.ser(x0.Y))
-			return y0
-		end
-
-		function serdes.des(y0: buffer)
-			local y1 = buffer.create(encoding.len)
-			local x = encoding.des(y0)
-
-			buffer.copy(y1, 0, y0, encoding.len, encoding.len)
-			local y = encoding.des(y1)
-
-			return Vector2.new(x, y)
-		end
-
-		function serdes.serarr(xs: { Vector2 })
-			local ys = buffer.create(serdes.len * #xs)
-			for i, x0 in xs do
-				local j = 2 * i
-				buffer.copy(ys, j - 3, encoding.ser(x0.X))
-				buffer.copy(ys, j - 2, encoding.ser(x0.Y))
+	local meta = {
+		__call = function(_, encoding: SerDes<number>)
+			local cached = cache[encoding] :: SerDes<Vector2>
+			if cached then
+				return cached
 			end
 
-			return ys
-		end
+			local serdes = {}
+			cache[encoding] = serdes
 
-		function serdes.desarr(ys: buffer)
-			local len = buffer.len(ys) / serdes.len
-			local xs = table.create(len)
-			local buf = buffer.create(encoding.len)
+			serdes.len = 2 * encoding.len
 
-			for i = 0, len - 1 do
-				local j = 2 * i
-				buffer.copy(buf, 0, ys, (j + 0) * encoding.len, encoding.len)
-				local x = encoding.des(buf)
-
-				buffer.copy(buf, 0, ys, (j + 1) * encoding.len, encoding.len)
-				local y = encoding.des(buf)
-
-				xs[i + 1] = Vector2.new(x, y)
+			function serdes.ser(x0: Vector2)
+				local y0 = buffer.create(serdes.len)
+				buffer.copy(y0, 0 * encoding.len, encoding.ser(x0.X))
+				buffer.copy(y0, 1 * encoding.len, encoding.ser(x0.Y))
+				return y0
 			end
 
-			return xs
-		end
+			function serdes.des(y0: buffer)
+				local y1 = buffer.create(encoding.len)
+				local x = encoding.des(y0)
 
-		return serdes
-	end
-end
+				buffer.copy(y1, 0, y0, encoding.len, encoding.len)
+				local y = encoding.des(y1)
 
-do
-	local cache = {}
-
-	function Squash.Vector3(encoding: SerDes<number>)
-		local cached = cache[encoding] :: SerDes<Vector3>
-		if cached then
-			return cached
-		end
-
-		local serdes = {}
-		cache[encoding] = serdes
-
-		serdes.len = 3 * encoding.len
-
-		function serdes.ser(x0: Vector3)
-			local y0 = buffer.create(serdes.len)
-			buffer.copy(y0, 0 * encoding.len, encoding.ser(x0.X))
-			buffer.copy(y0, 1 * encoding.len, encoding.ser(x0.Y))
-			buffer.copy(y0, 2 * encoding.len, encoding.ser(x0.Z))
-			return y0
-		end
-
-		function serdes.des(y0: buffer)
-			local y1 = buffer.create(encoding.len)
-			local x = encoding.des(y0)
-
-			buffer.copy(y1, 0, y0, encoding.len, encoding.len)
-			local y = encoding.des(y1)
-
-			buffer.copy(y1, 0, y0, 2 * encoding.len, encoding.len)
-			local z = encoding.des(y1)
-
-			return Vector3.new(x, y, z)
-		end
-
-		function serdes.serarr(xs: { Vector3 })
-			local ys = buffer.create(serdes.len * #xs)
-			for i, x0 in xs do
-				local j = 3 * i
-				buffer.copy(ys, j - 3, encoding.ser(x0.X))
-				buffer.copy(ys, j - 2, encoding.ser(x0.Y))
-				buffer.copy(ys, j - 1, encoding.ser(x0.Z))
+				return Vector2.new(x, y)
 			end
 
-			return ys
-		end
-
-		function serdes.desarr(ys: buffer)
-			local len = buffer.len(ys) / serdes.len
-			local xs = table.create(len)
-			local buf = buffer.create(encoding.len)
-
-			for i = 0, len - 1 do
-				local j = 3 * i
-				buffer.copy(buf, 0, ys, (j + 0) * encoding.len, encoding.len)
-				local x = encoding.des(buf)
-
-				buffer.copy(buf, 0, ys, (j + 1) * encoding.len, encoding.len)
-				local y = encoding.des(buf)
-
-				buffer.copy(buf, 0, ys, (j + 2) * encoding.len, encoding.len)
-				local z = encoding.des(buf)
-
-				xs[i + 1] = Vector3.new(x, y, z)
-			end
-
-			return xs
-		end
-
-		return serdes
-	end
-end
-
-do
-	function Squash.variadic<T...>(...: SerDes<any>)
-		local args = { ... }
-
-		local serdes = {} :: SerDesVar<T...>
-
-		serdes.len = 0
-
-		for _, arg in args do
-			serdes.len += arg.len
-		end
-
-		if serdes.len == math.huge then
-			local bufs = table.create(#args)
-
-			function serdes.ser(...: T...)
-				local xs = { ... }
-
-				local size = 0
-
-				for i, arg in ipairs(args) do
-					local y0 = arg.ser(xs[i])
-					bufs[i] = y0
-					size += arg.len
-				end
-
-				local ys = buffer.create(size)
-				local offset = 0
-
-				for i, buf in ipairs(bufs) do
-					buffer.copy(ys, offset, buf)
-					offset += buffer.len(buf)
+			function serdes.serarr(xs: { Vector2 })
+				local ys = buffer.create(serdes.len * #xs)
+				for i, x0 in xs do
+					local j = 2 * i
+					buffer.copy(ys, j - 3, encoding.ser(x0.X))
+					buffer.copy(ys, j - 2, encoding.ser(x0.Y))
 				end
 
 				return ys
 			end
-		else
-			local buf = buffer.create(serdes.len)
 
-			function serdes.ser(...: T...)
-				local xs = { ... }
+			function serdes.desarr(ys: buffer)
+				local len = buffer.len(ys) / serdes.len
+				local xs = table.create(len)
+				local buf = buffer.create(encoding.len)
+
+				for i = 0, len - 1 do
+					local j = 2 * i
+					buffer.copy(buf, 0, ys, (j + 0) * encoding.len, encoding.len)
+					local x = encoding.des(buf)
+
+					buffer.copy(buf, 0, ys, (j + 1) * encoding.len, encoding.len)
+					local y = encoding.des(buf)
+
+					xs[i + 1] = Vector2.new(x, y)
+				end
+
+				return xs
+			end
+
+			return serdes
+		end,
+	}
+	Squash.Vector2 = setmetatable({}, meta)
+end
+
+do
+	local cache = {}
+
+	local meta = {
+		__call = function(_, encoding: SerDes<number>)
+			local cached = cache[encoding] :: SerDes<Vector3>
+			if cached then
+				return cached
+			end
+
+			local serdes = {}
+			cache[encoding] = serdes
+
+			serdes.len = 3 * encoding.len
+
+			function serdes.ser(x0: Vector3)
+				local y0 = buffer.create(serdes.len)
+				buffer.copy(y0, 0 * encoding.len, encoding.ser(x0.X))
+				buffer.copy(y0, 1 * encoding.len, encoding.ser(x0.Y))
+				buffer.copy(y0, 2 * encoding.len, encoding.ser(x0.Z))
+				return y0
+			end
+
+			function serdes.des(y0: buffer)
+				local y1 = buffer.create(encoding.len)
+				local x = encoding.des(y0)
+
+				buffer.copy(y1, 0, y0, encoding.len, encoding.len)
+				local y = encoding.des(y1)
+
+				buffer.copy(y1, 0, y0, 2 * encoding.len, encoding.len)
+				local z = encoding.des(y1)
+
+				return Vector3.new(x, y, z)
+			end
+
+			function serdes.serarr(xs: { Vector3 })
+				local ys = buffer.create(serdes.len * #xs)
+				for i, x0 in xs do
+					local j = 3 * i
+					buffer.copy(ys, j - 3, encoding.ser(x0.X))
+					buffer.copy(ys, j - 2, encoding.ser(x0.Y))
+					buffer.copy(ys, j - 1, encoding.ser(x0.Z))
+				end
+
+				return ys
+			end
+
+			function serdes.desarr(ys: buffer)
+				local len = buffer.len(ys) / serdes.len
+				local xs = table.create(len)
+				local buf = buffer.create(encoding.len)
+
+				for i = 0, len - 1 do
+					local j = 3 * i
+					buffer.copy(buf, 0, ys, (j + 0) * encoding.len, encoding.len)
+					local x = encoding.des(buf)
+
+					buffer.copy(buf, 0, ys, (j + 1) * encoding.len, encoding.len)
+					local y = encoding.des(buf)
+
+					buffer.copy(buf, 0, ys, (j + 2) * encoding.len, encoding.len)
+					local z = encoding.des(buf)
+
+					xs[i + 1] = Vector3.new(x, y, z)
+				end
+
+				return xs
+			end
+
+			return serdes
+		end,
+	}
+	Squash.Vector3 = setmetatable({}, meta)
+end
+
+do
+	local meta = {
+		__call = function<T...>(_, ...: SerDes<any>)
+			local args = { ... }
+
+			local serdes = {} :: SerDesVar<T...>
+
+			serdes.len = 0
+
+			for _, arg in args do
+				serdes.len += arg.len
+			end
+
+			if serdes.len == math.huge then
+				local bufs = table.create(#args)
+
+				function serdes.ser(...: T...)
+					local xs = { ... }
+
+					local size = 0
+
+					for i, arg in ipairs(args) do
+						local y0 = arg.ser(xs[i])
+						bufs[i] = y0
+						size += arg.len
+					end
+
+					local ys = buffer.create(size)
+					local offset = 0
+
+					for i, buf in ipairs(bufs) do
+						buffer.copy(ys, offset, buf)
+						offset += buffer.len(buf)
+					end
+
+					return ys
+				end
+			else
+				local buf = buffer.create(serdes.len)
+
+				function serdes.ser(...: T...)
+					local xs = { ... }
+
+					local offset = 0
+					for i, arg in ipairs(args) do
+						local y0 = arg.ser(xs[i])
+						buffer.copy(buf, offset, y0)
+						offset += arg.len
+					end
+
+					return buf
+				end
+			end
+
+			function serdes.des(ys: buffer): T...
+				local xs = table.create(#args)
 
 				local offset = 0
 				for i, arg in ipairs(args) do
-					local y0 = arg.ser(xs[i])
-					buffer.copy(buf, offset, y0)
+					local y0 = buffer.create(arg.len)
+					buffer.copy(y0, 0, ys, offset, arg.len)
 					offset += arg.len
+
+					local x0 = arg.des(y0)
+					table.insert(xs, x0)
 				end
 
-				return buf
-			end
-		end
-
-		function serdes.des(ys: buffer): T...
-			local xs = table.create(#args)
-
-			local offset = 0
-			for i, arg in ipairs(args) do
-				local y0 = buffer.create(arg.len)
-				buffer.copy(y0, 0, ys, offset, arg.len)
-				offset += arg.len
-
-				local x0 = arg.des(y0)
-				table.insert(xs, x0)
+				return table.unpack(xs)
 			end
 
-			return table.unpack(xs)
-		end
-
-		return serdes
-	end
+			return serdes
+		end,
+	}
+	Squash.variadic = setmetatable({}, meta)
 end
+
 -- --[=[
 -- 	@class boolean
 -- ]=]
