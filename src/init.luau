@@ -1206,6 +1206,71 @@ end
 do
 	local cache = {}
 
+	function Squash.Vector2(encoding: SerDes<number>)
+		local cached = cache[encoding] :: SerDes<Vector2>
+		if cached then
+			return cached
+		end
+
+		local serdes = {}
+		cache[encoding] = serdes
+
+		serdes.len = 2 * encoding.len
+
+		function serdes.ser(x0: Vector2)
+			local y0 = buffer.create(serdes.len)
+			buffer.copy(y0, 0 * encoding.len, encoding.ser(x0.X))
+			buffer.copy(y0, 1 * encoding.len, encoding.ser(x0.Y))
+			return y0
+		end
+
+		function serdes.des(y0: buffer)
+			local y1 = buffer.create(encoding.len)
+			local x = encoding.des(y0)
+
+			buffer.copy(y1, 0, y0, encoding.len, encoding.len)
+			local y = encoding.des(y1)
+
+			return Vector2.new(x, y)
+		end
+
+		function serdes.serarr(xs: { Vector2 })
+			local ys = buffer.create(serdes.len * #xs)
+			for i, x0 in xs do
+				local j = 2 * i
+				buffer.copy(ys, j - 3, encoding.ser(x0.X))
+				buffer.copy(ys, j - 2, encoding.ser(x0.Y))
+			end
+
+			return ys
+		end
+
+		function serdes.desarr(ys: buffer)
+			local len = buffer.len(ys) / serdes.len
+			local xs = table.create(len)
+			local buf = buffer.create(encoding.len)
+
+			for i = 0, len - 1 do
+				local j = 2 * i
+				buffer.copy(buf, 0, ys, (j + 0) * encoding.len, encoding.len)
+				local x = encoding.des(buf)
+
+				buffer.copy(buf, 0, ys, (j + 1) * encoding.len, encoding.len)
+				local y = encoding.des(buf)
+
+				xs[i + 1] = Vector2.new(x, y)
+			end
+
+			return xs
+		end
+
+		return serdes
+	end
+end
+
+do
+	local cache = {}
+
 	function Squash.Vector3(encoding: SerDes<number>)
 		local cached = cache[encoding] :: SerDes<Vector3>
 		if cached then

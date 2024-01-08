@@ -345,26 +345,47 @@ do
 	resultarr('numbers 8', xs, ys, zs)
 end
 
--- do
--- 	for bytes = 1, 1 do
--- 		local x = Vector3.new(1, 2, 3)
--- 		local y = Squash.Vector3(Squash.uint(bytes)).ser(x)
--- 		local z = Squash.Vector3(Squash.uint(bytes)).des(y)
--- 		result('Vector3 ' .. bytes, x, y, z)
+do
+	for bytes = 1, 8 do
+		local x = Vector3.new(1, 2, 3)
+		local y = Squash.Vector3(Squash.uint(bytes)).ser(x)
+		local z = Squash.Vector3(Squash.uint(bytes)).des(y)
+		result('Vector3 ' .. bytes, x, y, z)
 
--- 		local xs = {
--- 			Vector3.new(1, 2, 3),
--- 			Vector3.new(0, 0, 0),
--- 			Vector3.new(-19, -390.28635, 9830),
--- 			Vector3.new(8302, 93928.03986138560192358, 6),
--- 			Vector3.new(-3873.320863, -164, -123838642887.286402),
--- 			Vector3.new(-28362.02689462, 18632.29863, 0),
--- 		}
--- 		local ys = Squash.Vector3(Squash.uint(bytes)).serarr(xs)
--- 		local zs = Squash.Vector3(Squash.uint(bytes)).desarr(ys)
--- 		resultarr('Vector3s ' .. bytes, xs, ys, zs)
--- 	end
--- end
+		local xs = {
+			Vector3.new(1, 2, 3),
+			Vector3.new(0, 0, 0),
+			Vector3.new(-19, -390.28635, 9830),
+			Vector3.new(8302, 93928.03986138560192358, 6),
+			Vector3.new(-3873.320863, -164, -123838642887.286402),
+			Vector3.new(-28362.02689462, 18632.29863, 0),
+		}
+		local ys = Squash.Vector3(Squash.uint(bytes)).serarr(xs)
+		local zs = Squash.Vector3(Squash.uint(bytes)).desarr(ys)
+		resultarr('Vector3s ' .. bytes, xs, ys, zs)
+	end
+end
+
+do
+	for bytes = 1, 8 do
+		local x = Vector2.new(1, 2)
+		local y = Squash.Vector2(Squash.uint(bytes)).ser(x)
+		local z = Squash.Vector2(Squash.uint(bytes)).des(y)
+		result('Vector2 ' .. bytes, x, y, z)
+
+		local xs = {
+			Vector2.new(1, 2),
+			Vector2.new(0, 0),
+			Vector2.new(-19, -390.28635),
+			Vector2.new(8302, 93928.03986138560192358),
+			Vector2.new(-3873.320863, -164),
+			Vector2.new(-28362.02689462, 18632.29863),
+		}
+		local ys = Squash.Vector2(Squash.uint(bytes)).serarr(xs)
+		local zs = Squash.Vector2(Squash.uint(bytes)).desarr(ys)
+		resultarr('Vector2s ' .. bytes, xs, ys, zs)
+	end
+end
 
 --do
 --	local serdes = Squash.variadic(Squash.boolean(), Squash.int(4), Squash.number(8)) :: Squash.SerDesVar<boolean, number, number>
