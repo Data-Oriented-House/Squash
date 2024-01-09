@@ -474,13 +474,13 @@ do
 
 		local x0 = buffer.readu8(y0, 0)
 		return (x0 / 1) % 2 >= 1,
-			(x0 / 2) % 2 >= 1,
-			(x0 / 4) % 2 >= 1,
-			(x0 / 8) % 2 >= 1,
-			(x0 / 16) % 2 >= 1,
-			(x0 / 32) % 2 >= 1,
-			(x0 / 64) % 2 >= 1,
-			(x0 / 128) % 2 >= 1
+		(x0 / 2) % 2 >= 1,
+		(x0 / 4) % 2 >= 1,
+		(x0 / 8) % 2 >= 1,
+		(x0 / 16) % 2 >= 1,
+		(x0 / 32) % 2 >= 1,
+		(x0 / 64) % 2 >= 1,
+		(x0 / 128) % 2 >= 1
 	end
 
 	function cache.serarr(xs: { boolean })
@@ -1522,7 +1522,13 @@ do
 		__call = function<T...>(_, ...: SerDes<any>)
 			local args = { ... }
 
-			local serdes = {} :: SerDesVar<T...>
+			if #args == 0 then
+				error('Cannot create variadic serdes with no arguments')
+			elseif #args == 1 then
+				return args[1] :: SerDesVar<T...>
+			end
+
+			local serdes = {}
 
 			serdes.len = 0
 
@@ -1535,24 +1541,68 @@ do
 
 				function serdes.ser(...: T...)
 					local xs = { ... }
+					local argc = #args
 
 					local size = 0
 
 					for i, arg in ipairs(args) do
 						local y0 = arg.ser(xs[i])
 						bufs[i] = y0
-						size += arg.len
+						if arg.len == math.huge then
+							size += buffer.len(y0) + if i < argc then 1 else 0
+						else
+							size += arg.len
+						end
 					end
 
 					local ys = buffer.create(size)
 					local offset = 0
 
 					for i, buf in ipairs(bufs) do
+						local len = buffer.len(buf)
 						buffer.copy(ys, offset, buf)
-						offset += buffer.len(buf)
+						offset += len
+						if args[i].len == math.huge and i < argc then
+							print(i)
+							buffer.writeu8(ys, offset, string.byte(Squash.delimiter))
+						end
 					end
 
 					return ys
+				end
+
+				function serdes.des(ys: buffer): T...
+					print(buffer.readu8(ys, 0), buffer.readu8(ys, 1), buffer.readu8(ys, 2), buffer.readu8(ys, 3), buffer.readu8(ys, 4), buffer.readu8(ys, 5), buffer.readu8(ys, 6), buffer.readu8(ys, 7), buffer.readu8(ys, 8))
+					local ys1 = string.split(buffer.tostring(ys), Squash.delimiter)
+					print(ys1)
+
+					local xs = {}
+
+					local yi = 1
+					local y0 = buffer.fromstring(ys1[yi])
+					local offset = 0
+					for i, arg in ipairs(args) do
+						if arg.len ~= math.huge then
+							print(buffer.readu8(ys, offset + yi - 1))
+							local buf = buffer.create(arg.len)
+							buffer.copy(buf, 0, ys, offset + yi - 1, arg.len)
+							xs[i] = arg.des(buf)
+							offset += arg.len
+						else
+							print(buffer.readu8(ys, offset + yi - 1), buffer.len(y0), offset)
+							local buf = buffer.create(buffer.len(y0) - offset)
+							print(buffer.len(buf), offset)
+							buffer.copy(buf, 0, y0, offset)
+							xs[i] = arg.des(buf)
+							offset = 0
+							yi += 1
+							y0 = buffer.fromstring(ys1[yi])
+						end
+					end
+
+					print(xs)
+
+					return table.unpack(xs)
 				end
 			else
 				local buf = buffer.create(serdes.len)
@@ -1569,22 +1619,22 @@ do
 
 					return buf
 				end
-			end
 
-			function serdes.des(ys: buffer): T...
-				local xs = table.create(#args)
+				function serdes.des(ys: buffer): T...
+					local xs = table.create(#args)
 
-				local offset = 0
-				for i, arg in ipairs(args) do
-					local y0 = buffer.create(arg.len)
-					buffer.copy(y0, 0, ys, offset, arg.len)
-					offset += arg.len
+					local offset = 0
+					for i, arg in ipairs(args) do
+						local y0 = buffer.create(arg.len)
+						buffer.copy(y0, 0, ys, offset, arg.len)
+						offset += arg.len
 
-					local x0 = arg.des(y0)
-					table.insert(xs, x0)
+						local x0 = arg.des(y0)
+						table.insert(xs, x0)
+					end
+
+					return table.unpack(xs)
 				end
-
-				return table.unpack(xs)
 			end
 
 			return serdes
