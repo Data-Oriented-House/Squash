@@ -1409,8 +1409,8 @@ do
 				local ys = buffer.create(serdes.len * #xs)
 				for i, x0 in xs do
 					local j = 2 * i
-					buffer.copy(ys, j - 3, encoding.ser(x0.X))
-					buffer.copy(ys, j - 2, encoding.ser(x0.Y))
+					buffer.copy(ys, j - 2, encoding.ser(x0.X))
+					buffer.copy(ys, j - 1, encoding.ser(x0.Y))
 				end
 
 				return ys
