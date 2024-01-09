@@ -122,6 +122,19 @@ Squash.utf8 = table.concat(utf8Characters) :: Alphabet
 
 --[=[
 	@within Squash
+	@prop compressed Alphabet
+
+	As many characters as possible in UTF-8 that are not reserved in Squash.
+]=]
+local compressed = table.create(255)
+compressed[1] = string.char(0)
+for i = 2, 255 do
+	compressed[i] = string.char(i)
+end
+Squash.compressed = table.concat(compressed) :: Alphabet
+
+--[=[
+	@within Squash
 	@prop lower Alphabet
 
 	All lowercase letters in the english language.
@@ -1218,82 +1231,103 @@ do
 end
 
 do
-	-- 	local cache = {}
+	local cache = {}
 
-	-- 	Squash.string.alphabet = function(source: string): Alphabet
-	-- 		local lookup = {}
-	-- 		local alphabet = table.create(#source)
-	-- 		for i = 1, #source do
-	-- 			local char = string.sub(source, i, i)
-	-- 			if not lookup[char] then
-	-- 				lookup[char] = true
-	-- 				table.insert(alphabet, char)
-	-- 			end
-	-- 		end
-	-- 		table.sort(alphabet)
-	-- 		return table.concat(alphabet)
-	-- 	end
+	local meta = {
+		__call = function(_, alphabet: Alphabet)
+			local cached = cache[alphabet] :: SerDes<string>
+			if cached then
+				return cached
+			end
 
-	-- --[=[
-	-- 	@within string
-	-- 	@function convert
-	-- 	@param x string
-	-- 	@param inAlphabet Alphabet
-	-- 	@param outAlphabet Alphabet
-	-- 	@return string
+			local serdes = {}
+			cache[alphabet] = serdes
 
-	-- 	Converts a string from one alphabet to another.
-	-- ]=]
-	-- Squash.string.convert = function(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet): string
-	-- 	local sourceDigits = {}
-	-- 	for i = 1, #inAlphabet do
-	-- 		sourceDigits[string.byte(inAlphabet, i)] = i - 1
-	-- 	end
+			serdes.len = math.huge
 
-	-- 	local targetDigits = {}
-	-- 	for i = 1, #outAlphabet do
-	-- 		targetDigits[i - 1] = string.byte(outAlphabet, i)
-	-- 	end
+			function serdes.ser(x0: string)
+				return buffer.fromstring(Squash.string.convert(x0, alphabet, Squash.compressed))
+			end
 
-	-- 	local inputDigits = {}
-	-- 	for i = 1, #x do
-	-- 		table.insert(inputDigits, sourceDigits[string.byte(x, i)])
-	-- 	end
+			function serdes.des(y0: buffer)
+				return Squash.string.convert(buffer.tostring(y0), Squash.compressed, alphabet) :: string
+			end
 
-	-- 	local output = {}
-	-- 	local sourceBase = #inAlphabet
-	-- 	local targetBase = #outAlphabet
-	-- 	local carry, value
-	-- 	while #inputDigits > 0 do
-	-- 		carry = 0
+			function serdes.serarr(xs: { string })
+				local ys = table.create(#xs)
+				for i, x0 in ipairs(xs) do
+					ys[i] = Squash.string.convert(x0, alphabet, Squash.compressed)
+				end
+				return buffer.fromstring(table.concat(ys, Squash.delimiter))
+			end
 
-	-- 		for i = 1, #inputDigits do
-	-- 			value = inputDigits[i] + carry * sourceBase
-	-- 			inputDigits[i] = math.floor(value / targetBase)
-	-- 			carry = value % targetBase
-	-- 		end
+			function serdes.desarr(ys: buffer)
+				local xs = string.split(buffer.tostring(ys), Squash.delimiter)
+				for i, x0 in ipairs(xs) do
+					xs[i] = Squash.string.convert(x0, Squash.compressed, alphabet)
+				end
+				return xs
+			end
 
-	-- 		while #inputDigits > 0 and inputDigits[1] == 0 do
-	-- 			table.remove(inputDigits, 1)
-	-- 		end
+			return serdes
+		end,
+	}
+	Squash.string = setmetatable({}, meta)
 
-	-- 		table.insert(output, 1, string.char(targetDigits[carry]))
-	-- 	end
+	function Squash.string.alphabet(source: string)
+		local lookup = {}
+		local alphabet = table.create(#source)
+		for i = 1, #source do
+			local char = string.sub(source, i, i)
+			if not lookup[char] then
+				lookup[char] = true
+				table.insert(alphabet, char)
+			end
+		end
+		table.sort(alphabet)
+		return table.concat(alphabet) :: Alphabet
+	end
 
-	-- 	return table.concat(output)
-	-- end
+	function Squash.string.convert(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet)
+		local sourceDigits = {}
+		for i = 1, #inAlphabet do
+			sourceDigits[string.byte(inAlphabet, i)] = i - 1
+		end
 
-	-- --[=[
-	-- 	@within string
-	-- 	@function ser
-	-- 	@param x string
-	-- 	@param alphabet Alphabet?
-	-- 	@return string
-	-- ]=]
-	-- Squash.string.ser = function(x: string, alphabet: Alphabet?): string
-	-- 	local inAlphabet = Squash.delimiter .. (alphabet or Squash.english)
-	-- 	return Squash.string.convert(x, inAlphabet, Squash.utf8)
-	-- end
+		local targetDigits = {}
+		for i = 1, #outAlphabet do
+			targetDigits[i - 1] = string.byte(outAlphabet, i)
+		end
+
+		local inputDigits = {}
+		for i = 1, #x do
+			table.insert(inputDigits, sourceDigits[string.byte(x, i)])
+		end
+
+		local output = {}
+		local sourceBase = #inAlphabet
+		local targetBase = #outAlphabet
+		local carry, value
+		while #inputDigits > 0 do
+			carry = 0
+
+			for i = 1, #inputDigits do
+				value = inputDigits[i] + carry * sourceBase
+				inputDigits[i] = math.floor(value / targetBase)
+				carry = value % targetBase
+			end
+
+			while #inputDigits > 0 and inputDigits[1] == 0 do
+				table.remove(inputDigits, 1)
+			end
+
+			table.insert(output, 1, string.char(targetDigits[carry]))
+		end
+
+		return table.concat(output)
+	end
+
+	Squash.string(Squash.lower)
 
 	-- --[=[
 	-- 	@within string

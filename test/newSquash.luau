@@ -346,6 +346,26 @@ do
 end
 
 do
+	local x = 'hello world'
+	local y = Squash.string(Squash.lower).ser(x)
+	local z = Squash.string(Squash.lower).des(y)
+	result('string lower', x, y, z)
+
+	local xs = {
+		'hello world',
+		'koa   eslaf wft',
+		'goodbyewokasaort   lrld',
+	}
+	local ys = Squash.string(Squash.lower .. ' ').serarr(xs)
+	local zs = Squash.string(Squash.lower .. ' ').desarr(ys)
+	print(`Old length: {#xs[1] + #xs[2] + #xs[3]}, Compressed length: {buffer.len(ys)}`)
+	print('strings lower', table.concat(xs, '\n'), '\n')
+	print(zs[1])
+	print(zs[2])
+	print(zs[3])
+end
+
+do
 	for bytes = 1, 8 do
 		local x = Vector3.new(1, 2, 3)
 		local y = Squash.Vector3(Squash.uint(bytes)).ser(x)
