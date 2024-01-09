@@ -359,10 +359,19 @@ do
 	local ys = Squash.string(Squash.lower .. ' ').serarr(xs)
 	local zs = Squash.string(Squash.lower .. ' ').desarr(ys)
 	print(`Old length: {#xs[1] + #xs[2] + #xs[3]}, Compressed length: {buffer.len(ys)}`)
-	print('strings lower', table.concat(xs, '\n'), '\n')
+	print('strings lower', '\n', table.concat(xs, '\t\t'), '\n', tostring(ys))
 	print(zs[1])
 	print(zs[2])
 	print(zs[3])
+	print()
+end
+
+do
+	local serdes = Squash.variadic(Squash.boolean(), Squash.int(4), Squash.number(8)) :: Squash.SerDesVar<boolean, number, number>
+	local x = { true, -1903, 400000000000000001 }
+	local y = serdes.ser(table.unpack(x))
+	local z = { serdes.des(y) }
+	resultarr('variadic boolean int', x, y, z)
 end
 
 do
@@ -406,11 +415,3 @@ do
 		resultarr('Vector2s ' .. bytes, xs, ys, zs)
 	end
 end
-
---do
---	local serdes = Squash.variadic(Squash.boolean(), Squash.int(4), Squash.number(8)) :: Squash.SerDesVar<boolean, number, number>
---	local x = { true, -1903, 400000000000000001 }
---	local y = serdes.ser(table.unpack(x))
---	local z = { serdes.des(y) }
---	resultarr('variadic boolean int', x, y, z)
---end
