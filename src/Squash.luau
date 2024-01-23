@@ -2,6 +2,34 @@
 --!native
 --!optimize 2
 
+local Vector3 = {}
+
+export type Vector3 = {
+	X: number,
+	Y: number,
+	Z: number,
+	Magnitude: number,
+	Unit: Vector3,
+}
+
+local Vector3Meta = {}
+Vector3Meta.__index = function(t: Vector3, k: string): any
+	if k == 'Magnitude' then
+		return math.sqrt(t.X^2 + t.Y^2 + t.Z^2)
+	end
+
+	if k == 'Unit' then
+		local m = 1 / math.sqrt(t.X^2 + t.Y^2 + t.Z^2)
+		return Vector3.new(t.X * m, t.Y * m, t.Z * m)
+	end
+
+	return nil
+end
+
+function Vector3.new(x: number?, y: number?, z: number?): Vector3
+	return setmetatable({ X = x or 0, Y = y or 0, Z = z or 0 }, Vector3Meta) :: any
+end
+
 --[=[
 	@class Squash
 ]=]
@@ -44,7 +72,8 @@ export type FloatBytes = number
 	A function that serializes a number into a string. Usually this is Squash's uint, int, or number ser methods.
 ]=]
 export type SerDes<T> = {
-	len: number,
+	min: number,
+	max: number,
 	ser: (x0: T) -> buffer,
 	des: (y0: buffer) -> T,
 	serarr: (xs: { T }) -> buffer,
@@ -52,7 +81,8 @@ export type SerDes<T> = {
 }
 
 export type SerDesVar<T...> = {
-	len: number,
+	min: number,
+	max: number,
 	ser: (T...) -> buffer,
 	des: (y0: buffer) -> T...,
 }
@@ -65,8 +95,8 @@ export type SerDesVar<T...> = {
 
 	The delimiter used to separate strings or other types in variable sized arrays and act as the 0 element for base conversions.
 ]=]
-Squash.zero = string.char(0) -- \0
-Squash.delimiter = string.char(1) -- \1
+Squash.zero = string.char(255) -- \0
+Squash.delimiter = string.char(254) -- \1
 
 --[=[
 	@within Squash
@@ -124,12 +154,12 @@ Squash.utf8 = table.concat(utf8Characters) :: Alphabet
 	@within Squash
 	@prop compressed Alphabet
 
-	As many characters as possible in UTF-8 that are not reserved in Squash.
+	As many characters as possible in UTF-8 that are not reserved in Squash, e.g. Squash.delimiter.
 ]=]
 local compressed = table.create(255)
-compressed[1] = string.char(0)
-for i = 2, 255 do
-	compressed[i] = string.char(i)
+compressed[1] = Squash.zero
+for i = 0, 253 do
+	compressed[i + 2] = string.char(i)
 end
 Squash.compressed = table.concat(compressed) :: Alphabet
 
@@ -438,7 +468,8 @@ end
 do
 	local cache = {}
 
-	cache.len = 1
+	cache.min = 0
+	cache.max = 1
 
 	function cache.ser(
 		x0: boolean?,
@@ -474,13 +505,13 @@ do
 
 		local x0 = buffer.readu8(y0, 0)
 		return (x0 / 1) % 2 >= 1,
-		(x0 / 2) % 2 >= 1,
-		(x0 / 4) % 2 >= 1,
-		(x0 / 8) % 2 >= 1,
-		(x0 / 16) % 2 >= 1,
-		(x0 / 32) % 2 >= 1,
-		(x0 / 64) % 2 >= 1,
-		(x0 / 128) % 2 >= 1
+			(x0 / 2) % 2 >= 1,
+			(x0 / 4) % 2 >= 1,
+			(x0 / 8) % 2 >= 1,
+			(x0 / 16) % 2 >= 1,
+			(x0 / 32) % 2 >= 1,
+			(x0 / 64) % 2 >= 1,
+			(x0 / 128) % 2 >= 1
 	end
 
 	function cache.serarr(xs: { boolean })
@@ -548,7 +579,8 @@ do
 
 	-- 1
 
-	bytes1.len = 1
+	bytes1.min = 1
+	bytes1.max = 1
 
 	function bytes1.ser(x0: number)
 		local y0 = buffer.create(1)
@@ -579,7 +611,8 @@ do
 
 	-- 2
 
-	bytes2.len = 2
+	bytes2.min = 2
+	bytes2.max = 2
 
 	function bytes2.ser(x0: number)
 		local y0 = buffer.create(2)
@@ -610,7 +643,8 @@ do
 
 	-- 3
 
-	bytes3.len = 3
+	bytes3.min = 3
+	bytes3.max = 3
 
 	function bytes3.ser(x0: number)
 		x0 %= 256 ^ 3
@@ -647,7 +681,8 @@ do
 
 	-- 4
 
-	bytes4.len = 4
+	bytes4.min = 4
+	bytes4.max = 4
 
 	function bytes4.ser(x0: number)
 		local y0 = buffer.create(4)
@@ -678,7 +713,8 @@ do
 
 	-- 5
 
-	bytes5.len = 5
+	bytes5.min = 5
+	bytes5.max = 5
 
 	function bytes5.ser(x0: number)
 		x0 %= 256 ^ 5
@@ -715,7 +751,8 @@ do
 
 	-- 6
 
-	bytes6.len = 6
+	bytes6.min = 6
+	bytes6.max = 6
 
 	function bytes6.ser(x0: number)
 		x0 %= 256 ^ 6
@@ -752,7 +789,8 @@ do
 
 	-- 7
 
-	bytes7.len = 7
+	bytes7.min = 7
+	bytes7.max = 7
 
 	function bytes7.ser(x0: number)
 		x0 %= 256 ^ 7
@@ -791,7 +829,8 @@ do
 
 	-- 8
 
-	bytes8.len = 8
+	bytes8.min = 8
+	bytes8.max = 8
 
 	function bytes8.ser(x0: number)
 		x0 %= 256 ^ 8
@@ -847,7 +886,8 @@ do
 
 	-- 1
 
-	bytes1.len = 1
+	bytes1.min = 1
+	bytes1.max = 1
 
 	function bytes1.ser(x0: number)
 		local y0 = buffer.create(1)
@@ -878,7 +918,8 @@ do
 
 	-- 2
 
-	bytes2.len = 2
+	bytes2.min = 2
+	bytes2.max = 2
 
 	function bytes2.ser(x0: number)
 		local y0 = buffer.create(2)
@@ -909,7 +950,8 @@ do
 
 	-- 3
 
-	bytes3.len = 3
+	bytes3.min = 3
+	bytes3.max = 3
 
 	function bytes3.ser(x0: number)
 		x0 = if x0 < 0 then x0 + 256 ^ 3 else x0
@@ -950,7 +992,8 @@ do
 
 	-- 4
 
-	bytes4.len = 4
+	bytes4.min = 4
+	bytes4.max = 4
 
 	function bytes4.ser(x0: number)
 		local y0 = buffer.create(4)
@@ -981,7 +1024,8 @@ do
 
 	-- 5
 
-	bytes5.len = 5
+	bytes5.min = 5
+	bytes5.max = 5
 
 	function bytes5.ser(x0: number)
 		x0 = if x0 < 0 then x0 + 256 ^ 5 else x0
@@ -1022,7 +1066,8 @@ do
 
 	-- 6
 
-	bytes6.len = 6
+	bytes6.min = 6
+	bytes6.max = 6
 
 	function bytes6.ser(x0: number)
 		x0 = if x0 < 0 then x0 + 256 ^ 6 else x0
@@ -1063,7 +1108,8 @@ do
 
 	-- 7
 
-	bytes7.len = 7
+	bytes7.min = 7
+	bytes7.max = 7
 
 	function bytes7.ser(x0: number)
 		x0 = if x0 < 0 then x0 + 256 ^ 7 else x0
@@ -1108,7 +1154,8 @@ do
 
 	-- 8
 
-	bytes8.len = 8
+	bytes8.min = 8
+	bytes8.max = 8
 
 	function bytes8.ser(x0: number)
 		x0 = if x0 < 0 then x0 + 256 ^ 8 else x0
@@ -1162,7 +1209,8 @@ do
 
 	-- 4
 
-	bytes4.len = 4
+	bytes4.min = 4
+	bytes4.max = 4
 
 	function bytes4.ser(x0: number)
 		local y0 = buffer.create(4)
@@ -1193,7 +1241,8 @@ do
 
 	-- 8
 
-	bytes8.len = 8
+	bytes8.min = 8
+	bytes8.max = 8
 
 	function bytes8.ser(x0: number)
 		local y0 = buffer.create(8)
@@ -1224,7 +1273,7 @@ do
 
 	local meta = {
 		__call = function(_, bytes: number)
-			return cache[bytes] or bytesAssert(bytes)
+			return cache[bytes] or floatAssert(bytes)
 		end,
 	}
 	Squash.number = setmetatable({}, meta)
@@ -1233,48 +1282,7 @@ end
 do
 	local cache = {}
 
-	local meta = {
-		__call = function(_, alphabet: Alphabet)
-			local cached = cache[alphabet] :: SerDes<string>
-			if cached then
-				return cached
-			end
-
-			local serdes = {}
-			cache[alphabet] = serdes
-
-			serdes.len = math.huge
-
-			function serdes.ser(x0: string)
-				return buffer.fromstring(Squash.string.convert(x0, alphabet, Squash.compressed))
-			end
-
-			function serdes.des(y0: buffer)
-				return Squash.string.convert(buffer.tostring(y0), Squash.compressed, alphabet) :: string
-			end
-
-			function serdes.serarr(xs: { string })
-				local ys = table.create(#xs)
-				for i, x0 in ipairs(xs) do
-					ys[i] = Squash.string.convert(x0, alphabet, Squash.compressed)
-				end
-				return buffer.fromstring(table.concat(ys, Squash.delimiter))
-			end
-
-			function serdes.desarr(ys: buffer)
-				local xs = string.split(buffer.tostring(ys), Squash.delimiter)
-				for i, x0 in ipairs(xs) do
-					xs[i] = Squash.string.convert(x0, Squash.compressed, alphabet)
-				end
-				return xs
-			end
-
-			return serdes
-		end,
-	}
-	Squash.string = setmetatable({}, meta)
-
-	function Squash.string.alphabet(source: string)
+	local function alphabet(source: string)
 		local lookup = {}
 		local alphabet = table.create(#source)
 		for i = 1, #source do
@@ -1288,7 +1296,7 @@ do
 		return table.concat(alphabet) :: Alphabet
 	end
 
-	function Squash.string.convert(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet)
+	local function convert(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet)
 		local sourceDigits = {}
 		for i = 1, #inAlphabet do
 			sourceDigits[string.byte(inAlphabet, i)] = i - 1
@@ -1327,7 +1335,50 @@ do
 		return table.concat(output)
 	end
 
-	Squash.string(Squash.lower)
+	local meta = {
+		__call = function(_, alphabet: Alphabet)
+			local cached = cache[alphabet] :: SerDes<string>
+			if cached then
+				return cached
+			end
+
+			local serdes = {}
+			cache[alphabet] = serdes
+
+			serdes.min = 0
+			serdes.max = math.huge
+
+			function serdes.ser(x0: string)
+				return buffer.fromstring(convert(x0, alphabet, Squash.compressed))
+			end
+
+			function serdes.des(y0: buffer)
+				return convert(buffer.tostring(y0), Squash.compressed, alphabet) :: string
+			end
+
+			function serdes.serarr(xs: { string })
+				local ys = table.create(#xs)
+				for i, x0 in ipairs(xs) do
+					ys[i] = convert(x0, alphabet, Squash.compressed)
+				end
+				return buffer.fromstring(table.concat(ys, Squash.delimiter))
+			end
+
+			function serdes.desarr(ys: buffer)
+				local xs = string.split(buffer.tostring(ys), Squash.delimiter)
+				for i, x0 in ipairs(xs) do
+					xs[i] = convert(x0, Squash.compressed, alphabet)
+				end
+				return xs
+			end
+
+			return serdes
+		end,
+	}
+	Squash.string = setmetatable({
+		convert = convert,
+		alphabet = alphabet,
+	}, meta)
 
 	-- --[=[
 	-- 	@within string
@@ -1386,27 +1437,28 @@ do
 			local serdes = {}
 			cache[encoding] = serdes
 
-			serdes.len = 2 * encoding.len
+			serdes.min = 2 * encoding.min
+			serdes.max = 2 * encoding.max
 
 			function serdes.ser(x0: Vector2)
-				local y0 = buffer.create(serdes.len)
-				buffer.copy(y0, 0 * encoding.len, encoding.ser(x0.X))
-				buffer.copy(y0, 1 * encoding.len, encoding.ser(x0.Y))
+				local y0 = buffer.create(serdes.max)
+				buffer.copy(y0, 0 * encoding.max, encoding.ser(x0.X))
+				buffer.copy(y0, 1 * encoding.max, encoding.ser(x0.Y))
 				return y0
 			end
 
 			function serdes.des(y0: buffer)
-				local y1 = buffer.create(encoding.len)
+				local y1 = buffer.create(encoding.max)
 				local x = encoding.des(y0)
 
-				buffer.copy(y1, 0, y0, encoding.len, encoding.len)
+				buffer.copy(y1, 0, y0, encoding.max, encoding.max)
 				local y = encoding.des(y1)
 
 				return Vector2.new(x, y)
 			end
 
 			function serdes.serarr(xs: { Vector2 })
-				local ys = buffer.create(serdes.len * #xs)
+				local ys = buffer.create(serdes.max * #xs)
 				for i, x0 in xs do
 					local j = 2 * i
 					buffer.copy(ys, j - 2, encoding.ser(x0.X))
@@ -1417,16 +1469,16 @@ do
 			end
 
 			function serdes.desarr(ys: buffer)
-				local len = buffer.len(ys) / serdes.len
+				local len = buffer.len(ys) / serdes.max
 				local xs = table.create(len)
-				local buf = buffer.create(encoding.len)
+				local buf = buffer.create(encoding.max)
 
 				for i = 0, len - 1 do
 					local j = 2 * i
-					buffer.copy(buf, 0, ys, (j + 0) * encoding.len, encoding.len)
+					buffer.copy(buf, 0, ys, (j + 0) * encoding.max, encoding.max)
 					local x = encoding.des(buf)
 
-					buffer.copy(buf, 0, ys, (j + 1) * encoding.len, encoding.len)
+					buffer.copy(buf, 0, ys, (j + 1) * encoding.max, encoding.max)
 					local y = encoding.des(buf)
 
 					xs[i + 1] = Vector2.new(x, y)
@@ -1454,31 +1506,32 @@ do
 			local serdes = {}
 			cache[encoding] = serdes
 
-			serdes.len = 3 * encoding.len
+			serdes.min = 3 * encoding.min
+			serdes.max = 3 * encoding.max
 
 			function serdes.ser(x0: Vector3)
-				local y0 = buffer.create(serdes.len)
-				buffer.copy(y0, 0 * encoding.len, encoding.ser(x0.X))
-				buffer.copy(y0, 1 * encoding.len, encoding.ser(x0.Y))
-				buffer.copy(y0, 2 * encoding.len, encoding.ser(x0.Z))
+				local y0 = buffer.create(serdes.max)
+				buffer.copy(y0, 0 * encoding.max, encoding.ser(x0.X))
+				buffer.copy(y0, 1 * encoding.max, encoding.ser(x0.Y))
+				buffer.copy(y0, 2 * encoding.max, encoding.ser(x0.Z))
 				return y0
 			end
 
 			function serdes.des(y0: buffer)
-				local y1 = buffer.create(encoding.len)
+				local y1 = buffer.create(encoding.max)
 				local x = encoding.des(y0)
 
-				buffer.copy(y1, 0, y0, encoding.len, encoding.len)
+				buffer.copy(y1, 0, y0, encoding.max, encoding.max)
 				local y = encoding.des(y1)
 
-				buffer.copy(y1, 0, y0, 2 * encoding.len, encoding.len)
+				buffer.copy(y1, 0, y0, 2 * encoding.max, encoding.max)
 				local z = encoding.des(y1)
 
 				return Vector3.new(x, y, z)
 			end
 
 			function serdes.serarr(xs: { Vector3 })
-				local ys = buffer.create(serdes.len * #xs)
+				local ys = buffer.create(serdes.max * #xs)
 				for i, x0 in xs do
 					local j = 3 * i
 					buffer.copy(ys, j - 3, encoding.ser(x0.X))
@@ -1490,19 +1543,19 @@ do
 			end
 
 			function serdes.desarr(ys: buffer)
-				local len = buffer.len(ys) / serdes.len
+				local len = buffer.len(ys) / serdes.max
 				local xs = table.create(len)
-				local buf = buffer.create(encoding.len)
+				local buf = buffer.create(encoding.max)
 
 				for i = 0, len - 1 do
 					local j = 3 * i
-					buffer.copy(buf, 0, ys, (j + 0) * encoding.len, encoding.len)
+					buffer.copy(buf, 0, ys, (j + 0) * encoding.max, encoding.max)
 					local x = encoding.des(buf)
 
-					buffer.copy(buf, 0, ys, (j + 1) * encoding.len, encoding.len)
+					buffer.copy(buf, 0, ys, (j + 1) * encoding.max, encoding.max)
 					local y = encoding.des(buf)
 
-					buffer.copy(buf, 0, ys, (j + 2) * encoding.len, encoding.len)
+					buffer.copy(buf, 0, ys, (j + 2) * encoding.max, encoding.max)
 					local z = encoding.des(buf)
 
 					xs[i + 1] = Vector3.new(x, y, z)
@@ -1521,37 +1574,39 @@ do
 	local meta = {
 		__call = function<T...>(_, ...: SerDes<any>)
 			local args = { ... }
+			local argc = #args
 
-			if #args == 0 then
-				error('Cannot create variadic serdes with no arguments')
-			elseif #args == 1 then
-				return args[1] :: SerDesVar<T...>
+			if argc == 0 then
+				error 'Cannot create tuple serdes with no arguments'
+			elseif argc == 1 then
+				return (args[1] :: any) :: SerDesVar<T...>
 			end
 
 			local serdes = {}
 
-			serdes.len = 0
+			serdes.min = 0
+			serdes.max = 0
 
 			for _, arg in args do
-				serdes.len += arg.len
+				serdes.min += arg.min
+				serdes.max += arg.max
 			end
 
-			if serdes.len == math.huge then
-				local bufs = table.create(#args)
+			if serdes.max == math.huge or serdes.max ~= serdes.min then
+				local bufs = table.create(argc)
 
 				function serdes.ser(...: T...)
 					local xs = { ... }
-					local argc = #args
 
 					local size = 0
 
 					for i, arg in ipairs(args) do
 						local y0 = arg.ser(xs[i])
 						bufs[i] = y0
-						if arg.len == math.huge then
+						if arg.max == math.huge or arg.max ~= arg.min then
 							size += buffer.len(y0) + if i < argc then 1 else 0
 						else
-							size += arg.len
+							size += arg.max
 						end
 					end
 
@@ -1562,8 +1617,8 @@ do
 						local len = buffer.len(buf)
 						buffer.copy(ys, offset, buf)
 						offset += len
-						if args[i].len == math.huge and i < argc then
-							print(i)
+						local arg = args[i]
+						if (arg.max == math.huge or arg.max ~= arg.min) and i < argc then
 							buffer.writeu8(ys, offset, string.byte(Squash.delimiter))
 						end
 					end
@@ -1572,40 +1627,47 @@ do
 				end
 
 				function serdes.des(ys: buffer): T...
-					print(buffer.readu8(ys, 0), buffer.readu8(ys, 1), buffer.readu8(ys, 2), buffer.readu8(ys, 3), buffer.readu8(ys, 4), buffer.readu8(ys, 5), buffer.readu8(ys, 6), buffer.readu8(ys, 7), buffer.readu8(ys, 8))
-					local ys1 = string.split(buffer.tostring(ys), Squash.delimiter)
-					print(ys1)
+					for i = 1, 23 do
+						print(buffer.readu8(ys, i))
+					end
+					local yss = string.split(buffer.tostring(ys), Squash.delimiter)
 
 					local xs = {}
 
 					local yi = 1
-					local y0 = buffer.fromstring(ys1[yi])
+					local ys0 = buffer.fromstring(yss[yi])
 					local offset = 0
-					for i, arg in ipairs(args) do
-						if arg.len ~= math.huge then
-							print(buffer.readu8(ys, offset + yi - 1))
-							local buf = buffer.create(arg.len)
-							buffer.copy(buf, 0, ys, offset + yi - 1, arg.len)
-							xs[i] = arg.des(buf)
-							offset += arg.len
-						else
-							print(buffer.readu8(ys, offset + yi - 1), buffer.len(y0), offset)
-							local buf = buffer.create(buffer.len(y0) - offset)
-							print(buffer.len(buf), offset)
-							buffer.copy(buf, 0, y0, offset)
-							xs[i] = arg.des(buf)
-							offset = 0
+
+					for _, arg in args do
+						if arg.max == math.huge or arg.max ~= arg.min then
+							local len = buffer.len(ys0)
+							local buf = buffer.create(len)
+							buffer.copy(buf, 0, ys0, offset)
+
+							local x = arg.des(buf)
+							table.insert(xs, x)
+
 							yi += 1
-							y0 = buffer.fromstring(ys1[yi])
+							if yss[yi] then
+								ys0 = buffer.fromstring(yss[yi])
+								offset = 0
+							end
+						else
+							local len = arg.max
+							local buf = buffer.create(len)
+							buffer.copy(buf, 0, ys0, offset, len)
+
+							local x = arg.des(ys0)
+							table.insert(xs, x)
+
+							offset += len
 						end
 					end
-
-					print(xs)
 
 					return table.unpack(xs)
 				end
 			else
-				local buf = buffer.create(serdes.len)
+				local buf = buffer.create(serdes.max)
 
 				function serdes.ser(...: T...)
 					local xs = { ... }
@@ -1640,7 +1702,7 @@ do
 			return serdes
 		end,
 	}
-	Squash.variadic = setmetatable({}, meta)
+	Squash.tuple = setmetatable({}, meta)
 end
 
 -- --[=[
