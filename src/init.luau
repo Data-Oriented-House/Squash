@@ -1644,8 +1644,8 @@ do
 							local buf = buffer.create(len)
 							buffer.copy(buf, 0, ys0, offset)
 
-							local x = arg.des(buf)
-							table.insert(xs, x)
+							local x0 = arg.des(buf)
+							table.insert(xs, x0)
 
 							yi += 1
 							if yss[yi] then
@@ -1657,8 +1657,8 @@ do
 							local buf = buffer.create(len)
 							buffer.copy(buf, 0, ys0, offset, len)
 
-							local x = arg.des(ys0)
-							table.insert(xs, x)
+							local x0 = arg.des(ys0)
+							table.insert(xs, x0)
 
 							offset += len
 						end
