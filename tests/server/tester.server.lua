@@ -1,7 +1,7 @@
 --!strict
 
-local Squash = require(script.Parent)
-local test = require(script.Parent.test)
+local Squash = require(game.ReplicatedStorage.Squash)
+local test = require(game.ReplicatedStorage.test)
 
 test.Axes()
 test.CFrame(Squash.uint)
