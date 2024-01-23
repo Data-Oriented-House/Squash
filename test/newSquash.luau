@@ -41,6 +41,34 @@ local function resultarr<T>(name: string, x: { T }, y: buffer, z: { T })
 	print()
 end
 
+local Vector3 = {}
+
+export type Vector3 = {
+	X: number,
+	Y: number,
+	Z: number,
+	Magnitude: number,
+	Unit: Vector3,
+}
+
+local Vector3Meta = {}
+Vector3Meta.__index = function(t: Vector3, k: string): any
+	if k == 'Magnitude' then
+		return math.sqrt(t.X^2 + t.Y^2 + t.Z^2)
+	end
+
+	if k == 'Unit' then
+		local m = 1 / math.sqrt(t.X^2 + t.Y^2 + t.Z^2)
+		return Vector3.new(t.X * m, t.Y * m, t.Z * m)
+	end
+
+	return nil
+end
+
+function Vector3.new(x: number?, y: number?, z: number?): Vector3
+	return setmetatable({ X = x or 0, Y = y or 0, Z = z or 0 }, Vector3Meta) :: any
+end
+
 --print()
 
 --print('zero')
@@ -347,31 +375,33 @@ end
 --	resultarr('numbers 8', xs, ys, zs)
 --end
 
---do
---	local x = 'hello world'
---	local y = Squash.string(Squash.lower).ser(x)
---	local z = Squash.string(Squash.lower).des(y)
---	result('string lower', x, y, z)
+do
+	local x = 'hello world'
+	local y = Squash.string(Squash.lower).ser(x)
+	local z = Squash.string(Squash.lower).des(y)
+	result('string lower', x, y, z)
 
---	local xs = {
---		'hello world',
---		'koa   eslaf wft',
---		'goodbyewokasaort   lrld',
---	}
---	local ys = Squash.string(Squash.lower .. ' ').serarr(xs)
---	local zs = Squash.string(Squash.lower .. ' ').desarr(ys)
---	print(`Old length: {#xs[1] + #xs[2] + #xs[3]}, Compressed length: {buffer.len(ys)}`)
---	print('strings lower', '\n', table.concat(xs, '\t\t'), '\n', tostring(ys))
---	print(zs[1])
---	print(zs[2])
---	print(zs[3])
---	print()
---end
+	local xs = {
+		'hello world',
+		'koa   eslaf wft',
+		'goodbyewokasaort   lrld',
+	}
+	local ys = Squash.string(Squash.lower .. ' ').serarr(xs)
+	local zs = Squash.string(Squash.lower .. ' ').desarr(ys)
+	print(`Old length: {#xs[1] + #xs[2] + #xs[3]}, Compressed length: {buffer.len(ys)}`)
+	print('strings lower', '\n', table.concat(xs, '\t\t'), '\n', tostring(ys))
+	print(zs[1])
+	print(zs[2])
+	print(zs[3])
+	print()
+end
 
 do
-	local serdes = Squash.variadic(Squash.boolean(), Squash.int(4), Squash.number(8), Squash.Vector3(Squash.uint(1)), Squash.string(Squash.lower)) :: Squash.SerDesVar<boolean, number, number, Vector3, string>
+	local serdes = Squash.tuple(Squash.boolean(), Squash.int(4), Squash.number(8), Squash.Vector3(Squash.uint(1)), Squash.string(Squash.lower)) :: Squash.SerDesVar<boolean, number, number, Vector3, string>
 	local x0 = { true, -1903, 400000000000000001, Vector3.new(1, 2, 3), 'whatareyoudoing' }
 	local y0 = serdes.ser(table.unpack(x0))
+	-- print(x0, y0)
+	-- print(tostring(y0))
 	local z0 = { serdes.des(y0) }
 	resultarr('variadic boolean int number Vector3 string', x0, y0, z0)
 end
