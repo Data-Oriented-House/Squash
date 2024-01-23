@@ -1,6 +1,6 @@
 --!strict
-
-local Squash = require 'src/init'
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Squash = require(ReplicatedStorage.Squash)
 
 local function toBits(num)
 	-- returns a table of bits

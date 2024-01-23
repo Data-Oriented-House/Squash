@@ -9,6 +9,13 @@ description = "A comprehensive and flat library for compressing and decompressin
 
 realm = "shared"
 
-exclude = ["README.md"]
+exclude = ["**"]
+include = [
+    "default.project.json",
+    "src",
+    "src/**",
+    "LICENSE",
+    "wally.toml",
+]
 
 [dependencies]

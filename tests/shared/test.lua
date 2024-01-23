@@ -1,6 +1,6 @@
 --!strict
 
-local Squash = require(script.Parent)
+local Squash = require(game.ReplicatedStorage.Squash)
 
 local test = {}
 
