@@ -1,6 +1,11 @@
 --!strict
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Squash = require(ReplicatedStorage.Squash)
+local Squash
+if game then
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	Squash = require(ReplicatedStorage.Squash)
+else
+	Squash = require '../../src/Squash.luau'
+end
 
 local function toBits(num)
 	-- returns a table of bits
@@ -17,10 +22,32 @@ local function toBits(num)
 	end
 end
 
-local function tostring(buf: buffer)
+local function splitBuffer(ys: buffer, delimiter: number)
+	local yss = {}
+	local last = buffer.len(ys)
+	local j = 0
+	for i = 0, last - 2 do
+		if buffer.readu8(ys, i) == delimiter then
+			local new = buffer.create(i - j)
+			buffer.copy(new, 0, ys, j, i - j)
+			table.insert(yss, new)
+			j = i + 1
+		end
+	end
+	do
+		local new = buffer.create(last - j)
+		buffer.copy(new, 0, ys, j, last - j)
+		table.insert(yss, new)
+	end
+
+	return yss
+end
+
+local function tostringbuf(buf: buffer)
 	local bytes = {}
 	for i = 0, buffer.len(buf) - 1 do
 		bytes[i + 1] = toBits(buffer.readu8(buf, i))
+		-- bytes[i + 1] = string.char(buffer.readu8(buf, i))
 	end
 	return table.concat(bytes, '-')
 end
@@ -28,7 +55,15 @@ end
 local function result<T>(name: string, x: T, y: buffer, z: T)
 	print(name)
 	print(x)
-	print(tostring(y))
+	print(tostringbuf(y))
+	print(z)
+	print()
+end
+
+local function resultvar<T>(name: string, x: T, y: buffer, z: T, l: number)
+	print(name)
+	print(x)
+	print(tostringbuf(y))
 	print(z)
 	print()
 end
@@ -36,37 +71,9 @@ end
 local function resultarr<T>(name: string, x: { T }, y: buffer, z: { T })
 	print(name)
 	print(table.unpack(x))
-	print(tostring(y))
+	print(tostringbuf(y))
 	print(table.unpack(z))
 	print()
-end
-
-local Vector3 = {}
-
-export type Vector3 = {
-	X: number,
-	Y: number,
-	Z: number,
-	Magnitude: number,
-	Unit: Vector3,
-}
-
-local Vector3Meta = {}
-Vector3Meta.__index = function(t: Vector3, k: string): any
-	if k == 'Magnitude' then
-		return math.sqrt(t.X^2 + t.Y^2 + t.Z^2)
-	end
-
-	if k == 'Unit' then
-		local m = 1 / math.sqrt(t.X^2 + t.Y^2 + t.Z^2)
-		return Vector3.new(t.X * m, t.Y * m, t.Z * m)
-	end
-
-	return nil
-end
-
-function Vector3.new(x: number?, y: number?, z: number?): Vector3
-	return setmetatable({ X = x or 0, Y = y or 0, Z = z or 0 }, Vector3Meta) :: any
 end
 
 --print()
@@ -123,17 +130,39 @@ end
 
 --print()
 
---do
---	local x = { true, true, false, true, false, false, true }
---	local y = Squash.boolean().ser(table.unpack(x))
---	local z = { Squash.boolean().des(y) }
---	resultarr('boolean', x, y, z)
+-- do
+-- 	local x = { false, false, false, false, false, false, false, false }
+-- 	local y = Squash.boolean().ser(table.unpack(x))
+-- 	local z = { Squash.boolean().des(y) }
+-- 	resultarr('boolean false', x, y, z)
 
---	local xs = { true, false, true, true, false, false, true, true, true, false, false, false, true }
---	local ys = Squash.boolean().serarr(xs)
---	local zs = Squash.boolean().desarr(ys)
---	resultarr('booleans', xs, ys, zs)
---end
+-- 	local x = false
+-- 	local y = Squash.boolean().servar(x)
+-- 	local z = Squash.boolean().desvar(y, 0)
+-- 	result('boolean var false', x, y, z)
+
+-- 	local xs = { false, false, false, false, false, false, false, false, false, false, false, false }
+-- 	local ys = Squash.boolean().serarr(xs)
+-- 	local zs = Squash.boolean().desarr(ys)
+-- 	resultarr('boolean falses', xs, ys, zs)
+-- end
+
+-- do
+-- 	local x = { true, true, false, true, false, false, true }
+-- 	local y = Squash.boolean().ser(table.unpack(x))
+-- 	local z = { Squash.boolean().des(y) }
+-- 	resultarr('boolean', x, y, z)
+
+-- 	local x = true
+-- 	local y = Squash.boolean().servar(x)
+-- 	local z = Squash.boolean().desvar(y, 0)
+-- 	result('boolean var true', x, y, z)
+
+-- 	local xs = { true, false, true, true, false, false, true, true, true, false, false, false, true }
+-- 	local ys = Squash.boolean().serarr(xs)
+-- 	local zs = Squash.boolean().desarr(ys)
+-- 	resultarr('booleans', xs, ys, zs)
+-- end
 
 --do
 --	local x = 257
@@ -375,30 +404,123 @@ end
 --	resultarr('numbers 8', xs, ys, zs)
 --end
 
-do
-	local x = 'hello world'
-	local y = Squash.string(Squash.lower).ser(x)
-	local z = Squash.string(Squash.lower).des(y)
-	result('string lower', x, y, z)
+-- do
+-- 	local x = 'hello world'
+-- 	local y = Squash.string(Squash.lower .. ' ').ser(x)
+-- 	local z = Squash.string(Squash.lower .. ' ').des(y)
+-- 	print(`Old length: {#x}, Compressed length: {buffer.len(y)}`)
+-- 	result('string lower', x, y, z)
 
-	local xs = {
-		'hello world',
-		'koa   eslaf wft',
-		'goodbyewokasaort   lrld',
-	}
-	local ys = Squash.string(Squash.lower .. ' ').serarr(xs)
-	local zs = Squash.string(Squash.lower .. ' ').desarr(ys)
-	print(`Old length: {#xs[1] + #xs[2] + #xs[3]}, Compressed length: {buffer.len(ys)}`)
-	print('strings lower', '\n', table.concat(xs, '\t\t'), '\n', tostring(ys))
-	print(zs[1])
-	print(zs[2])
-	print(zs[3])
-	print()
-end
+-- 	local x = 'hello world'
+-- 	local y = Squash.string(Squash.lower .. ' ').servar(x)
+-- 	local z = Squash.string(Squash.lower .. ' ').desvar(y, 0)
+-- 	print(`Old length: {#x}, Compressed length: {buffer.len(y)}`)
+-- 	resultvar('string lower', x, y, z)
+
+-- 	local xs = {
+-- 		'hello world',
+-- 		'koa   eslaf wft',
+-- 		'goodbyewokasaort   lrld',
+-- 	}
+-- 	local ys = Squash.string(Squash.lower .. ' ').serarr(xs)
+-- 	local zs = Squash.string(Squash.lower .. ' ').desarr(ys)
+-- 	print(`Old length: {#xs[1] + #xs[2] + #xs[3]}, Compressed length: {buffer.len(ys)}`)
+-- 	print('strings lower', '\n', table.concat(xs, '\t\t'), '\n', tostring(ys))
+-- 	print(zs[1])
+-- 	print(zs[2])
+-- 	print(zs[3])
+-- 	print()
+-- end
+
+-- do
+-- 	for bytes = 1, 8 do
+-- 		local x = Vector2.new(0, 0)
+-- 		local y = Squash.Vector2(Squash.uint(bytes)).ser(x)
+-- 		local z = Squash.Vector2(Squash.uint(bytes)).des(y)
+-- 		result('Vector2 ' .. bytes, x, y, z)
+
+-- 		local x = Vector2.new(1, 0)
+-- 		local y = Squash.Vector2(Squash.uint(bytes)).ser(x)
+-- 		local z = Squash.Vector2(Squash.uint(bytes)).des(y)
+-- 		result('Vector2 ' .. bytes, x, y, z)
+
+-- 		local x = Vector2.new(0, 1)
+-- 		local y = Squash.Vector2(Squash.uint(bytes)).ser(x)
+-- 		local z = Squash.Vector2(Squash.uint(bytes)).des(y)
+-- 		result('Vector2 ' .. bytes, x, y, z)
+
+-- 		local x = Vector2.new(1, 1)
+-- 		local y = Squash.Vector2(Squash.uint(bytes)).ser(x)
+-- 		local z = Squash.Vector2(Squash.uint(bytes)).des(y)
+-- 		result('Vector2 ' .. bytes, x, y, z)
+
+-- 		local x = Vector2.new(1, 2)
+-- 		local y = Squash.Vector2(Squash.uint(bytes)).ser(x)
+-- 		local z = Squash.Vector2(Squash.uint(bytes)).des(y)
+-- 		result('Vector2 ' .. bytes, x, y, z)
+
+-- 		local xs = {
+-- 			Vector2.new(0, 0),
+-- 			Vector2.new(1, 0),
+-- 			Vector2.new(0, 1),
+-- 			Vector2.new(1, 1),
+-- 		}
+-- 		local ys = Squash.Vector2(Squash.uint(bytes)).serarr(xs)
+-- 		local zs = Squash.Vector2(Squash.uint(bytes)).desarr(ys)
+-- 		resultarr('Vector2s ' .. bytes, xs, ys, zs)
+-- 	end
+-- end
+
+-- do
+-- 	for bytes = 1, 8 do
+-- 		local x = Vector2.new(1, 2)
+-- 		local y = Squash.Vector2(Squash.uint(bytes)).ser(x)
+-- 		local z = Squash.Vector2(Squash.uint(bytes)).des(y)
+-- 		result('Vector2 ' .. bytes, x, y, z)
+
+-- 		local xs = {
+-- 			Vector2.new(1, 2),
+-- 			Vector2.new(0, 0),
+-- 			Vector2.new(-19, -390.28635),
+-- 			Vector2.new(8302, 93928.03986138560192358),
+-- 			Vector2.new(-3873.320863, -164),
+-- 			Vector2.new(-28362.02689462, 18632.29863),
+-- 		}
+-- 		local ys = Squash.Vector2(Squash.uint(bytes)).serarr(xs)
+-- 		local zs = Squash.Vector2(Squash.uint(bytes)).desarr(ys)
+-- 		resultarr('Vector2s ' .. bytes, xs, ys, zs)
+-- 	end
+-- end
+
+-- do
+-- 	for bytes = 1, 8 do
+-- 		local x = Vector3.new(1, 2, 3)
+-- 		local y = Squash.Vector3(Squash.uint(bytes)).ser(x)
+-- 		local z = Squash.Vector3(Squash.uint(bytes)).des(y)
+-- 		result('Vector3 ' .. bytes, x, y, z)
+
+-- 		local xs = {
+-- 			Vector3.new(1, 2, 3),
+-- 			Vector3.new(0, 0, 0),
+-- 			Vector3.new(-19, -390.28635, 9830),
+-- 			Vector3.new(8302, 93928.03986138560192358, 6),
+-- 			Vector3.new(-3873.320863, -164, -123838642887.286402),
+-- 			Vector3.new(-28362.02689462, 18632.29863, 0),
+-- 		}
+-- 		local ys = Squash.Vector3(Squash.uint(bytes)).serarr(xs)
+-- 		local zs = Squash.Vector3(Squash.uint(bytes)).desarr(ys)
+-- 		resultarr('Vector3s ' .. bytes, xs, ys, zs)
+-- 	end
+-- end
 
 do
-	local serdes = Squash.tuple(Squash.boolean(), Squash.int(4), Squash.number(8), Squash.Vector3(Squash.uint(1)), Squash.string(Squash.lower)) :: Squash.SerDesVar<boolean, number, number, Vector3, string>
-	local x0 = { true, -1903, 400000000000000001, Vector3.new(1, 2, 3), 'whatareyoudoing' }
+	local serdes = Squash.tuple(
+		Squash.boolean(),
+		Squash.int(4),
+		Squash.number(8),
+		Squash.Vector3(Squash.uint(1))
+	) :: Squash.SerDesVar<boolean, number, number, Vector3>
+	local x0 = { true, -1903, 400000000000000001, Vector3.new(1, 2, 3) }
 	local y0 = serdes.ser(table.unpack(x0))
 	-- print(x0, y0)
 	-- print(tostring(y0))
@@ -406,44 +528,17 @@ do
 	resultarr('variadic boolean int number Vector3 string', x0, y0, z0)
 end
 
---do
---	for bytes = 1, 8 do
---		local x = Vector3.new(1, 2, 3)
---		local y = Squash.Vector3(Squash.uint(bytes)).ser(x)
---		local z = Squash.Vector3(Squash.uint(bytes)).des(y)
---		result('Vector3 ' .. bytes, x, y, z)
-
---		local xs = {
---			Vector3.new(1, 2, 3),
---			Vector3.new(0, 0, 0),
---			Vector3.new(-19, -390.28635, 9830),
---			Vector3.new(8302, 93928.03986138560192358, 6),
---			Vector3.new(-3873.320863, -164, -123838642887.286402),
---			Vector3.new(-28362.02689462, 18632.29863, 0),
---		}
---		local ys = Squash.Vector3(Squash.uint(bytes)).serarr(xs)
---		local zs = Squash.Vector3(Squash.uint(bytes)).desarr(ys)
---		resultarr('Vector3s ' .. bytes, xs, ys, zs)
---	end
---end
-
---do
---	for bytes = 1, 8 do
---		local x = Vector2.new(1, 2)
---		local y = Squash.Vector2(Squash.uint(bytes)).ser(x)
---		local z = Squash.Vector2(Squash.uint(bytes)).des(y)
---		result('Vector2 ' .. bytes, x, y, z)
-
---		local xs = {
---			Vector2.new(1, 2),
---			Vector2.new(0, 0),
---			Vector2.new(-19, -390.28635),
---			Vector2.new(8302, 93928.03986138560192358),
---			Vector2.new(-3873.320863, -164),
---			Vector2.new(-28362.02689462, 18632.29863),
---		}
---		local ys = Squash.Vector2(Squash.uint(bytes)).serarr(xs)
---		local zs = Squash.Vector2(Squash.uint(bytes)).desarr(ys)
---		resultarr('Vector2s ' .. bytes, xs, ys, zs)
---	end
---end
+-- do
+-- 	local serdes = Squash.tuple(
+-- 		Squash.boolean(),
+-- 		Squash.int(4),
+-- 		Squash.string(Squash.lower)
+-- 		-- Squash.number(8),
+-- 		-- Squash.Vector3(Squash.uint(1)),
+-- 		-- Squash.string(Squash.lower)
+-- 	) :: Squash.SerDesVar<boolean, number, string> --, number, Vector3, string>
+-- 	local x0 = { true, -1903, 'yolo', }-- 400000000000000001, Vector3.new(1, 2, 3), 'whatareyoudoing' }
+-- 	local y0 = serdes.ser(table.unpack(x0))
+-- 	local z0 = { serdes.des(y0) }
+-- 	-- resultarr('variadic boolean int number Vector3 string', x0, y0, z0)
+-- end
