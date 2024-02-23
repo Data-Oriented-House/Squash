@@ -271,7 +271,7 @@ After | "F" | 0×83 | 0×0701 | 0×76c309 | 0×000b | 0×7b | 0×02 | 0×01c5b60
 
 #### General Case
 
-In the general case, CFrames have some arbitrary rotation that is not clean multiples of 90 degrees. This means that the rotation will not or cannot be enumerated, and therefore must be sent entirely. We do not understand the rotation format, but it is 6 bytes long, so forgive the elusive formatting we use. If you would like to help us figure out the rotation format, you may download the packet viewer, run the tests you need to, and make a pull request improving [Squash's documentation](https://github.com/Data-Oriented-House/Squash)!
+In the general case, CFrames have some arbitrary rotation that is not clean multiples of 90 degrees. This means that the rotation will not or cannot be enumerated, and therefore must be sent entirely. CFrames use 6 bytes to represent their rotation with 3 float16s. Since CFrames utilize quaternions which have four rotational components, the last component is calculated on the other side; this can be confirmed because the rotation quaternions are normalized, meaning they have three degrees of freedom instead of four. Due to this, the fourth rotational component can instead be derived from the other three.
 
 | Type 0×1b (byte) | X (4 bytes) | Y (4 bytes) | Z (4 bytes) | Id 0×00 (byte) | Rotation (6 bytes) |
 |-|-|-|-|-|-|
