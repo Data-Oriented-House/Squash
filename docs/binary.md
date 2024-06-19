@@ -8,7 +8,7 @@ Strings are great for serializing data, but we need to know when to serialize. C
 
 ## How Are Packets Sent And Recieved?
 
-Roblox remotes sends its data in the form of [*packets*](https://en.wikipedia.org/wiki/Network_packet). Every roblox packet is packed densely with data to reduce their size. Every byte is important and has meaning. To verify this information for yourself, source code and instructions on the hooking process are provided in [this ZIP folder](/PacketViewerSource.zip).
+Roblox remotes sends its data in the form of [*packets*](https://en.wikipedia.org/wiki/Network_packet). Every roblox packet is packed densely with data to reduce their size. Every byte is important and has meaning. To verify this information for yourself, source code is available [here](https://github.com/arcturus-prime/studio-packet-dumper) and instructions on the hooking process are provided in [this ZIP folder](/PacketViewerSource.zip).
 
 After writing this documentation, we've discovered [rbx-dom](https://dom.rojo.space/), a site dedicated to serialization and deserialization implementations. Sadly, it does not contain any information about remotes, but some information found in the other specifications has been very encouraging as they support our findings.
 
