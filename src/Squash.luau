@@ -627,6 +627,7 @@ function Squash.record<T>(record: T & {}): SerDes<T>
 			table.insert(properties, prop)
 		end
 	end
+	table.sort(properties)
 
 	local rec = {}
 
