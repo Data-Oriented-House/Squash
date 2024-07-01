@@ -439,7 +439,7 @@ export type SerDes<T...> = {
 	des: (cursor: Cursor) -> T...,
 }
 
-function Squash.I<T>(x: SerDes<T>): T
+function Squash.unwrap<T>(x: SerDes<T>): T
 	return x :: any
 end
 
@@ -652,7 +652,17 @@ function Squash.record<T>(record: T & {}): SerDes<T>
 	return rec
 end
 
-local I = Squash.I
+function Squash.table<T>(tab: T & {}): T
+	local properties = {}
+	for prop in record :: any do
+		if type(prop) == 'string' then
+			table.insert(properties, prop)
+		end
+	end
+	table.sort(properties)
+end
+
+local T = Squash.unwrap
 local arr = Squash.array
 local uint = Squash.uint
 local int = Squash.int
@@ -663,12 +673,12 @@ local record = Squash.record
 
 local cursor = newCursor()
 local serdes = record {
-	positions = I(arr(uint(3))),
-	velocities = I(arr(uint(3))),
-	healths = I(arr(uint(1))),
-	nested = I(record {
-		wow = I(number(4)),
-		epic = I(string()),
+	positions = T(arr(uint(3))),
+	velocities = T(arr(uint(3))),
+	healths = T(arr(uint(1))),
+	nested = T(record {
+		wow = T(number(4)),
+		epic = T(string()),
 	}),
 }
 serdes.ser(cursor, {
@@ -678,7 +688,7 @@ serdes.ser(cursor, {
 	nested = {
 		wow = 387.345,
 		epic = "This is so cool wth"
-	}
+	},
 })
 local tab = serdes.des(cursor)
 
