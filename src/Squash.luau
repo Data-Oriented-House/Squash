@@ -620,24 +620,77 @@ function Squash.tuple<T...>(...: T...): SerDes<T...>
 	return tuple
 end
 
+function Squash.record<T>(record: T & {}): SerDes<T>
+	local properties = {}
+	for prop in record :: any do
+		if type(prop) == 'string' then
+			table.insert(properties, prop)
+		end
+	end
+
+	local rec = {}
+
+	function rec.ser(cursor: Cursor, tab: T)
+		for _, prop in properties do
+			local ser = (record :: any)[prop].ser
+			local x = (tab :: any)[prop]
+			ser(cursor, x)
+		end
+	end
+
+	function rec.des(cursor: Cursor)
+		local tab = {}
+		for i = #properties, 1, -1 do
+			local prop = properties[i]
+			local des = (record :: any)[prop].des
+			tab[prop] = des(cursor)
+		end
+		return tab :: any
+	end
+
+	return rec
+end
+
 local I = Squash.I
 local arr = Squash.array
 local uint = Squash.uint
+local int = Squash.int
+local number = Squash.number
 local string = Squash.string
 local tuple = Squash.tuple
+local record = Squash.record
 
 local cursor = newCursor()
-local serdes = tuple(I(arr(uint(2))), I(string()))
-serdes.ser(cursor, {5, 2.44, 92485}, "Howdy world!")
-local xs, str = serdes.des(cursor)
+local serdes = record {
+	positions = I(arr(uint(3))),
+	velocities = I(arr(uint(3))),
+	healths = I(arr(uint(1))),
+	nested = I(record {
+		wow = I(number(4)),
+		epic = I(string()),
+	}),
+}
+serdes.ser(cursor, {
+	positions = { 1, 2, 3 },
+	velocities = { 1200, 3, 2, 1, 0, },
+	healths = { 0, 100, 50, 50 },
+	nested = {
+		wow = 387.345,
+		epic = "This is so cool wth"
+	}
+})
+local tab = serdes.des(cursor)
 
-print('X')
-for _, x in xs do
-	print(x)
-end
-print('Y')
-for _, y in ys do
-	print(y)
+for k, v in tab do
+	if type(v) == 'table' then
+		print(`tab[{k}] = \{`)
+		for l, v in v do
+			print(`\t{k}[{l}] = {v}`)
+		end
+		print(`\}`)
+	else
+		print(`tab[{k}] = {v}`)
+	end
 end
 
 local vector2Cache = {}
