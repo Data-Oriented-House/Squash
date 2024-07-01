@@ -516,7 +516,7 @@ end
 do
 	local serdes = Squash.tuple(
 		Squash.boolean(),
-		Squash.int(4),
+		Squash.number(4),
 		Squash.number(8),
 		Squash.Vector3(Squash.uint(1))
 	) :: Squash.SerDesVar<boolean, number, number, Vector3>
