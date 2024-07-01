@@ -427,9 +427,7 @@ end
 local function popstr(cursor: Cursor)
 	local len = popvlq(cursor)
 	cursor.Pos -= len
-	local buf = buffer.create(len)
-	buffer.copy(buf, 0, cursor.Buf, cursor.Pos, len)
-	return buffer.tostring(buf)
+	return buffer.readstring(cursor.Buf, cursor.Pos, len)
 end
 
 local Squash = {}
@@ -439,7 +437,7 @@ export type SerDes<T...> = {
 	des: (cursor: Cursor) -> T...,
 }
 
-function Squash.unwrap<T>(x: SerDes<T>): T
+function Squash.T<T>(x: SerDes<T>): T
 	return x :: any
 end
 
@@ -556,7 +554,7 @@ local stringMeta = {
 Squash.string = setmetatable({}, stringMeta)
 
 local arrayCache = {}
-function Squash.array<T>(serdes: SerDes<T>): SerDes<{T}>
+local function array<T>(serdes: SerDes<T>): SerDes<{T}>
 	if arrayCache[serdes] then
 		return arrayCache[serdes]
 	end
@@ -584,6 +582,7 @@ function Squash.array<T>(serdes: SerDes<T>): SerDes<{T}>
 	arrayCache[serdes] = arr
 	return arr
 end
+Squash.array = array
 
 local angleCache: SerDes<number> = {
 	ser = function(cursor: Cursor, angle: number)
@@ -620,21 +619,23 @@ function Squash.tuple<T...>(...: T...): SerDes<T...>
 	return tuple
 end
 
-function Squash.record<T>(record: T & {}): SerDes<T>
+local function record<T>(schema: T & {}): SerDes<T>
 	local properties = {}
-	for prop in record :: any do
+	for prop in schema :: any do
 		if type(prop) == 'string' then
 			table.insert(properties, prop)
 		end
 	end
 	table.sort(properties)
+	table.insert(properties, (schema :: any)[true])
+	table.insert(properties, (schema :: any)[false])
 
 	local rec = {}
 
-	function rec.ser(cursor: Cursor, tab: T)
+	function rec.ser(cursor: Cursor, rec: T)
 		for _, prop in properties do
-			local ser = (record :: any)[prop].ser
-			local x = (tab :: any)[prop]
+			local ser = (schema :: any)[prop].ser
+			local x = (rec :: any)[prop]
 			ser(cursor, x)
 		end
 	end
@@ -643,7 +644,7 @@ function Squash.record<T>(record: T & {}): SerDes<T>
 		local tab = {}
 		for i = #properties, 1, -1 do
 			local prop = properties[i]
-			local des = (record :: any)[prop].des
+			local des = (schema :: any)[prop].des
 			tab[prop] = des(cursor)
 		end
 		return tab :: any
@@ -651,18 +652,39 @@ function Squash.record<T>(record: T & {}): SerDes<T>
 
 	return rec
 end
+Squash.record = record
 
-function Squash.table<T>(tab: T & {}): T
-	local properties = {}
-	for prop in record :: any do
-		if type(prop) == 'string' then
-			table.insert(properties, prop)
+local function map<K, V>(keySerDes: K, valueSerDes: V): SerDes<{[K]: V}>
+	local map = {}
+
+	function map.ser(cursor: Cursor, map: {[K]: V})
+		local count = 0
+		for k, v in map :: any do
+			(valueSerDes :: any).ser(cursor, v)
+			;(keySerDes :: any).ser(cursor, k)
+			count += 1
 		end
+		pushvlq(cursor, count)
 	end
-	table.sort(properties)
-end
 
-local T = Squash.unwrap
+	function map.des(cursor: Cursor): {[K]: V}
+		local map = {}
+
+		local count = popvlq(cursor)
+		for _ = 1, count do
+			local key = (keySerDes :: any).des(cursor)
+			local value = (valueSerDes :: any).des(cursor)
+			map[key] = value
+		end
+
+		return map :: any
+	end
+
+	return map
+end
+Squash.map = map
+
+local T = Squash.T
 local arr = Squash.array
 local uint = Squash.uint
 local int = Squash.int
@@ -670,27 +692,26 @@ local number = Squash.number
 local string = Squash.string
 local tuple = Squash.tuple
 local record = Squash.record
+local map = Squash.map
 
 local cursor = newCursor()
-local serdes = record {
-	positions = T(arr(uint(3))),
-	velocities = T(arr(uint(3))),
-	healths = T(arr(uint(1))),
-	nested = T(record {
-		wow = T(number(4)),
-		epic = T(string()),
-	}),
-}
+local serdes = map(T(arr(uint(4))), T(record {
+	x = T(number(4)),
+	y = T(number(4)),
+	z = T(number(4)),
+}))
+
 serdes.ser(cursor, {
-	positions = { 1, 2, 3 },
-	velocities = { 1200, 3, 2, 1, 0, },
-	healths = { 0, 100, 50, 50 },
-	nested = {
-		wow = 387.345,
-		epic = "This is so cool wth"
+	[{84.3, 45324.3, 2436/63456}] = {
+		x = 1,
+		y = 2,
+		z = 4,
 	},
 })
-local tab = serdes.des(cursor)
+local send = toBuffer(cursor)
+
+local receive = fromBuffer(send)
+local tab = serdes.des(receive)
 
 for k, v in tab do
 	if type(v) == 'table' then
