@@ -311,7 +311,7 @@ local function popf8(cursor: Cursor)
 end
 
 local function pushbool(cursor: Cursor, a: boolean, b: boolean?, c: boolean?, d: boolean?, e: boolean?, f: boolean?, g: boolean?, h: boolean?)
-	pushu8(cursor,
+	pushu1(cursor,
 		if a then 1 else 0 +
 		if b then 2 else 0 +
 		if c then 4 else 0 +
@@ -323,8 +323,8 @@ local function pushbool(cursor: Cursor, a: boolean, b: boolean?, c: boolean?, d:
 	)
 end
 
-local function popbool(cursor: Cursor)
-	local x = popu8(cursor)
+local function popbool(cursor: Cursor): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
+	local x = popu1(cursor)
 	return
 		(x / 1) % 2 >= 1,
 		(x / 2) % 2 >= 1,
@@ -333,7 +333,7 @@ local function popbool(cursor: Cursor)
 		(x / 16) % 2 >= 1,
 		(x / 32) % 2 >= 1,
 		(x / 64) % 2 >= 1,
-		(0 / 128) % 2 >= 1
+		(x / 128) % 2 >= 1
 end
 
 local function pushvlq(cursor: Cursor, x: number)
@@ -430,7 +430,27 @@ local function popstr(cursor: Cursor)
 	return buffer.readstring(cursor.Buf, cursor.Pos, len)
 end
 
+local function pushbuf(cursor: Cursor, x: buffer)
+	local len = buffer.len(x)
+	tryRealloc(cursor, len)
+	buffer.copy(cursor.Buf, cursor.Pos, x, 0, len)
+	cursor.Pos += len
+	pushvlq(cursor, len)
+end
+
+local function popbuf(cursor: Cursor)
+	local len = popvlq(cursor)
+	cursor.Pos -= len
+	local buf = buffer.create(len)
+	buffer.copy(buf, 0, cursor.Buf, cursor.Pos, len)
+	return buf
+end
+
 local Squash = {}
+
+Squash.cursor = newCursor
+Squash.frombuffer = fromBuffer
+Squash.tobuffer = toBuffer
 
 export type SerDes<T...> = {
 	ser: (cursor: Cursor, T...) -> (),
@@ -445,12 +465,12 @@ local booleanCache: SerDes<boolean, boolean?, boolean?, boolean?, boolean?, bool
 	ser = pushbool,
 	des = popbool,
 }
-function Squash.boolean()
+function Squash.boolean(): SerDes<boolean, boolean?, boolean?, boolean?, boolean?, boolean?, boolean?, boolean?>
 	return booleanCache
 end
 
-local uintCache = {} :: { SerDes<number> }
-function Squash.uint(bytes: number)
+local uintCache = {}
+local function uint(bytes: number): SerDes<number>
 	if uintCache[bytes] then
 		return uintCache[bytes]
 	end
@@ -476,16 +496,17 @@ function Squash.uint(bytes: number)
 		error(`uint bytes must be integer between [1, 8], got {bytes}`)
 	end
 
-	local num = {
+	local num: SerDes<number> = {
 		ser = push,
 		des = pop,
 	}
 	uintCache[bytes] = num
 	return num
 end
+Squash.uint = uint
 
-local intCache = {} :: { SerDes<number> }
-function Squash.int(bytes: number)
+local intCache = {}
+local function int(bytes: number): SerDes<number>
 	if intCache[bytes] then
 		return intCache[bytes]
 	end
@@ -511,16 +532,17 @@ function Squash.int(bytes: number)
 		error(`int bytes must be integer between [1, 8], got {bytes}`)
 	end
 
-	local num = {
+	local num: SerDes<number> = {
 		ser = push,
 		des = pop,
 	}
 	intCache[bytes] = num
 	return num
 end
+Squash.int = int
 
-local numberCache = {} :: { SerDes<number> }
-function Squash.number(bytes: number)
+local numberCache = {}
+local function num(bytes: number): SerDes<number>
 	if numberCache[bytes] then
 		return numberCache[bytes]
 	end
@@ -534,13 +556,14 @@ function Squash.number(bytes: number)
 		error(`number bytes must be integer 4 or 8, got {bytes}`)
 	end
 
-	local num = {
+	local num: SerDes<number> = {
 		ser = push,
 		des = pop,
 	}
 	intCache[bytes] = num
 	return num
 end
+Squash.number = num
 
 local stringCache: SerDes<string> = {
 	ser = pushstr,
@@ -551,7 +574,16 @@ local stringMeta = {
 		return stringCache
 	end,
 }
-Squash.string = setmetatable({}, stringMeta)
+local str = setmetatable({}, stringMeta)
+Squash.string = str
+
+local bufCache: SerDes<buffer> = {
+	ser = pushbuf,
+	des = popbuf,
+}
+function Squash.buffer(): SerDes<buffer>
+	return bufCache
+end
 
 local arrayCache = {}
 local function array<T>(serdes: SerDes<T>): SerDes<{T}>
@@ -561,40 +593,28 @@ local function array<T>(serdes: SerDes<T>): SerDes<{T}>
 
 	local ser, des = serdes.ser, serdes.des
 
-	local arr = {}
-
-	function arr.ser(cursor: Cursor, xs: {T})
-		for _, x in xs do
-			ser(cursor, x)
-		end
-		pushvlq(cursor, #xs)
-	end
-
-	function arr.des(cursor: Cursor)
-		local len = popvlq(cursor)
-		local xs = table.create(len)
-		for i = len, 1, -1 do
-			xs[i] = des(cursor)
-		end
-		return xs
-	end
+	local arr: SerDes<{T}> = {
+		ser = function(cursor, xs)
+			for _, x in xs do
+				ser(cursor, x)
+			end
+			pushvlq(cursor, #xs)
+		end,
+		
+		des = function(cursor)
+			local len = popvlq(cursor)
+			local xs = table.create(len)
+			for i = len, 1, -1 do
+				xs[i] = des(cursor)
+			end
+			return xs
+		end,
+	}
 
 	arrayCache[serdes] = arr
 	return arr
 end
 Squash.array = array
-
-local angleCache: SerDes<number> = {
-	ser = function(cursor: Cursor, angle: number)
-		pushu8(cursor, angle * 180 / math.pi)
-	end,
-	des = function(cursor: Cursor)
-		return popu8(cursor) * math.pi / 180
-	end,
-}
-function Squash.angle()
-	return angleCache
-end
 
 function Squash.tuple<T...>(...: T...): SerDes<T...>
 	local serdesargs: { any } = { ... }
@@ -630,100 +650,637 @@ local function record<T>(schema: T & {}): SerDes<T>
 	table.insert(properties, (schema :: any)[true])
 	table.insert(properties, (schema :: any)[false])
 
-	local rec = {}
+	return {
+		ser = function(cursor, rec)
+			for _, prop in properties do
+				local ser = (schema :: any)[prop].ser
+				local x = (rec :: any)[prop]
+				ser(cursor, x)
+			end
+		end,
 
-	function rec.ser(cursor: Cursor, rec: T)
-		for _, prop in properties do
-			local ser = (schema :: any)[prop].ser
-			local x = (rec :: any)[prop]
-			ser(cursor, x)
-		end
-	end
-
-	function rec.des(cursor: Cursor)
-		local tab = {}
-		for i = #properties, 1, -1 do
-			local prop = properties[i]
-			local des = (schema :: any)[prop].des
-			tab[prop] = des(cursor)
-		end
-		return tab :: any
-	end
-
-	return rec
+		des = function(cursor)
+			local tab = {}
+			for i = #properties, 1, -1 do
+				local prop = properties[i]
+				local des = (schema :: any)[prop].des
+				tab[prop] = des(cursor)
+			end
+			return tab :: any
+		end,
+	}
 end
 Squash.record = record
 
 local function map<K, V>(keySerDes: K, valueSerDes: V): SerDes<{[K]: V}>
-	local map = {}
+	return {
+		ser = function(cursor, map)
+			local count = 0
+			for k, v in map :: any do
+				(valueSerDes :: any).ser(cursor, v)
+				;(keySerDes :: any).ser(cursor, k)
+				count += 1
+			end
+			pushvlq(cursor, count)
+		end,
 
-	function map.ser(cursor: Cursor, map: {[K]: V})
-		local count = 0
-		for k, v in map :: any do
-			(valueSerDes :: any).ser(cursor, v)
-			;(keySerDes :: any).ser(cursor, k)
-			count += 1
-		end
-		pushvlq(cursor, count)
-	end
+		des = function(cursor: Cursor)
+			local map = {}
 
-	function map.des(cursor: Cursor): {[K]: V}
-		local map = {}
+			local count = popvlq(cursor)
+			for _ = 1, count do
+				local key = (keySerDes :: any).des(cursor)
+				local value = (valueSerDes :: any).des(cursor)
+				map[key] = value
+			end
 
-		local count = popvlq(cursor)
-		for _ = 1, count do
-			local key = (keySerDes :: any).des(cursor)
-			local value = (valueSerDes :: any).des(cursor)
-			map[key] = value
-		end
-
-		return map :: any
-	end
-
-	return map
+			return map :: any
+		end,
+	}
 end
 Squash.map = map
 
-local T = Squash.T
-local arr = Squash.array
-local uint = Squash.uint
-local int = Squash.int
-local number = Squash.number
-local string = Squash.string
-local tuple = Squash.tuple
-local record = Squash.record
-local map = Squash.map
+local pushangle, popangle = uint(1).ser, uint(1).des
+local angleCache: SerDes<number> = {
+	ser = function(cursor, angle)
+		pushangle(cursor, angle * 128 / math.pi)
+	end,
 
-local cursor = newCursor()
-local serdes = map(T(arr(uint(4))), T(record {
-	x = T(number(4)),
-	y = T(number(4)),
-	z = T(number(4)),
-}))
+	des = function(cursor)
+		return popangle(cursor) * math.pi / 128
+	end,
+}
+local function angle(): SerDes<number>
+	return angleCache
+end
+Squash.angle = angle
 
-serdes.ser(cursor, {
-	[{84.3, 45324.3, 2436/63456}] = {
-		x = 1,
-		y = 2,
-		z = 4,
-	},
-})
-local send = toBuffer(cursor)
+local axesCache: SerDes<Axes> = {
+	ser = function(cursor, axes)
+		pushbool(cursor, axes.Back, axes.Bottom, axes.Front, axes.Left, axes.Right, axes.Top)
+		pushbool(cursor, axes.X, axes.Y, axes.Z)
+	end,
 
-local receive = fromBuffer(send)
-local tab = serdes.des(receive)
+	des = function(cursor)
+		local x, y, z = popbool(cursor)
+		local back, bottom, front, left, right, top = popbool(cursor)
+		return Axes.new(
+			x and Enum.Axis.X,
+			y and Enum.Axis.Y,
+			z and Enum.Axis.Z,
+			back and Enum.NormalId.Back,
+			bottom and Enum.NormalId.Bottom,
+			front and Enum.NormalId.Front,
+			left and Enum.NormalId.Left,
+			right and Enum.NormalId.Right,
+			top and Enum.NormalId.Top,
+		)
+	end,
+}
+function Squash.Axes(): SerDes<Axes>
+	return axesCache
+end
 
-for k, v in tab do
-	if type(v) == 'table' then
-		print(`tab[{k}] = \{`)
-		for l, v in v do
-			print(`\t{k}[{l}] = {v}`)
-		end
-		print(`\}`)
-	else
-		print(`tab[{k}] = {v}`)
+local brickcolorCache: SerDes<BrickColor> = {
+	ser = function(cursor, brickcolor)
+		pushu2(cursor, brickcolor.Number)
+	end,
+
+	des = function(cursor)
+		local number = popu2(cursor)
+		return BrickColor.new(number)
+	end,
+}
+function Squash.BrickColor(): SerDes<BrickColor>
+	return brickcolorCache
+end
+
+local enums: { Enum } = {}
+local enumIds: { [Enum]: number }
+do
+	local names = {}
+	for enumName in pairs(Enum) do
+		table.insert(names, enumName :: string)
+	end
+	table.sort(names)
+
+	for i, enumName in names do
+		local enum: Enum = (Enum :: any)[enumName]
+		enums[i] = enum
+		enumIds[enum] = i
 	end
 end
+local function pushenum(cursor, enum)
+	local id = enumIds[enum]
+	pushvlq(cursor, id)
+end
+local function popenum(cursor)
+	local id = popvlq(cursor)
+	return enums[id]
+end
+local enumCache: SerDes<Enum> = {
+	ser = pushenum,
+	des = popenum,
+}
+function Squash.Enum()
+	return enumCache
+end
+
+local enumItems = {}
+do
+	for _, enum in Enum:GetEnums() do
+		local items = {}
+		for _, item in enum:GetEnumItems() do
+			items[item.Value] = item
+		end
+	
+		enumItems[enum] = items 
+	end
+end
+
+local enumItemCache = {}
+local function enumitem(enum: Enum): SerDes<EnumItem>
+	if enumItemCache[enum] then
+		return enumItemCache[enum]
+	end
+
+	local sortedItems = enum:GetEnumItems()
+	table.sort(sortedItems, function(a, b) return a.Value < b.Value end)
+
+	local itemsToIds = {}
+	local idsToItems = table.create(#sortedItems)
+	for i, item in sortedItems do
+		itemsToIds[item] = i
+		idsToItems[i] = item
+	end
+
+	local item: SerDes<EnumItem> = {
+		ser = function(cursor, item)
+			pushvlq(cursor, itemsToIds[item])
+		end,
+
+		des = function(cursor)
+			return idsToItems[popvlq(cursor)]
+		end,
+	}
+
+	enumItemCache[enum] = item
+	return item
+end
+Squash.EnumItem = enumitem
+
+local catalogsorttype = enumitem(Enum.CatalogSortType)
+local catalogsortaggregation = enumitem(Enum.CatalogSortAggregation)
+local catalogcategoryfilter = enumitem(Enum.CatalogCategoryFilter)
+local salestypefilter = enumitem(Enum.SalesTypeFilter)
+local assettype = enumitem(Enum.AssetType)
+local catalogueSearchParamsCache: SerDes<CatalogSearchParams> = {
+	ser = function(cursor, params)
+		pushbool(cursor, params.IncludeOffSale)
+		pushu1(cursor, params.Limit)
+		pushu4(cursor, params.MinPrice)
+		pushu4(cursor, params.MaxPrice)
+		pushstr(cursor, params.CreatorName)
+		pushstr(cursor, params.SearchKeyword)
+		catalogsorttype.ser(cursor, params.SortType)
+		catalogsortaggregation.ser(cursor, params.SortAggregation)
+		catalogcategoryfilter.ser(cursor, params.CategoryFilter)
+		salestypefilter.ser(cursor, params.SalesTypeFilter)
+		for _, assetType in params.AssetTypes do
+			assettype.ser(cursor, assetType)
+		end
+		pushvlq(cursor, #params.AssetTypes)
+	end,
+
+	des = function(cursor)
+		local params = CatalogSearchParams.new()
+		local assetCount = popvlq(cursor)
+		local assetTypes = table.create(assetCount)
+		for i = assetCount, 1, -1 do
+			assetTypes[i] = enumItems[Enum.AssetType][popu1(cursor)]
+		end
+		params.AssetTypes = assetTypes
+		
+		params.SalesTypesFilter = salestypefilter.des(cursor)
+		params.CategoryFilter = catalogcategoryfilter.des(cursor)
+		params.SortAggregation = catalogsortaggregation.des(cursor)
+		params.SortType =  catalogsorttype.des(cursor)
+		params.SearchKeyword = popstr(cursor)
+		params.CreatorName = popstr(cursor)
+		params.MaxPrice = popu4(cursor)
+		params.MinPrice = popu4(cursor)
+		params.Limit = popu1(cursor)
+		params.IncludeOffSale = popbool(cursor)
+	end,
+}
+function Squash.CatalogueSearchParams(): SerDes<CatalogSearchParams>
+	return catalogueSearchParamsCache
+end
+
+local idToCFrame = {
+	CFrame.Angles(0, 0, 0),
+	CFrame.Angles(math.rad(90), 0, 0),
+	CFrame.Angles(0, math.rad(180), math.rad(180)),
+	CFrame.Angles(math.rad(-90), 0, 0),
+	CFrame.Angles(0, math.rad(180), math.rad(90)),
+	CFrame.Angles(0, math.rad(90), math.rad(90)),
+	CFrame.Angles(0, 0, math.rad(90)),
+	CFrame.Angles(0, math.rad(-90), math.rad(90)),
+	CFrame.Angles(math.rad(-90), math.rad(-90), 0),
+	CFrame.Angles(0, math.rad(-90), 0),
+	CFrame.Angles(math.rad(90), math.rad(-90), 0),
+	CFrame.Angles(0, math.rad(90), math.rad(180)),
+	CFrame.Angles(0, math.rad(-90), math.rad(180)),
+	CFrame.Angles(0, math.rad(180), math.rad(0)),
+	CFrame.Angles(math.rad(-90), math.rad(-180), math.rad(0)),
+	CFrame.Angles(0, math.rad(0), math.rad(180)),
+	CFrame.Angles(math.rad(90), math.rad(180), math.rad(0)),
+	CFrame.Angles(0, math.rad(0), math.rad(-90)),
+	CFrame.Angles(0, math.rad(-90), math.rad(-90)),
+	CFrame.Angles(0, math.rad(-180), math.rad(-90)),
+	CFrame.Angles(0, math.rad(90), math.rad(-90)),
+	CFrame.Angles(math.rad(90), math.rad(90), 0),
+	CFrame.Angles(0, math.rad(90), 0),
+	CFrame.Angles(math.rad(-90), math.rad(90), 0),
+}
+local cframeCache: SerDes<CFrame> = {
+	ser = function(cursor, cframe)
+		local specialId = table.find(idToCFrame, cframe.Rotation)
+		if specialId then
+			pushu1(cursor, specialId)
+		else
+			local axis, theta = cframe:ToAxisAngle()
+			local rotaxis = axis * theta * 256
+			pushi2(cursor, rotaxis.Z)
+			pushi2(cursor, rotaxis.Y)
+			pushi2(cursor, rotaxis.X)
+			pushu1(cursor, 0)
+		end
+		local pos = cframe.Position
+		pushf4(cursor, pos.Z)
+		pushf4(cursor, pos.Y)
+		pushf4(cursor, pos.X)
+	end,
+
+	des = function(cursor)
+		local pos = Vector3.new(popf4(cursor), popf4(cursor), popf4(cursor))
+		
+		local specialId = popu1(cursor)
+		if specialId ~= 0 then
+			return idToCFrame[specialId] + pos
+		end
+
+		local rotaxis = Vector3.new(popi2(cursor), popi2(cursor), popi2(cursor)) / 256
+		return CFrame.fromAxisAngle(rotaxis.Unit, rotaxis.Magnitude) + pos
+	end,
+}
+function Squash.CFrame(): SerDes<CFrame>
+	return cframeCache
+end
+
+local function pushcolor3(cursor, color3)
+	pushu1(cursor, color3.B * 256)
+	pushu1(cursor, color3.G * 256)
+	pushu1(cursor, color3.R * 256)
+end
+local function popcolor3(cursor)
+	return Color3.new(popu1(cursor), popu1(cursor), popu1(cursor))
+end
+local color3Cache: SerDes<Color3> = {
+	ser = pushcolor3,
+	des = popcolor3,
+}
+function Squash.Color3(): SerDes<Color3>
+	return color3Cache
+end
+
+local function pushcolorsequencekeypoint(cursor, keypoint)
+	pushcolor3(cursor, keypoint.Value)
+	pushu1(cursor, keypoint.Time * 256)
+end
+local function popcolorsequencekeypoint(cursor)
+	return ColorSequenceKeypoint.new(
+		popu8(cursor) / 256,
+		popcolor3(cursor)
+	)
+end
+local colorSequenceKeypointCache: SerDes<ColorSequenceKeypoint> = {
+	ser = pushcolorsequencekeypoint,
+	des = popcolorsequencekeypoint,
+}
+function Squash.ColorSequenceKeypoint(): SerDes<ColorSequenceKeypoint>
+	return colorSequenceKeypointCache
+end
+
+local colorSequenceCache: SerDes<ColorSequence> = {
+	ser = function(cursor, sequence)
+		for _, keypoint in sequence.Keypoints do
+			pushcolorsequencekeypoint(cursor, keypoint)
+		end
+		pushvlq(cursor, #sequence.Keypoints)
+	end,
+
+	des = function(cursor)
+		local keypointCount = popvlq(cursor)
+		local keypoints = table.create(keypointCount)
+		for i = keypointCount, 1, -1 do
+			keypoints[i] = popcolorsequencekeypoint(cursor)
+		end
+		return ColorSequence.new(keypoints)
+	end,
+}
+function Squash.ColorSequence(): SerDes<ColorSequence>
+	return colorSequenceCache
+end
+
+local dateTimeCache: SerDes<DateTime> = {
+	ser = function(cursor, date)
+		pushu6(cursor, date.UnixTimestampMillis)
+	end,
+	des = function(cursor)
+		return DateTime.fromUnixTimestampMillis(popu6(cursor))
+	end,
+}
+function Squash.DateTime(): SerDes<DateTime>
+	return dateTimeCache
+end
+
+local dockWidgetPluginGuiInfoCache: SerDes<DockWidgetPluginGuiInfo> = {
+	ser = function(cursor, info)
+		pushbool(cursor, info.InitialEnabled, info.InitialEnabledShouldOverrideRestore)
+		pushu2(cursor, info.FloatingYSize)
+		pushu2(cursor, info.FloatingXSize)
+		pushu2(cursor, info.MinHeight)
+		pushu2(cursor, info.MinWidth)
+	end,
+
+	des = function(cursor)
+		local minWidth = popu2(cursor)
+		local minHeight = popu2(cursor)
+		local xSize = popu2(cursor)
+		local ySize = popu2(cursor)
+		local initEnabled, override = popbool(cursor)
+
+		return DockWidgetPluginGuiInfo.new(
+			nil,
+			initEnabled,
+			override,
+			xSize,
+			ySize,
+			minWidth,
+			minHeight
+		)
+	end,
+}
+function Squash.DockWidgetPluginGuiInfo(): SerDes<DockWidgetPluginGuiInfo>
+	return dockWidgetPluginGuiInfoCache
+end
+
+local facesCache: SerDes<Faces> = {
+	ser = function(cursor, face)
+		pushbool(cursor, face.Back, face.Bottom, face.Front, face.Left, face.Right, face.Top)
+	end,
+
+	des = function(cursor)
+		local back, bottom, front, left, right, top = popbool(cursor)
+		return Faces.new(back, bottom, front, left, right, top)
+	end,
+}
+function Squash.Faces(): SerDes<Faces>
+	return facesCache
+end
+
+local keyinterpolationmode = enumitem(Enum.KeyInterpolationMode)
+local floatCurveKeyCache: SerDes<FloatCurveKey> = {
+	ser = function(cursor, key)
+		if key.Interpolation == Enum.KeyInterpolationMode.Cubic then
+			pushf4(cursor, key.LeftTangent)
+			pushf4(cursor, key.RightTangent)
+		end
+
+		keyinterpolationmode.ser(cursor, key.Interpolation)
+
+		pushf4(cursor, key.Value)
+		pushf4(cursor, key.Time)
+	end,
+
+	des = function(cursor)
+		local key = FloatCurveKey.new(
+			popf4(cursor),
+			popf4(cursor),
+			keyinterpolationmode.des(cursor) :: any,
+		)
+		if key.Interpolation == Enum.KeyInterpolationMode.Cubic then
+			key.RightTangent = popf4(cursor)
+			key.LeftTangent = popf4(cursor)
+		end
+		return key
+	end,
+}
+function Squash.FloatCurveKey(): SerDes<FloatCurveKey>
+	return floatCurveKeyCache
+end
+
+local fontweight = enumitem(Enum.FontWeight)
+local fontstyle = enumitem(Enum.FontStyle)
+local fontCache: SerDes<Font> = {
+	ser = function(cursor, font)
+		local family = string.match(font.Family, "rbxasset://fonts/families/(.+).json") or error(`Invalid font family {font.Family}`)
+		pushstr(cursor, family)
+		pushbool(cursor, font.Bold)
+		fontweight.ser(cursor, font.Weight)
+		fontstyle.ser(cursor, font.Style)
+	end,
+
+	des = function(cursor)
+		local style = fontstyle.des(cursor) :: Enum.FontStyle
+		local weight = fontstyle.des(cursor) :: Enum.FontWeight
+		local bold = popbool(cursor)
+		local family = popstr(cursor)
+		local font = Font.new(`rbxasset://fonts/families/{family}.json`, weight, style)
+		font.Bold = bold
+		return font
+	end,
+}
+function Squash.Font(): SerDes<Font>
+	return fontCache
+end
+
+local numberRangeCache = {}
+local function numberrange(serdes: SerDes<number>): SerDes<NumberRange>
+	if numberRangeCache[serdes] then
+		return numberRangeCache[serdes]
+	end
+
+	local push, pop = serdes.ser, serdes.des
+
+	local numrange: SerDes<NumberRange> = {
+		ser = function(cursor, range)
+			push(cursor, range.Max)
+			push(cursor, range.Min)
+		end,
+	
+		des = function(cursor)
+			return NumberRange.new(pop(cursor), pop(cursor))
+		end,
+	}
+	numberRangeCache[serdes] = numrange
+	return numrange
+end
+Squash.NumberRange = numberrange
+
+local numberSequenceKeypointCache = {}
+local function numbersequencekeypoint(serdes: SerDes<number>): SerDes<NumberSequenceKeypoint>
+	if numberSequenceKeypointCache[serdes] then
+		return numberSequenceKeypointCache[serdes]
+	end
+
+	local push, pop = serdes.ser, serdes.des
+
+	local sequencekeypoint: SerDes<NumberSequenceKeypoint> = {
+		ser = function(cursor, keypoint)
+			push(cursor, keypoint.Value)
+			push(cursor, keypoint.Envelope)
+			pushu8(cursor, keypoint.Time * 255)
+		end,
+
+		des = function(cursor)
+			local keypointTime = popu8(cursor) / 255
+			local envelope = pop(cursor)
+			local value = pop(cursor)
+			return NumberSequenceKeypoint.new(keypointTime, value, envelope)
+		end,
+	}
+	numberSequenceKeypointCache[serdes] = sequencekeypoint
+	return sequencekeypoint
+end
+Squash.NumberSequenceEnvelope = numbersequencekeypoint
+
+local numberSequenceCache = {}
+local function numbersequence(serdes: SerDes<number>): SerDes<NumberSequence>
+	if numberSequenceCache[serdes] then
+		return numberSequenceCache[serdes]
+	end
+
+	local push, pop = numbersequencekeypoint(serdes).ser, numbersequencekeypoint(serdes).des
+
+	local numsequence: SerDes<NumberSequence> = {
+		ser = function(cursor, sequence)
+			for _, keypoint in sequence.Keypoints do
+				push(cursor, keypoint)
+			end
+			pushvlq(cursor, #sequence.Keypoints)
+		end,
+
+		des = function(cursor)
+			local count = popvlq(cursor)
+			local keypoints = table.create(count)
+			for i = count,  1, -1 do
+				keypoints[i] = pop(cursor)
+			end
+			return NumberSequence.new(keypoints)
+		end,
+	}
+
+	numberSequenceCache[serdes] = numsequence
+	return numsequence
+end
+Squash.NumberSequence = numbersequence
+
+local raycastfiltertype = enumitem(Enum.RaycastFilterType)
+--- Does not encode instance data at all.
+local overlapParamsCache: SerDes<OverlapParams> = {
+	ser = function(cursor, params)
+		pushbool(cursor, params.BruteForceAllSlow, params.RespectCanCollide)
+		pushu2(cursor, params.MaxParts)
+		raycastfiltertype.ser(cursor, params.FilterType)
+		pushstr(cursor, params.CollisionGroup)
+	end,
+
+	des = function(cursor)
+		local params = OverlapParams.new()
+		params.CollisionGroup = popstr(cursor)
+		params.FilterType = raycastfiltertype.des(cursor) :: Enum.RaycastFilterType
+		params.MaxParts = popu2(cursor)
+		params.BruteForceAllSlow, params.RespectCanCollide = popbool(cursor)
+		return params
+	end,
+}
+function Squash.OverlapParams(): SerDes<OverlapParams>
+	return overlapParamsCache
+end
+
+local raycastParamsCache: SerDes<RaycastParams> = {
+	ser = function(cursor, params)
+		pushbool(cursor, params.BruteForceAllSlow, params.RespectCanCollide, params.IgnoreWater)
+		raycastfiltertype.ser(cursor, params.FilterType)
+		pushstr(cursor, params.CollisionGroup)
+	end,
+
+	des = function(cursor)
+		local params = RaycastParams.new()
+		params.CollisionGroup = popstr(cursor)
+		params.FilterType = raycastfiltertype.des(cursor) :: Enum.RaycastFilterType
+		params.BruteForceAllSlow, params.RespectCanCollide, params.IgnoreWater = popbool(cursor)
+		return params
+	end,
+}
+function Squash.RaycastParams(): SerDes<RaycastParams>
+	return raycastParamsCache
+end
+
+local vector3Cache = {}
+local function vector3(serdes: SerDes<number>): SerDes<Vector3>
+	if vector3Cache[serdes] then
+		return vector3Cache[serdes]
+	end
+
+	local push, pop = serdes.ser, serdes.des
+
+	local vec: SerDes<Vector3> = {
+		ser = function(cursor, vector3)
+			push(cursor, vector3.Z)
+			push(cursor, vector3.Y)
+			push(cursor, vector3.X)
+		end,
+
+		des = function(cursor)
+			return Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+		end,
+	}
+	vector3Cache[serdes] = vec
+	return vec
+end
+Squash.Vector3 = vector3
+
+local pathwaypointaction = enumitem(Enum.PathWaypointAction)
+local pathWaypointCache = {}
+local function pathwaypoint(serdes: SerDes<number>): SerDes<PathWaypoint>
+	if pathWaypointCache[serdes] then
+		return pathWaypointCache[serdes]
+	end
+
+	local push, pop = vector3(serdes).ser, vector3(serdes).des
+
+	local path: SerDes<PathWaypoint> = {
+		ser = function(cursor, waypoint)
+			pushstr(cursor, waypoint.Label)
+			pathwaypointaction.ser(cursor, waypoint.Action)
+			push(cursor, waypoint.Position)
+		end,
+
+		des = function(cursor)
+			return PathWaypoint.new(
+				pop(cursor),
+				pathwaypointaction.des(cursor) :: Enum.PathWaypointAction,
+				popstr(cursor)
+			)
+		end,
+	}
+	pathWaypointCache[serdes] = path
+	return path
+end
+Squash.PathWaypoint = pathwaypoint
 
 local vector2Cache = {}
 function Squash.Vector2(serdes: SerDes<number>): SerDes<Vector2>
@@ -732,971 +1289,20 @@ function Squash.Vector2(serdes: SerDes<number>): SerDes<Vector2>
 	end
 
 	local ser, des = serdes.ser, serdes.des
-
-	local vec2 = {}
-
-	function vec2.ser(cursor: Cursor, v: Vector2)
-		ser(cursor, v.X)
-		ser(cursor, v.Y)
-	end
-
-	function vec2.des(cursor: Cursor)
-		local y, x = des(cursor), des(cursor)
-		return Vector2.new(x, y)
-	end
+	local vec2: SerDes<Vector2> = {
+		ser = function(cursor, v)
+			ser(cursor, v.X)
+			ser(cursor, v.Y)
+		end,
+		
+		des = function(cursor)
+			local y, x = des(cursor), des(cursor)
+			return Vector2.new(x, y)
+		end,
+	}
 
 	vector2Cache[serdes] = vec2
 	return vec2
 end
 
--- --[=[
--- 	@class Squash
--- ]=]
--- local Squash = {}
-
--- Squash.newCursor = newCursor
--- Squash.trimCursor = trimCursor
-
--- --* Types *--
-
--- --[=[
--- 	@within Squash
--- 	@type Alphabet string
-
--- 	A string of unique characters that represent the basis of other strings.
--- ]=]
--- export type Alphabet = string
-
--- --[=[
--- 	@within Squash
--- 	@type Bytes number
-
--- 	1, 2, 3, 4, 5, 6, 7, 8
-
--- 	The number of bytes used to represent a number.
--- ]=]
--- export type Bytes = number
-
--- --[=[
--- 	@within Squash
--- 	@type FloatBytes number
-
--- 	4, 8
-
--- 	The number of bytes used to represent a floating point number.
--- ]=]
--- export type FloatBytes = number
-
--- --[=[
--- 	@within Squash
--- 	@type NumberSer (x: number, bytes: Bytes?) -> string
-
--- 	A function that serializes a number into a string. Usually this is Squash's uint, int, or number ser methods.
--- ]=]
--- export type SerDes<T> = {
--- 	ser: (cursor: Cursor, x0: T) -> Cursor,
--- 	des: (cursor: Cursor) -> T,
--- 	serarr: (cursor: Cursor, xs: { T }) -> Cursor,
--- 	desarr: (cursor: Cursor) -> { T },
--- }
-
--- --* Properties *--
-
--- -- Alphabets
--- do
--- 	--[=[
--- 		@within Squash
--- 		@prop binary Alphabet
-	
--- 		All digits in base 2.
--- 	]=]
--- 	Squash.binary = '01' :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop octal Alphabet
-	
--- 		All digits in base 8.
--- 	]=]
--- 	Squash.octal = '01234567' :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop decimal Alphabet
-	
--- 		All digits in base 10.
--- 	]=]
--- 	Squash.decimal = '0123456789' :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop duodecimal Alphabet
-	
--- 		All digits in base 12.
--- 	]=]
--- 	Squash.duodecimal = '0123456789AB' :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop hexadecimal Alphabet
-	
--- 		All digits in base 16.
--- 	]=]
--- 	Squash.hexadecimal = '0123456789ABCDEF' :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop utf8 Alphabet
-	
--- 		All digits in base 256. The UTF-8 character set.
--- 	]=]
--- 	local utf8Characters = table.create(256)
--- 	for i = 0, 255 do
--- 		utf8Characters[i + 1] = string.char(i)
--- 	end
--- 	Squash.utf8 = table.concat(utf8Characters) :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop lower Alphabet
-	
--- 		All lowercase letters in the english language.
--- 	]=]
--- 	Squash.lower = 'abcdefghijklmnopqrstuvwxyz' :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop upper Alphabet
-	
--- 		All uppercase letters in the english language.
--- 	]=]
--- 	Squash.upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop letters Alphabet
-	
--- 		All letters in the english language.
--- 	]=]
--- 	Squash.letters = Squash.lower .. Squash.upper :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop punctuation Alphabet
-	
--- 		All punctuation symbols in the english language.
--- 	]=]
--- 	Squash.punctuation = ' .,?!:;\'"-_' :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop english Alphabet
-	
--- 		All symbols in the english language.
--- 	]=]
--- 	Squash.english = Squash.letters .. Squash.punctuation :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop filepath Alphabet
-	
--- 		All characters that may be used in a filepath.
--- 	]=]
--- 	Squash.filepath = Squash.letters .. Squash.letters .. ':/-_ ' :: Alphabet
-
--- 	--[=[
--- 		@within Squash
--- 		@prop datastore Alphabet
-	
--- 		All characters that will not be expanded when JSONEncoded.
--- 	]=]
--- 	Squash.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~'
--- end
-
--- --* Duplication Reducers *--
-
--- --? inlined
--- local function bytesAssert(bytes: number): never
--- 	error(`Expected 1, 2, 3, 4, 5, 6, 7, 8 bytes. Invalid number of bytes for integer: {bytes}`)
--- end
-
--- --? inlined
--- local function floatAssert(bytes: number): never
--- 	error(`Expected 4 or 8 bytes. Invalid number of bytes for floating point: {bytes}`)
--- end
-
--- local function numberSerDes(bytes: number, push: (cursor: Cursor, x0: number) -> (), pop: (cursor: Cursor) -> number)
--- 	local num = {}
-
--- 	function num.ser(cursor: Cursor?, x0: number)
--- 		local cursor = cursor or newCursor(bytes)
--- 		push(cursor, x0)
--- 		return cursor
--- 	end
-
--- 	num.des = pop
-
--- 	function num.serarr(cursor: Cursor, xs: { number })
--- 		local cursor = cursor or newCursor(bytes * #xs)
--- 		for _, x0 in xs do
--- 			push(cursor, x0)
--- 		end
--- 		return cursor
--- 	end
-
--- 	function num.desarr(cursor: Cursor)
--- 		local len = cursor.Pos // bytes
--- 		local xs = table.create(len)
--- 		for i = 1, len do
--- 			xs[i] = pop(cursor)
--- 		end
--- 		return xs
--- 	end
-
--- 	return num
--- end
-
--- --* Actual API *--
-
--- function Squash.bytes(x0: number)
--- 	if x0 == 0 then -- 0
--- 		return 1
--- 	elseif x0 ~= x0 // 1 then -- floating point
--- 		local x1 = string.unpack('f', string.pack('f', x0))
--- 		return if x0 == x1 then 4 else 8
--- 	elseif x0 < 1 then -- negative int
--- 		return math.ceil(math.log(math.abs(2 * x0), 256))
--- 	else -- positive uint
--- 		return math.ceil(math.log(math.abs(1 + x0), 256))
--- 	end
--- end
-
--- do
--- 	local booleans = {}
-
--- 	function booleans.ser(
--- 		cursor: Cursor?,
--- 		x0: boolean?,
--- 		x1: boolean?,
--- 		x2: boolean?,
--- 		x3: boolean?,
--- 		x4: boolean?,
--- 		x5: boolean?,
--- 		x6: boolean?,
--- 		x7: boolean?
--- 	)
--- 		local cursor = cursor or newCursor()
--- 		local y = (if x0 then 1 else 0)
--- 			+ (if x1 then 2 else 0)
--- 			+ (if x2 then 4 else 0)
--- 			+ (if x3 then 8 else 0)
--- 			+ (if x4 then 16 else 0)
--- 			+ (if x5 then 32 else 0)
--- 			+ (if x6 then 64 else 0)
--- 			+ (if x7 then 128 else 0)
--- 		pushu1(cursor, y)
--- 		return cursor
--- 	end
-
--- 	function booleans.des(cursor: Cursor)
--- 		local x0 = popu1(cursor)
--- 		return (x0 / 1) % 2 >= 1,
--- 			(x0 / 2) % 2 >= 1,
--- 			(x0 / 4) % 2 >= 1,
--- 			(x0 / 8) % 2 >= 1,
--- 			(x0 / 16) % 2 >= 1,
--- 			(x0 / 32) % 2 >= 1,
--- 			(x0 / 64) % 2 >= 1,
--- 			(x0 / 128) % 2 >= 1
--- 	end
-
--- 	function booleans.serarr(cursor: Cursor?, xs: { boolean })
--- 		local cursor = cursor or newCursor()
-
--- 		for i = 0, math.ceil(#xs / 8) - 1 do
--- 			local j = i * 8
--- 			pushu8(
--- 				cursor,
--- 				(if xs[j + 1] then 1 else 0)
--- 					+ (if xs[j + 2] then 2 else 0)
--- 					+ (if xs[j + 3] then 4 else 0)
--- 					+ (if xs[j + 4] then 8 else 0)
--- 					+ (if xs[j + 5] then 16 else 0)
--- 					+ (if xs[j + 6] then 32 else 0)
--- 					+ (if xs[j + 7] then 64 else 0)
--- 					+ (if xs[j + 8] then 128 else 0)
--- 			)
--- 		end
-
--- 		return cursor
--- 	end
-
--- 	function booleans.desarr(cursor: Cursor)
--- 		local xs = {}
-
--- 		for i = 0, cursor.Pos - 1 do
--- 			local x0 = popu8(cursor)
--- 			local j = i * 8
--- 			xs[j + 1] = (x0 / 1) % 2 >= 1
--- 			xs[j + 2] = (x0 / 2) % 2 >= 1
--- 			xs[j + 3] = (x0 / 4) % 2 >= 1
--- 			xs[j + 4] = (x0 / 8) % 2 >= 1
--- 			xs[j + 5] = (x0 / 16) % 2 >= 1
--- 			xs[j + 6] = (x0 / 32) % 2 >= 1
--- 			xs[j + 7] = (x0 / 64) % 2 >= 1
--- 			xs[j + 8] = (x0 / 128) % 2 >= 1
--- 		end
-
--- 		return xs
--- 	end
-
--- 	local meta = {
--- 		__call = function(_)
--- 			return booleans
--- 		end,
--- 	}
--- 	Squash.boolean = setmetatable({}, meta)
--- end
-
--- do
--- 	local cache = {}
--- 	local meta = {
--- 		__call = function(_, bytes: number)
--- 			local cached: SerDes<number>? = cache[bytes]
--- 			if cached then
--- 				return cached
--- 			end
-
--- 			local push, pop
--- 			if bytes == 1 then
--- 				push, pop = pushu1, popu1
--- 			elseif bytes == 2 then
--- 				push, pop = pushu2, popu2
--- 			elseif bytes == 3 then
--- 				push, pop = pushu3, popu3
--- 			elseif bytes == 4 then
--- 				push, pop = pushu4, popu4
--- 			elseif bytes == 5 then
--- 				push, pop = pushu5, popu5
--- 			elseif bytes == 6 then
--- 				push, pop = pushu6, popu6
--- 			elseif bytes == 7 then
--- 				push, pop = pushu7, popu7
--- 			elseif bytes == 8 then
--- 				push, pop = pushu8, popu8
--- 			else
--- 				bytesAssert(bytes)
--- 			end
-
--- 			local uint = numberSerDes(bytes, push, pop)
--- 			cache[bytes] = uint
--- 			return uint
--- 		end,
--- 	}
--- 	Squash.uint = setmetatable({}, meta)
--- end
-
--- do
--- 	local cache = {}
--- 	local meta = {
--- 		__call = function(_, bytes: number)
--- 			local cached: SerDes<number>? = cache[bytes]
--- 			if cached then
--- 				return cached
--- 			end
-
--- 			local push, pop
--- 			if bytes == 1 then
--- 				push, pop = pushi1, popi1
--- 			elseif bytes == 2 then
--- 				push, pop = pushi2, popi2
--- 			elseif bytes == 3 then
--- 				push, pop = pushi3, popi3
--- 			elseif bytes == 4 then
--- 				push, pop = pushi4, popi4
--- 			elseif bytes == 5 then
--- 				push, pop = pushi5, popi5
--- 			elseif bytes == 6 then
--- 				push, pop = pushi6, popi6
--- 			elseif bytes == 7 then
--- 				push, pop = pushi7, popi7
--- 			elseif bytes == 8 then
--- 				push, pop = pushi8, popi8
--- 			else
--- 				bytesAssert(bytes)
--- 			end
-
--- 			local int = numberSerDes(bytes, push, pop)
--- 			cache[bytes] = int
--- 			return int
--- 		end,
--- 	}
--- 	Squash.int = setmetatable({}, meta)
--- end
-
--- do
--- 	local cache = {}
-
--- 	local meta = {
--- 		__call = function(_, bytes: number)
--- 			local cached: SerDes<number>? = cache[bytes]
--- 			if cached then
--- 				return cached
--- 			end
-
--- 			local push, pop
--- 			if bytes == 4 then
--- 				push, pop = pushf4, popf4
--- 			elseif bytes == 8 then
--- 				push, pop = pushf8, popf8
--- 			else
--- 				floatAssert(bytes)
--- 			end
-
--- 			local number = numberSerDes(bytes, push, pop)
--- 			cache[bytes] = number
--- 			return number
--- 		end,
--- 	}
--- 	Squash.number = setmetatable({}, meta)
--- end
-
--- do
--- 	local cache = {}
-
--- 	local function alphabet(source: string)
--- 		local lookup = {}
--- 		local alphabet = table.create(#source)
--- 		for i = 1, #source do
--- 			local char = string.sub(source, i, i)
--- 			if not lookup[char] then
--- 				lookup[char] = true
--- 				table.insert(alphabet, char)
--- 			end
--- 		end
--- 		table.sort(alphabet)
--- 		return table.concat(alphabet) :: Alphabet
--- 	end
-
--- 	local function convert(x: string, inAlphabet: Alphabet, outAlphabet: Alphabet)
--- 		local sourceDigits = {}
--- 		for i = 1, #inAlphabet do
--- 			sourceDigits[string.byte(inAlphabet, i)] = i - 1
--- 		end
-
--- 		local targetDigits = {}
--- 		for i = 1, #outAlphabet do
--- 			targetDigits[i - 1] = string.byte(outAlphabet, i)
--- 		end
-
--- 		local inputDigits = {}
--- 		for i = 1, #x do
--- 			table.insert(inputDigits, sourceDigits[string.byte(x, i)])
--- 		end
-
--- 		local output = {}
--- 		local sourceBase = #inAlphabet
--- 		local targetBase = #outAlphabet
--- 		local carry, value
--- 		while #inputDigits > 0 do
--- 			carry = 0
-
--- 			for i = 1, #inputDigits do
--- 				value = inputDigits[i] + carry * sourceBase
--- 				inputDigits[i] = value // targetBase
--- 				carry = value % targetBase
--- 			end
-
--- 			while #inputDigits > 0 and inputDigits[1] == 0 do
--- 				table.remove(inputDigits, 1)
--- 			end
-
--- 			table.insert(output, 1, string.char(targetDigits[carry]))
--- 		end
-
--- 		return table.concat(output)
--- 	end
-
--- 	local meta = {
--- 		__call = function(_, alphabet: Alphabet)
--- 			local cached = cache[alphabet] :: SerDes<string>
--- 			if cached then
--- 				return cached
--- 			end
-
--- 			local serdes = {}
--- 			cache[alphabet] = serdes
-
--- 			serdes.min = 0
--- 			serdes.max = math.huge
-
--- 			function serdes.ser(x0: string)
--- 				return buffer.fromstring(convert(x0, zeroChar .. alphabet, Squash.compressed))
--- 			end
-
--- 			function serdes.des(y0: buffer)
--- 				return convert(buffer.tostring(y0), Squash.compressed, zeroChar .. alphabet) :: string
--- 			end
-
--- 			function serdes.servar(x0: string)
--- 				return buffer.fromstring(convert(x0, zeroChar .. alphabet, Squash.list))
--- 			end
-
--- 			function serdes.desvar(y0: buffer)
--- 				return convert(buffer.tostring(y0), Squash.list, zeroChar .. alphabet)
--- 			end
-
--- 			function serdes.serarr(xs: { string })
--- 				local ys = table.create(#xs)
--- 				for i, x0 in ipairs(xs) do
--- 					ys[i] = convert(x0, zeroChar .. alphabet, Squash.list)
--- 				end
--- 				return buffer.fromstring(table.concat(ys, delimiterChar))
--- 			end
-
--- 			function serdes.desarr(ys: buffer)
--- 				local xs = string.split(buffer.tostring(ys), delimiterChar)
--- 				for i, x0 in ipairs(xs) do
--- 					xs[i] = convert(x0, Squash.list, zeroChar .. alphabet)
--- 				end
--- 				return xs
--- 			end
-
--- 			serdes.split = split
-
--- 			return serdes
--- 		end,
--- 	}
--- 	Squash.string = setmetatable({
--- 		convert = convert,
--- 		alphabet = alphabet,
--- 	}, meta)
-
--- 	-- --[=[
--- 	-- 	@within string
--- 	-- 	@function des
--- 	-- 	@param y string
--- 	-- 	@param alphabet Alphabet?
--- 	-- 	@return string
--- 	-- ]=]
--- 	-- Squash.string.des = function(y: string, alphabet: Alphabet?): string
--- 	-- 	local outAlphabet = Squash.delimiter .. (alphabet or Squash.english)
--- 	-- 	return Squash.string.convert(y, Squash.utf8, outAlphabet)
--- 	-- end
-
--- 	-- --[=[
--- 	-- 	@within string
--- 	-- 	@function serarr
--- 	-- 	@tag WARNING: Array serialization is unstable due to implementation oversight, use carefully
--- 	-- 	@param x { string }
--- 	-- 	@param alphabet Alphabet?
--- 	-- 	@return string
--- 	-- ]=]
--- 	-- Squash.string.serarr = function(x: { string }, alphabet: Alphabet?)
--- 	-- 	local y = {}
--- 	-- 	for i, v in x do
--- 	-- 		y[i] = Squash.string.ser(v, alphabet)
--- 	-- 	end
--- 	-- 	return table.concat(y, Squash.delimiter)
--- 	-- end
-
--- 	-- --[=[
--- 	-- 	@within string
--- 	-- 	@function desarr
--- 	-- 	@param y string
--- 	-- 	@param alphabet Alphabet?
--- 	-- 	@return { string }
--- 	-- ]=]
--- 	-- Squash.string.desarr = function(y: string, alphabet: Alphabet?): { string }
--- 	-- 	local x = {}
--- 	-- 	for v in string.gmatch(y, '[^' .. Squash.delimiter .. ']+') do
--- 	-- 		table.insert(x, Squash.string.des(v, alphabet))
--- 	-- 	end
--- 	-- 	return x
--- 	-- end
--- end
-
--- do
--- 	local cache = {}
-
--- 	local meta = {
--- 		__call = function(_, encoding: SerDes<number>)
--- 			local cached = cache[encoding] :: SerDes<Vector2>
--- 			if cached then
--- 				return cached
--- 			end
-
--- 			local serdes = {}
--- 			cache[encoding] = serdes
-
--- 			local encodingmax = encoding.max
--- 			local encodingser = encoding.ser
--- 			local encodingdes = encoding.des
-
--- 			local max = 2 * encodingmax
--- 			serdes.min = 0
--- 			serdes.max = max
-
--- 			function serdes.ser(cursor: Cursor, x0: Vector2)
--- 				if x0 == Vector2.zero then
--- 					return buffer.create(0)
--- 				elseif x0 == Vector2.one then
--- 					return buffer.create(1)
--- 				elseif x0 == Vector2.xAxis then
--- 					local y0 = buffer.create(1)
--- 					buffer.writeu8(y0, 0, 1)
--- 					return y0
--- 				elseif x0 == Vector2.yAxis then
--- 					local y0 = buffer.create(1)
--- 					buffer.writeu8(y0, 0, 2)
--- 					return y0
--- 				end
-
--- 				local y0 = buffer.create(max)
--- 				buffer.copy(y0, 0 * encodingmax, encodingser(x0.X))
--- 				buffer.copy(y0, 1 * encodingmax, encodingser(x0.Y))
--- 				return y0
--- 			end
-
--- 			function serdes.des(y0: buffer)
--- 				local len = buffer.len(y0)
--- 				if len == 0 then
--- 					return Vector2.zero
--- 				elseif len == 1 then
--- 					local id = buffer.readu8(y0, 0)
--- 					if id == 0 then
--- 						return Vector2.one
--- 					elseif id == 1 then
--- 						return Vector2.xAxis
--- 					elseif id == 2 then
--- 						return Vector2.yAxis
--- 					else
--- 						error(`Vector2 Special-Case Buffer of size 1 has invalid ID {id}, expected 0, 1, 2`)
--- 					end
--- 				end
-
--- 				local y1 = buffer.create(encodingmax)
--- 				local x = encodingdes(y0)
-
--- 				buffer.copy(y1, 0, y0, encodingmax, encodingmax)
--- 				local y = encodingdes(y1)
-
--- 				return Vector2.new(x, y)
--- 			end
-
--- 			function serdes.serarr(xs: { Vector2 })
--- 				local ys = buffer.create(max * #xs)
--- 				for i, x0 in xs do
--- 					local j = 2 * i
--- 					buffer.copy(ys, j - 2, encodingser(x0.X))
--- 					buffer.copy(ys, j - 1, encodingser(x0.Y))
--- 				end
-
--- 				return ys
--- 			end
-
--- 			function serdes.desarr(ys: buffer)
--- 				local len = buffer.len(ys) / max
--- 				local xs = table.create(len)
--- 				local buf = buffer.create(encodingmax)
-
--- 				for i = 0, len - 1 do
--- 					local j = 2 * i
--- 					buffer.copy(buf, 0, ys, (j + 0) * encodingmax, encodingmax)
--- 					local x = encodingdes(buf)
-
--- 					buffer.copy(buf, 0, ys, (j + 1) * encodingmax, encodingmax)
--- 					local y = encodingdes(buf)
-
--- 					xs[i + 1] = Vector2.new(x, y)
--- 				end
-
--- 				return xs
--- 			end
-
--- 			return serdes
--- 		end,
--- 	}
--- 	Squash.Vector2 = setmetatable({}, meta)
--- end
-
--- do
--- 	local cache = {}
-
--- 	local meta = {
--- 		__call = function(_, encoding: SerDes<number>)
--- 			local cached = cache[encoding] :: SerDes<Vector3>
--- 			if cached then
--- 				return cached
--- 			end
-
--- 			local serdes = {}
--- 			cache[encoding] = serdes
-
--- 			local encodingmax = encoding.max
--- 			local encodingser = encoding.ser
--- 			local encodingdes = encoding.des
-
--- 			local max = 3 * encodingmax
--- 			serdes.min = 0
--- 			serdes.max = max
-
--- 			function serdes.ser(x0: Vector3)
--- 				if x0 == Vector3.zero then
--- 					return buffer.create(0)
--- 				elseif x0 == Vector3.one then
--- 					return buffer.create(1)
--- 				elseif x0 == Vector3.xAxis then
--- 					local y0 = buffer.create(1)
--- 					buffer.writeu8(y0, 0, 1)
--- 					return y0
--- 				elseif x0 == Vector3.yAxis then
--- 					local y0 = buffer.create(1)
--- 					buffer.writeu8(y0, 0, 2)
--- 					return y0
--- 				elseif x0 == Vector3.zAxis then
--- 					local y0 = buffer.create(1)
--- 					buffer.writeu8(y0, 0, 3)
--- 					return y0
--- 				end
-
--- 				local y0 = buffer.create(max)
--- 				buffer.copy(y0, 0 * encodingmax, encodingser(x0.X))
--- 				buffer.copy(y0, 1 * encodingmax, encodingser(x0.Y))
--- 				buffer.copy(y0, 2 * encodingmax, encodingser(x0.Z))
--- 				return y0
--- 			end
-
--- 			function serdes.des(y0: buffer)
--- 				local len = buffer.len(y0)
--- 				if len == 0 then
--- 					return Vector3.zero
--- 				elseif len == 1 then
--- 					local id = buffer.readu8(y0, 0)
--- 					if id == 0 then
--- 						return Vector3.one
--- 					elseif id == 1 then
--- 						return Vector3.xAxis
--- 					elseif id == 2 then
--- 						return Vector3.yAxis
--- 					elseif id == 3 then
--- 						return Vector3.zAxis
--- 					else
--- 						error(`Vector3 Special-Case Buffer of size 1 has invalid ID {id}, expected 0, 1, 2, 3`)
--- 					end
--- 				end
-
--- 				local y1 = buffer.create(encodingmax)
--- 				local x = encodingdes(y0)
-
--- 				buffer.copy(y1, 0, y0, encodingmax, encodingmax)
--- 				local y = encodingdes(y1)
-
--- 				buffer.copy(y1, 0, y0, 2 * encodingmax, encodingmax)
--- 				local z = encodingdes(y1)
-
--- 				return Vector3.new(x, y, z)
--- 			end
-
--- 			serdes.minvar = max
-
--- 			function serdes.servar(x0: Vector3)
--- 				local y0 = buffer.create(max)
--- 				buffer.copy(y0, 0 * encodingmax, encodingser(x0.X))
--- 				buffer.copy(y0, 1 * encodingmax, encodingser(x0.Y))
--- 				buffer.copy(y0, 2 * encodingmax, encodingser(x0.Z))
--- 				return y0
--- 			end
-
--- 			function serdes.desvar(y0: buffer)
--- 				local y1 = buffer.create(encodingmax)
--- 				local x = encodingdes(y0)
-
--- 				buffer.copy(y1, 0, y0, encodingmax, encodingmax)
--- 				local y = encodingdes(y1)
-
--- 				buffer.copy(y1, 0, y0, 2 * encodingmax, encodingmax)
--- 				local z = encodingdes(y1)
-
--- 				return Vector3.new(x, y, z)
--- 			end
-
--- 			function serdes.serarr(xs: { Vector3 })
--- 				local ys = buffer.create(max * #xs)
--- 				for i, x0 in xs do
--- 					local j = 3 * i
--- 					buffer.copy(ys, j - 3, encodingser(x0.X))
--- 					buffer.copy(ys, j - 2, encodingser(x0.Y))
--- 					buffer.copy(ys, j - 1, encodingser(x0.Z))
--- 				end
-
--- 				return ys
--- 			end
-
--- 			function serdes.desarr(ys: buffer)
--- 				local len = buffer.len(ys) / max
--- 				local xs = table.create(len)
--- 				local buf = buffer.create(encodingmax)
-
--- 				for i = 0, len - 1 do
--- 					local j = 3 * i
--- 					buffer.copy(buf, 0, ys, (j + 0) * encodingmax, encodingmax)
--- 					local x = encodingdes(buf)
-
--- 					buffer.copy(buf, 0, ys, (j + 1) * encodingmax, encodingmax)
--- 					local y = encodingdes(buf)
-
--- 					buffer.copy(buf, 0, ys, (j + 2) * encodingmax, encodingmax)
--- 					local z = encodingdes(buf)
-
--- 					xs[i + 1] = Vector3.new(x, y, z)
--- 				end
-
--- 				return xs
--- 			end
-
--- 			return serdes
--- 		end,
--- 	}
--- 	Squash.Vector3 = setmetatable({}, meta)
--- end
-
--- do
--- 	local meta = {
--- 		__call = function<T...>(_, ...: SerDes<any>)
--- 			local args = { ... }
--- 			local argc = #args
-
--- 			if argc == 0 then
--- 				error 'Cannot create tuple serdes with no arguments'
--- 			elseif argc == 1 then
--- 				return (args[1] :: any) :: SerDesVar<T...>
--- 			end
-
--- 			local serdes = {}
-
--- 			serdes.min = 0
--- 			serdes.max = 0
-
--- 			for i, arg in args do
--- 				local min = arg.minvar or arg.min
--- 				local max = arg.maxvar or arg.max
--- 				serdes.min += min
--- 				serdes.max += max + if max == math.huge and i < argc then 1 else 0
--- 			end
-
--- 			print('MIN', serdes.min, 'MAX', serdes.max)
-
--- 			if serdes.max == math.huge then
--- 				print 'UNBOUNDED SIZE'
--- 				local ys = table.create(argc)
-
--- 				function serdes.ser(...: T...)
--- 					print 'SER'
-
--- 					local xs = { ... }
-
--- 					for i, arg in args do
--- 						local ser = arg.servar or arg.ser
--- 						ys[i] = ser(xs[i])
--- 					end
--- 				end
-
--- 				function serdes.des(ys: buffer): T...
--- 					print 'DES'
--- 				end
--- 			elseif serdes.max ~= serdes.min then
--- 				print 'BOUNDED SIZE'
-
--- 				function serdes.ser(...: T...)
--- 					local xs = { ... }
-
--- 					local yss = {}
--- 					local sizes = table.create(argc)
-
--- 					local size = 0
--- 					for i, arg in ipairs(args) do
--- 						local ser = arg.servar or arg.ser
--- 						local y0 = ser(xs[i])
--- 						table.insert(yss, y0)
-
--- 						local len = buffer.len(y0)
--- 						size += len
--- 						sizes[i] = len
--- 					end
-
--- 					local offset = 0
--- 					local ys = buffer.create(size)
--- 					for i, y0 in yss do
--- 						buffer.copy(ys, offset, y0)
--- 						offset += sizes[i]
--- 					end
-
--- 					return ys
--- 				end
-
--- 				function serdes.des(ys: buffer)
--- 					local xs = table.create(argc)
-
--- 					local yss = ys
-
--- 					local offset = 0
--- 					for _, arg in args do
--- 						local cutoff = if arg.split then arg.split(yss) else offset + (arg.maxvar or arg.max)
-
--- 						local segment = buffer.create(cutoff - offset)
--- 						offset = cutoff + 1
--- 						buffer.copy(segment, 0, yss, cutoff)
-
--- 						local des = arg.desvar or arg.des
--- 						table.insert(xs, des(segment))
-
--- 						local len = buffer.len(yss) - offset
--- 						local last = buffer.create(len)
--- 						buffer.copy(last, 0, yss, offset)
--- 						yss = last
--- 					end
--- 				end
--- 			else
--- 				print 'FIXED SIZE'
--- 				local buf = buffer.create(serdes.max)
-
--- 				function serdes.ser(...: T...)
--- 					local xs = { ... }
-
--- 					local offset = 0
--- 					for i, arg in ipairs(args) do
--- 						local y0 = arg.ser(xs[i])
--- 						buffer.copy(buf, offset, y0)
--- 						local len = arg.maxvar or arg.max
--- 						offset += len
--- 					end
-
--- 					return buf
--- 				end
-
--- 				function serdes.des(ys: buffer): T...
--- 					local xs = table.create(#args)
-
--- 					local offset = 0
--- 					for i, arg in ipairs(args) do
--- 						local len = arg.maxvar or arg.max
--- 						local y0 = buffer.create(len)
--- 						buffer.copy(y0, 0, ys, offset, len)
--- 						offset += len
-
--- 						local x0 = arg.des(y0)
--- 						table.insert(xs, x0)
--- 					end
-
--- 					return table.unpack(xs)
--- 				end
--- 			end
-
--- 			return serdes
--- 		end,
--- 	}
--- 	Squash.tuple = setmetatable({}, meta)
--- end
-
--- return Squash
+return Squash
