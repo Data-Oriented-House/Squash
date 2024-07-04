@@ -8,21 +8,21 @@ export type Cursor = {
 	Pos: number,
 }
 
-local function newCursor(size: number?, position: number?): Cursor
+local function newcursor(size: number?, position: number?): Cursor
 	return {
 		Buf = buffer.create(size or 8), --? Chosen to not use too much space and not resize too quickly as a starting point
 		Pos = position or 0,
 	}
 end
 
-local function fromBuffer(buf: buffer)
+local function frombuffer(buf: buffer)
 	return {
 		Buf = buf,
 		Pos = buffer.len(buf),
 	}
 end
 
-local function toBuffer(cursor: Cursor): buffer
+local function tobuffer(cursor: Cursor): buffer
 	local buf = buffer.create(cursor.Pos)
 	buffer.copy(buf, 0, cursor.Buf, 0, cursor.Pos)
 	return buf
@@ -418,11 +418,34 @@ local function popbuf(cursor: Cursor)
 	return buf
 end
 
+local function printcursor(cursor: Cursor): ()
+	local bytes = {string.byte(buffer.tostring(cursor.Buf), 1, -1)}
+	local offset = 7
+	for i = 1, cursor.Pos do
+		local byte = bytes[i]
+		local digits = if byte == 0 then 1 else math.ceil(math.log10(1 + byte))
+		offset += digits + 1
+	end
+
+	local lastByte = bytes[cursor.Pos + 1]
+	if lastByte then
+		local lastDigits = if lastByte == 0 then 1 else math.ceil(math.log10(1 + lastByte))
+		offset += lastDigits // 2
+	end
+
+	if #bytes == 0 or cursor.Pos == buffer.len(cursor.Buf) then
+		table.insert(bytes, ' ' :: any)
+	end
+
+	print(`Len: {buffer.len(cursor.Buf)}\nPos: {cursor.Pos}\nBuf: \{ {table.concat(bytes, ' ')} \}\n{string.rep(' ', offset)}^`)
+end
+
 local Squash = {}
 
-Squash.cursor = newCursor
-Squash.frombuffer = fromBuffer
-Squash.tobuffer = toBuffer
+Squash.print = printcursor
+Squash.cursor = newcursor
+Squash.frombuffer = frombuffer
+Squash.tobuffer = tobuffer
 
 export type SerDes<T...> = {
 	ser: (cursor: Cursor, T...) -> (),
