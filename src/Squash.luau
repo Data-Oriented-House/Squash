@@ -2,34 +2,6 @@
 --!native
 --!optimize 2
 
--- local Vector3 = {}
-
--- export type Vector3 = {
--- 	X: number,
--- 	Y: number,
--- 	Z: number,
--- 	Magnitude: number,
--- 	Unit: Vector3,
--- }
-
--- local Vector3Meta = {}
--- Vector3Meta.__index = function(t: Vector3, k: string): any
--- 	if k == 'Magnitude' then
--- 		return math.sqrt(t.X^2 + t.Y^2 + t.Z^2)
--- 	end
-
--- 	if k == 'Unit' then
--- 		local m = 1 / math.sqrt(t.X^2 + t.Y^2 + t.Z^2)
--- 		return Vector3.new(t.X * m, t.Y * m, t.Z * m)
--- 	end
-
--- 	return nil
--- end
-
--- function Vector3.new(x: number?, y: number?, z: number?): Vector3
--- 	return setmetatable({ X = x or 0, Y = y or 0, Z = z or 0 }, Vector3Meta) :: any
--- end
-
 --- An import of the [Redblox Buffit Cursor](https://github.com/red-blox/Util/blob/main/libs/Buffit/Buffit.luau) type for better cross-library interaction
 export type Cursor = {
 	Buf: buffer,
@@ -733,7 +705,7 @@ local axesCache: SerDes<Axes> = {
 			front and Enum.NormalId.Front,
 			left and Enum.NormalId.Left,
 			right and Enum.NormalId.Right,
-			top and Enum.NormalId.Top,
+			top and Enum.NormalId.Top
 		)
 	end,
 }
@@ -1053,28 +1025,17 @@ end
 local keyinterpolationmode = enumitem(Enum.KeyInterpolationMode)
 local floatCurveKeyCache: SerDes<FloatCurveKey> = {
 	ser = function(cursor, key)
-		if key.Interpolation == Enum.KeyInterpolationMode.Cubic then
-			pushf4(cursor, key.LeftTangent)
-			pushf4(cursor, key.RightTangent)
-		end
-
 		keyinterpolationmode.ser(cursor, key.Interpolation)
-
 		pushf4(cursor, key.Value)
 		pushf4(cursor, key.Time)
 	end,
 
 	des = function(cursor)
-		local key = FloatCurveKey.new(
+		return FloatCurveKey.new(
 			popf4(cursor),
 			popf4(cursor),
-			keyinterpolationmode.des(cursor) :: any,
+			keyinterpolationmode.des(cursor) :: any
 		)
-		if key.Interpolation == Enum.KeyInterpolationMode.Cubic then
-			key.RightTangent = popf4(cursor)
-			key.LeftTangent = popf4(cursor)
-		end
-		return key
 	end,
 }
 function Squash.FloatCurveKey(): SerDes<FloatCurveKey>
@@ -1248,6 +1209,7 @@ local function vector3(serdes: SerDes<number>): SerDes<Vector3>
 			return Vector3.new(pop(cursor), pop(cursor), pop(cursor))
 		end,
 	}
+
 	vector3Cache[serdes] = vec
 	return vec
 end
@@ -1260,18 +1222,20 @@ local function pathwaypoint(serdes: SerDes<number>): SerDes<PathWaypoint>
 		return pathWaypointCache[serdes]
 	end
 
-	local push, pop = vector3(serdes).ser, vector3(serdes).des
+	local push, pop = serdes.ser, serdes.des
 
 	local path: SerDes<PathWaypoint> = {
 		ser = function(cursor, waypoint)
 			pushstr(cursor, waypoint.Label)
 			pathwaypointaction.ser(cursor, waypoint.Action)
-			push(cursor, waypoint.Position)
+			push(cursor, waypoint.Position.Z)
+			push(cursor, waypoint.Position.Y)
+			push(cursor, waypoint.Position.X)
 		end,
 
 		des = function(cursor)
 			return PathWaypoint.new(
-				pop(cursor),
+				Vector3.new(pop(cursor), pop(cursor), pop(cursor)),
 				pathwaypointaction.des(cursor) :: Enum.PathWaypointAction,
 				popstr(cursor)
 			)
@@ -1282,27 +1246,315 @@ local function pathwaypoint(serdes: SerDes<number>): SerDes<PathWaypoint>
 end
 Squash.PathWaypoint = pathwaypoint
 
+local physicalPropertiesCache: SerDes<PhysicalProperties> = {
+	ser = function(cursor, props)
+		pushf4(cursor, props.ElasticityWeight)
+		pushf4(cursor, props.FrictionWeight)
+		pushf4(cursor, props.Elasticity)
+		pushf4(cursor, props.Friction)
+		pushf4(cursor, props.Density)
+	end,
+
+	des = function(cursor)
+		return PhysicalProperties.new(
+			popf4(cursor),
+			popf4(cursor),
+			popf4(cursor),
+			popf4(cursor),
+			popf4(cursor)
+		)
+	end,
+}
+function Squash.PhysicalProperties(): SerDes<PhysicalProperties>
+	return physicalPropertiesCache
+end
+
+local rayCache = {}
+local function rayserdes(serdes: SerDes<number>): SerDes<Ray>
+	if rayCache[serdes] then
+		return rayCache[serdes]
+	end
+
+	local push, pop = serdes.ser, serdes.des
+
+	local raycached: SerDes<Ray> = {
+		ser = function(cursor, ray)
+			push(cursor, ray.Direction.Z)
+			push(cursor, ray.Direction.Y)
+			push(cursor, ray.Direction.X)
+			push(cursor, ray.Origin.Z)
+			push(cursor, ray.Origin.Y)
+			push(cursor, ray.Origin.X)
+		end,
+
+		des = function(cursor)
+			return Ray.new(
+				Vector3.new(pop(cursor), pop(cursor), pop(cursor)),
+				Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+			)
+		end,
+	}
+	rayCache[serdes] = raycached
+	return raycached
+end
+Squash.Ray = rayserdes
+
+local materialenum = enumitem(Enum.Material)
+local raycastResultCache = {}
+function Squash.RaycastResult(serdes: SerDes<number>)
+	if raycastResultCache[serdes] then
+		return raycastParamsCache[serdes]
+	end
+
+	local push, pop = serdes.ser, serdes.des
+
+	local raycastresult: SerDes<RaycastResult> = {
+		ser = function(cursor, result)
+			pushf4(cursor, result.Distance)
+			push(cursor, result.Position.Z)
+			push(cursor, result.Position.Y)
+			push(cursor, result.Position.X)
+			push(cursor, result.Normal.Z)
+			push(cursor, result.Normal.Y)
+			push(cursor, result.Normal.X)
+			materialenum.ser(cursor, result.Material)
+		end,
+
+		des = function(cursor)
+			return {
+				Material = materialenum.des(cursor) :: any,
+				Normal = Vector3.new(pop(cursor), pop(cursor), pop(cursor)),
+				Position = Vector3.new(pop(cursor), pop(cursor), pop(cursor)),
+				Distance = popf4(cursor),
+				Instance = nil,
+			} :: any
+		end,
+	}
+
+	raycastResultCache[serdes] = raycastresult
+	return raycastresult
+end
+
 local vector2Cache = {}
 function Squash.Vector2(serdes: SerDes<number>): SerDes<Vector2>
 	if vector2Cache[serdes] then
 		return vector2Cache[serdes]
 	end
 
-	local ser, des = serdes.ser, serdes.des
+	local push, pop = serdes.ser, serdes.des
+	
 	local vec2: SerDes<Vector2> = {
 		ser = function(cursor, v)
-			ser(cursor, v.X)
-			ser(cursor, v.Y)
+			push(cursor, v.Y)
+			push(cursor, v.X)
 		end,
 		
 		des = function(cursor)
-			local y, x = des(cursor), des(cursor)
-			return Vector2.new(x, y)
+			return Vector2.new(pop(cursor), pop(cursor))
 		end,
 	}
 
 	vector2Cache[serdes] = vec2
 	return vec2
+end
+
+local rectCache = {}
+function Squash.Rect(serdes: SerDes<number>): SerDes<Rect>
+	if rectCache[serdes] then
+		return rectCache[serdes]
+	end
+
+	local push, pop = serdes.ser, serdes.des
+
+	local rectserdes: SerDes<Rect> = {
+		ser = function(cursor, rect)
+			push(cursor, rect.Max.Y)
+			push(cursor, rect.Max.X)
+			push(cursor, rect.Min.Y)
+			push(cursor, rect.Min.X)
+		end,
+
+		des = function(cursor)
+			return Rect.new(pop(cursor), pop(cursor), pop(cursor), pop(cursor))
+		end,
+	}
+	rectCache[serdes] = rectserdes
+	return rectserdes
+end
+
+local region3Cache = {}
+function Squash.Region3(serdes: SerDes<number>): SerDes<Region3>
+	if region3Cache[serdes] then
+		return region3Cache[serdes]
+	end
+
+	local push, pop = serdes.ser, serdes.des
+
+	local reg: SerDes<Region3> = {
+		ser = function(cursor, region)
+			local size = region.Size
+			push(cursor, size.Z)
+			push(cursor, size.Y)
+			push(cursor, size.X)
+			local pos = region.CFrame.Position
+			push(cursor, pos.Z)
+			push(cursor, pos.Y)
+			push(cursor, pos.X)
+		end,
+
+		des = function(cursor)
+			local size = 0.5 * Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+			local position = Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+			return Region3.new(position - size, position + size)
+		end,
+	}
+	region3Cache[serdes] = reg
+	return reg
+end
+
+local region3int16Cache: SerDes<Region3int16> = {
+	ser = function(cursor, region)
+		local max = region.Max
+		pushi2(cursor, max.Z)
+		pushi2(cursor, max.Y)
+		pushi2(cursor, max.X)
+		local min = region.Min
+		pushi2(cursor, min.Z)
+		pushi2(cursor, min.Y)
+		pushi2(cursor, min.X)
+	end,
+
+	des = function(cursor)
+		local min = Vector3int16.new(popi2(cursor), popi2(cursor), popi2(cursor))
+		local max = Vector3int16.new(popi2(cursor), popi2(cursor), popi2(cursor))
+		return Region3int16.new(min, max)
+	end,
+}
+function Squash.Region3int16()
+	return region3int16Cache
+end
+
+local rotationCurveKeyCache: SerDes<RotationCurveKey> = {
+	ser = function(cursor, key)
+		keyinterpolationmode.ser(cursor, key.Interpolation)
+		cframeCache.ser(cursor, key.Value)
+		pushf4(cursor, key.Time)
+	end,
+	
+	des = function(cursor)
+		return RotationCurveKey.new(
+			popf4(cursor),
+			cframeCache.des(cursor),
+			keyinterpolationmode.des(cursor) :: Enum.KeyInterpolationMode
+		)
+	end,
+}
+function Squash.RotationCurveKey()
+	return rotationCurveKeyCache
+end
+
+local easingstyle = enumitem(Enum.EasingStyle)
+local easingdirection = enumitem(Enum.EasingDirection)
+local tweenInfoCache: SerDes<TweenInfo> = {
+	ser = function(cursor, info)
+		pushf4(cursor, info.DelayTime)
+		pushbool(cursor, info.Reverses)
+		pushvlq(cursor, info.RepeatCount)
+		easingdirection.ser(cursor, info.EasingDirection)
+		easingstyle.ser(cursor, info.EasingStyle)
+		pushf4(cursor, info.Time)
+	end,
+
+	des = function(cursor)
+		return TweenInfo.new(
+			popf4(cursor),
+			easingstyle.des(cursor) :: Enum.EasingStyle,
+			easingdirection.des(cursor) :: Enum.EasingDirection,
+			popvlq(cursor),
+			popbool(cursor),
+			popf4(cursor)
+		)
+	end
+}
+function Squash.TweenInfo()
+	return tweenInfoCache
+end
+
+local udimCache = {}
+function Squash.UDim(serdes: SerDes<number>): SerDes<UDim>
+	if udimCache[serdes] then
+		return udimCache[serdes]
+	end
+
+	local push, pop = serdes.ser, serdes.des
+	
+	local udim: SerDes<UDim> = {
+		ser = function(cursor, u)
+			push(cursor, u.Offset)
+			push(cursor, u.Scale)
+		end,
+		
+		des = function(cursor)
+			return UDim.new(pop(cursor), pop(cursor))
+		end,
+	}
+
+	udimCache[serdes] = udim
+	return udim
+end
+
+local udim2Cache = {}
+function Squash.UDim2(serdes: SerDes<number>): SerDes<UDim2>
+	if udim2Cache[serdes] then
+		return udim2Cache[serdes]
+	end
+
+	local push, pop = serdes.ser, serdes.des
+	
+	local udim2: SerDes<UDim2> = {
+		ser = function(cursor, u)
+			push(cursor, u.Y.Offset)
+			push(cursor, u.Y.Scale)
+			push(cursor, u.X.Offset)
+			push(cursor, u.X.Scale)
+		end,
+		
+		des = function(cursor)
+			return UDim2.new(pop(cursor), pop(cursor), pop(cursor), pop(cursor))
+		end,
+	}
+
+	udim2Cache[serdes] = udim2
+	return udim2
+end
+
+local vector2int16Cache: SerDes<Vector2int16> = {
+	ser = function(cursor, v)
+		pushi2(cursor, v.Y)
+		pushi2(cursor, v.X)
+	end,
+	
+	des = function(cursor)
+		return Vector2int16.new(popi2(cursor), popi2(cursor))
+	end,
+}
+function Squash.Vector2int16(): SerDes<Vector2int16>
+	return vector2int16Cache
+end
+
+local vector3int16Cache: SerDes<Vector3int16> = {
+	ser = function(cursor, v)
+		pushi2(cursor, v.Z)
+		pushi2(cursor, v.Y)
+		pushi2(cursor, v.X)
+	end,
+	
+	des = function(cursor)
+		return Vector3int16.new(popi2(cursor), popi2(cursor), popi2(cursor))
+	end,
+}
+function Squash.Vector3int16(): SerDes<Vector3int16>
+	return vector3int16Cache
 end
 
 return Squash
