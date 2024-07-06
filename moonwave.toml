@@ -102,6 +102,9 @@ href = "https://discord.com/channels/385151591524597761/1118427954377146378"
 label = "Discord"
 position = "right"
 
+[navbar.logo]
+src = "/favicon.ico"
+
 [footer]
 style = "dark"
 copyright = "Copyright © 2024 SolarScuffle-Bot. Built with Moonwave and Docusaurus"
