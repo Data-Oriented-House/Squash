@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[55],{63891:s=>{s.exports=JSON.parse('{"sourceUrl":"https://github.com/Data-Oriented-House/Squash/blob/main","baseUrl":"/Squash/","classOrder":[{"classes":["Squash"]},{"section":"Luau","collapsed":true,"classes":["string"]}],"apiCategories":[]}')}}]);
