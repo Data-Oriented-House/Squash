@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # What Is SerDes?
 
-Serdes is a common abbreviation used for **Serialization Deserialization**.
+SerDes is a common abbreviation used for **Serialization Deserialization**.
 
 ## Why SerDes?
 
