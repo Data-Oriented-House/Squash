@@ -1,0 +1,17 @@
+{
+    "name": "project",
+    "tree": {
+        "$className": "DataModel",
+        "ReplicatedStorage": {
+            "$ignoreUnknownInstances": true,
+            "$path": "tests/shared",
+            "Squash": {
+                "$path": "default.project.json"
+            }
+        },
+        "ServerScriptService": {
+            "$ignoreUnknownInstances": true,
+            "$path": "tests"
+        }
+    }
+}
