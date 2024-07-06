@@ -59,7 +59,7 @@ To generate a JSON file of the test below results you can download [this place f
 
 To compare these results with the binary data above, we can take the difference between two median rates, and compare them with the theoretical difference in bytes. Sending `()` has a rate of `0.783 kB/s`, and sending `(7)` has a rate of `1.323 kB/s`. The difference is `0.540 kB/s`.
 
-Now to apply theory, the binary suggests that `(7)` uses 1 byte for the type and 8 bytes for the number. This means `9 Bytes`. The rate of these measurements is 60 times a second. This means that the theoretical difference in bytes is `9 Bytes * 60 / Second = 540 Bytes / second`. This means that the theoretical difference in kB/s is `0.540 kB/s`. This is the same as the measured difference in kB/s. This leads us to believe that the binary data is correct, and that the measurements below are accurate as well. This also means that the Stats service displays Kilobytes instead of Kibibytes.
+Now to apply theory, the binary suggests that `(7)` uses 1 byte for the type and 8 bytes for the number. This means `9 Bytes`. The rate of these measurements is 60 times a second. This means that the theoretical difference in bytes is `9 Bytes * 60 / second = 540 Bytes / second`. This means that the theoretical difference in kB/s is `0.540 kB/s`. This is the same as the measured difference in kB/s. This leads us to believe that the binary data is correct, and that the measurements below are accurate as well. This also means that the Stats service displays Kilobytes instead of Kibibytes.
 
 ## Results
 

@@ -11,13 +11,7 @@
         },
         "ServerScriptService": {
             "$ignoreUnknownInstances": true,
-            "$path": "tests/server"
-        },
-        "StarterPlayer": {
-            "StarterPlayerScripts": {
-                "$ignoreUnknownInstances": true,
-                "$path": "tests/client"
-            }
+            "$path": "tests"
         }
     }
 }

@@ -8,7 +8,7 @@ Serdes is a common abbreviation used for **Serialization Deserialization**.
 
 ## Why SerDes?
 
-**SerDes** is a way to minimize latency and save space by reducing the size of data. **It is to give the player a better experience.**
+**SerDes** is a way to minimize bandwidth and save space by reducing the size of data. **It is to give the player a better experience.**
 
 ### Minimizing Latency
 
@@ -28,6 +28,6 @@ In the world of persistent data storage, we often need to store data across serv
 
 ## How To SerDes In Roblox?
 
-### Strings Are The Key
+### Buffers Are The Key
 
-The only two arbitrarily-sized datatypes in Luau are the `string` datatype and the `table` datatype. Tables can only be composed of primitive datatypes or other tables, therefore if we need more control over the data we need to serialize, we need to use strings. With strings, we have access to individual characters, which in Lua are single-byte values. **Strings enable byte-level control of our data.**
+The only three arbitrarily-sized datatypes in Luau are the `string`, `buffer`, and `table` datatypes. Tables can only be composed of primitive datatypes or other tables, and strings have both performance and memory overheads. Therefore if we need more control over the data we need to serialize, we should use buffers. With buffers, we have access to individual byte manipulation.

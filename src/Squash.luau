@@ -169,7 +169,7 @@ end
 
 local function pushi3(cursor: Cursor, x: number)
 	x %= 256 ^ 3
-	x = if x < 0 then 256 ^ 3 - x else x
+	x = if x < 0 then 256 ^ 3 + x else x
 	tryRealloc(cursor, 3)
 	buffer.writeu8(cursor.Buf, cursor.Pos, x)
 	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
@@ -180,7 +180,8 @@ local function popi3(cursor: Cursor)
 	cursor.Pos -= 3
 	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
 	local x2 = buffer.readu16(cursor.Buf, cursor.Pos + 1)
-	return x1 + x2 * 256
+	local x = x1 + x2 * 256
+	return if x > 256 ^ 2 - 1 then x - 256 ^ 3 else x
 end
 
 local function pushi4(cursor: Cursor, x: number)
@@ -196,7 +197,7 @@ end
 
 local function pushi5(cursor: Cursor, x: number)
 	x %= 256 ^ 5
-	x = if x < 0 then 256 ^ 5 - x else x
+	x = if x < 0 then 256 ^ 5 + x else x
 	tryRealloc(cursor, 5)
 	buffer.writei8(cursor.Buf, cursor.Pos, x)
 	buffer.writei32(cursor.Buf, cursor.Pos + 1, x // 256)
@@ -207,12 +208,13 @@ local function popi5(cursor: Cursor)
 	cursor.Pos -= 5
 	local x1 = buffer.readi8(cursor.Buf, cursor.Pos)
 	local x2 = buffer.readi32(cursor.Buf, cursor.Pos + 1)
-	return x1 + x2 * 256
+	local x = x1 + x2 * 256
+	return if x > 256 ^ 4 - 1 then x - 256 ^ 5 else x
 end
 
 local function pushi6(cursor: Cursor, x: number)
 	x %= 256 ^ 6
-	x = if x < 0 then 256 ^ 6 - x else x
+	x = if x < 0 then 256 ^ 6 + x else x
 	tryRealloc(cursor, 6)
 	buffer.writei16(cursor.Buf, cursor.Pos, x)
 	buffer.writei32(cursor.Buf, cursor.Pos + 2, x // 256 ^ 2)
@@ -223,12 +225,13 @@ local function popi6(cursor: Cursor)
 	cursor.Pos -= 6
 	local x1 = buffer.readi16(cursor.Buf, cursor.Pos)
 	local x2 = buffer.readi32(cursor.Buf, cursor.Pos + 2)
-	return x1 + x2 * (256 ^ 2)
+	local x = x1 + x2 * 256 ^ 2
+	return if x > 256 ^ 5 - 1 then x - 256 ^ 6 else x
 end
 
 local function pushi7(cursor: Cursor, x: number)
 	x %= 256 ^ 7
-	x = if x < 0 then 256 ^ 7 - x else x
+	x = if x < 0 then 256 ^ 7 + x else x
 	tryRealloc(cursor, 7)
 	buffer.writei8(cursor.Buf, cursor.Pos, x)
 	buffer.writei16(cursor.Buf, cursor.Pos + 1, x // 256)
@@ -241,7 +244,8 @@ local function popi7(cursor: Cursor)
 	local x1 = buffer.readi8(cursor.Buf, cursor.Pos)
 	local x2 = buffer.readi16(cursor.Buf, cursor.Pos + 1)
 	local x3 = buffer.readi32(cursor.Buf, cursor.Pos + 3)
-	return x1 + x2 * 256 + x3 * (256 ^ 3)
+	local x = x1 + x2 * 256 + x3 * 256 ^ 3
+	return if x > 256 ^ 6 - 1 then x - 256 ^ 7 else x
 end
 
 local function pushi8(cursor: Cursor, x: number)
@@ -257,7 +261,8 @@ local function popi8(cursor: Cursor)
 	cursor.Pos -= 8
 	local x1 = buffer.readi32(cursor.Buf, cursor.Pos)
 	local x2 = buffer.readi32(cursor.Buf, cursor.Pos + 4)
-	return x1 + x2 * (256 ^ 4)
+	local x = x1 + x2 * 256 ^ 4
+	return if x > 256 ^ 7 - 1 then x - 256 ^ 8 else x
 end
 
 local function pushf4(cursor: Cursor, x: number)
@@ -284,28 +289,28 @@ end
 
 local function pushbool(cursor: Cursor, a: boolean, b: boolean?, c: boolean?, d: boolean?, e: boolean?, f: boolean?, g: boolean?, h: boolean?)
 	pushu1(cursor,
-		if a then 1 else 0 +
-		if b then 2 else 0 +
-		if c then 4 else 0 +
-		if d then 8 else 0 +
-		if e then 16 else 0 +
-		if f then 32 else 0 +
-		if g then 64 else 0 +
-		if h then 128 else 0
+		(if a then 1 else 0) +
+		(if b then 2 else 0) +
+		(if c then 4 else 0) +
+		(if d then 8 else 0) +
+		(if e then 16 else 0) +
+		(if f then 32 else 0) +
+		(if g then 64 else 0) +
+		(if h then 128 else 0)
 	)
 end
 
 local function popbool(cursor: Cursor): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = popu1(cursor)
 	return
-		(x / 1) % 2 >= 1,
-		(x / 2) % 2 >= 1,
-		(x / 4) % 2 >= 1,
-		(x / 8) % 2 >= 1,
-		(x / 16) % 2 >= 1,
-		(x / 32) % 2 >= 1,
-		(x / 64) % 2 >= 1,
-		(x / 128) % 2 >= 1
+		x % 2 >= 1,
+		x % 4 >= 2,
+		x % 8 >= 4,
+		x % 16 >= 8,
+		x % 32 >= 16,
+		x % 64 >= 32,
+		x % 128 >= 64,
+		x % 256 >= 128
 end
 
 local function pushvlq(cursor: Cursor, x: number)
@@ -384,8 +389,9 @@ local function popvlq(cursor: Cursor)
 	if b >= 128 then
 		return x + (b - 128) * 128 ^ 7
 	end
+	x += b * 128 ^ 7
 
-	error(`Not a valid vlq: {x + b * 128 ^ 7} = {buffer.tostring(cursor.Buf)}`)
+	error(`Not a valid vlq: {x} = {buffer.tostring(cursor.Buf)}`)
 end
 
 local function pushstr(cursor: Cursor, x: string)
@@ -437,7 +443,7 @@ local function printcursor(cursor: Cursor): ()
 		table.insert(bytes, ' ' :: any)
 	end
 
-	print(`Len: {buffer.len(cursor.Buf)}\nPos: {cursor.Pos}\nBuf: \{ {table.concat(bytes, ' ')} \}\n{string.rep(' ', offset)}^`)
+	print(`Pos: {cursor.Pos} / {buffer.len(cursor.Buf)}\nBuf: \{ {table.concat(bytes, ' ')} \}\n{string.rep(' ', offset)}^`)
 end
 
 local Squash = {}
@@ -456,11 +462,11 @@ function Squash.T<T>(x: SerDes<T>): T
 	return x :: any
 end
 
-local booleanCache: SerDes<boolean, boolean?, boolean?, boolean?, boolean?, boolean?, boolean?, boolean?> = {
+local booleanCache = {
 	ser = pushbool,
 	des = popbool,
 }
-function Squash.boolean(): SerDes<boolean, boolean?, boolean?, boolean?, boolean?, boolean?, boolean?, boolean?>
+function Squash.boolean()
 	return booleanCache
 end
 
@@ -569,7 +575,77 @@ local stringMeta = {
 		return stringCache
 	end,
 }
-local str = setmetatable({}, stringMeta)
+local str = {}
+function str.convert(str: string, inAlphabet: string, outAlphabet: string): string
+	local sourceDigits = {}
+	for i = 1, #inAlphabet do
+		sourceDigits[string.byte(inAlphabet, i)] = i - 1
+	end
+
+	local targetDigits = {}
+	for i = 1, #outAlphabet do
+		targetDigits[i - 1] = string.byte(outAlphabet, i)
+	end
+
+	local inputDigits = {}
+	for i = 1, #str do
+		table.insert(inputDigits, sourceDigits[string.byte(str, i)])
+	end
+
+	local output = {}
+	local sourceBase = #inAlphabet
+	local targetBase = #outAlphabet
+	local carry, value
+	while #inputDigits > 0 do
+		carry = 0
+
+		for i = 1, #inputDigits do
+			value = inputDigits[i] + carry * sourceBase
+			inputDigits[i] = math.floor(value / targetBase)
+			carry = value % targetBase
+		end
+
+		while #inputDigits > 0 and inputDigits[1] == 0 do
+			table.remove(inputDigits, 1)
+		end
+
+		table.insert(output, 1, string.char(targetDigits[carry]))
+	end
+
+	return table.concat(output)
+end
+function str.alphabet(source: string): string
+	local lookup = {}
+	local alphabet = table.create(#source)
+	for i = 1, #source do
+		local char = string.sub(source, i, i)
+		if not lookup[char] then
+			lookup[char] = true
+			table.insert(alphabet, char)
+		end
+	end
+	table.sort(alphabet)
+	return table.concat(alphabet)
+end
+str.binary = '01'
+str.octal = '01234567'
+str.decimal = '0123456789'
+str.duodecimal = '0123456789AB'
+str.hexadecimal = '0123456789ABCDEF'
+local utf8Characters = table.create(256)
+for i = 0, 255 do
+	utf8Characters[i + 1] = string.char(i)
+end
+str.utf8 = table.concat(utf8Characters)
+str.lower = 'abcdefghijklmnopqrstuvwxyz'
+str.upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+str.letters = str.lower .. str.upper
+str.punctuation = ' .,?!:;\'"-_'
+str.english = str.letters .. str.punctuation
+str.filepath = str.letters .. ':/'
+str.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+
+local str = setmetatable(str, stringMeta)
 Squash.string = str
 
 local bufCache: SerDes<buffer> = {
@@ -578,6 +654,14 @@ local bufCache: SerDes<buffer> = {
 }
 function Squash.buffer(): SerDes<buffer>
 	return bufCache
+end
+
+local vlqCache: SerDes<number> = {
+	ser = pushvlq,
+	des = popvlq,
+}
+function Squash.vlq(): SerDes<number>
+	return vlqCache
 end
 
 local arrayCache = {}
@@ -614,6 +698,9 @@ Squash.array = array
 function Squash.tuple<T...>(...: T...): SerDes<T...>
 	local serdesargs: { any } = { ... }
 	local count = #serdesargs
+	if count == 1 then
+		return serdesargs[1]
+	end
 
 	local tuple = {}
 
@@ -750,37 +837,6 @@ function Squash.BrickColor(): SerDes<BrickColor>
 	return brickcolorCache
 end
 
-local enums: { Enum } = {}
-local enumIds: { [Enum]: number }
-do
-	local names = {}
-	for enumName in pairs(Enum) do
-		table.insert(names, enumName :: string)
-	end
-	table.sort(names)
-
-	for i, enumName in names do
-		local enum: Enum = (Enum :: any)[enumName]
-		enums[i] = enum
-		enumIds[enum] = i
-	end
-end
-local function pushenum(cursor, enum)
-	local id = enumIds[enum]
-	pushvlq(cursor, id)
-end
-local function popenum(cursor)
-	local id = popvlq(cursor)
-	return enums[id]
-end
-local enumCache: SerDes<Enum> = {
-	ser = pushenum,
-	des = popenum,
-}
-function Squash.Enum()
-	return enumCache
-end
-
 local enumItems = {}
 do
 	for _, enum in Enum:GetEnums() do
@@ -815,7 +871,8 @@ local function enumitem(enum: Enum): SerDes<EnumItem>
 		end,
 
 		des = function(cursor)
-			return idsToItems[popvlq(cursor)]
+			local itemId = popvlq(cursor)
+			return idsToItems[itemId]
 		end,
 	}
 
@@ -898,48 +955,57 @@ local idToCFrame = {
 	CFrame.Angles(0, math.rad(90), 0),
 	CFrame.Angles(math.rad(-90), math.rad(90), 0),
 }
-local cframeCache: SerDes<CFrame> = {
-	ser = function(cursor, cframe)
-		local specialId = table.find(idToCFrame, cframe.Rotation)
-		if specialId then
-			pushu1(cursor, specialId)
-		else
-			local axis, theta = cframe:ToAxisAngle()
-			local rotaxis = axis * theta * 256
-			pushi2(cursor, rotaxis.Z)
-			pushi2(cursor, rotaxis.Y)
-			pushi2(cursor, rotaxis.X)
-			pushu1(cursor, 0)
-		end
-		local pos = cframe.Position
-		pushf4(cursor, pos.Z)
-		pushf4(cursor, pos.Y)
-		pushf4(cursor, pos.X)
-	end,
+local cframeCache = {}
+local function cframe(positionSerDes: SerDes<number>): SerDes<CFrame>
+	if cframeCache[positionSerDes] then
+		return cframeCache[positionSerDes]
+	end
 
-	des = function(cursor)
-		local pos = Vector3.new(popf4(cursor), popf4(cursor), popf4(cursor))
-		
-		local specialId = popu1(cursor)
-		if specialId ~= 0 then
-			return idToCFrame[specialId] + pos
-		end
+	local push, pop = positionSerDes.ser, positionSerDes.des
 
-		local rotaxis = Vector3.new(popi2(cursor), popi2(cursor), popi2(cursor)) / 256
-		return CFrame.fromAxisAngle(rotaxis.Unit, rotaxis.Magnitude) + pos
-	end,
-}
-function Squash.CFrame(): SerDes<CFrame>
-	return cframeCache
+	local cframeserdes: SerDes<CFrame> = {
+		ser = function(cursor, cframe)
+			local specialId = table.find(idToCFrame, cframe.Rotation)
+			if specialId then
+				pushu1(cursor, specialId)
+			else
+				local axis, theta = cframe:ToAxisAngle()
+				local rotaxis = axis * theta * 256
+				pushi2(cursor, rotaxis.Z)
+				pushi2(cursor, rotaxis.Y)
+				pushi2(cursor, rotaxis.X)
+				pushu1(cursor, 0)
+			end
+			local pos = cframe.Position
+			push(cursor, pos.Z)
+			push(cursor, pos.Y)
+			push(cursor, pos.X)
+		end,
+	
+		des = function(cursor)
+			local pos = Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+			
+			local specialId = popu1(cursor)
+			if specialId ~= 0 then
+				return idToCFrame[specialId] + pos
+			end
+	
+			local rotaxis = Vector3.new(popi2(cursor), popi2(cursor), popi2(cursor)) / 256
+			return CFrame.fromAxisAngle(rotaxis.Unit, rotaxis.Magnitude) + pos
+		end,
+	}
+	cframeCache[positionSerDes] = cframeserdes
+	return cframeserdes
 end
+Squash.CFrame = cframe
 
 local function pushcolor3(cursor, color3)
-	pushu1(cursor, color3.B * 256)
-	pushu1(cursor, color3.G * 256)
-	pushu1(cursor, color3.R * 256)
+	pushu1(cursor, color3.B * 255)
+	pushu1(cursor, color3.G * 255)
+	pushu1(cursor, color3.R * 255)
 end
 local function popcolor3(cursor)
-	return Color3.new(popu1(cursor), popu1(cursor), popu1(cursor))
+	return Color3.fromRGB(popu1(cursor), popu1(cursor), popu1(cursor))
 end
 local color3Cache: SerDes<Color3> = {
 	ser = pushcolor3,
@@ -951,11 +1017,11 @@ end
 
 local function pushcolorsequencekeypoint(cursor, keypoint)
 	pushcolor3(cursor, keypoint.Value)
-	pushu1(cursor, keypoint.Time * 256)
+	pushu1(cursor, keypoint.Time * 255)
 end
 local function popcolorsequencekeypoint(cursor)
 	return ColorSequenceKeypoint.new(
-		popu8(cursor) / 256,
+		popu1(cursor) / 255,
 		popcolor3(cursor)
 	)
 end
@@ -1000,37 +1066,6 @@ function Squash.DateTime(): SerDes<DateTime>
 	return dateTimeCache
 end
 
-local dockWidgetPluginGuiInfoCache: SerDes<DockWidgetPluginGuiInfo> = {
-	ser = function(cursor, info)
-		pushbool(cursor, info.InitialEnabled, info.InitialEnabledShouldOverrideRestore)
-		pushu2(cursor, info.FloatingYSize)
-		pushu2(cursor, info.FloatingXSize)
-		pushu2(cursor, info.MinHeight)
-		pushu2(cursor, info.MinWidth)
-	end,
-
-	des = function(cursor)
-		local minWidth = popu2(cursor)
-		local minHeight = popu2(cursor)
-		local xSize = popu2(cursor)
-		local ySize = popu2(cursor)
-		local initEnabled, override = popbool(cursor)
-
-		return DockWidgetPluginGuiInfo.new(
-			nil,
-			initEnabled,
-			override,
-			xSize,
-			ySize,
-			minWidth,
-			minHeight
-		)
-	end,
-}
-function Squash.DockWidgetPluginGuiInfo(): SerDes<DockWidgetPluginGuiInfo>
-	return dockWidgetPluginGuiInfoCache
-end
-
 local facesCache: SerDes<Faces> = {
 	ser = function(cursor, face)
 		pushbool(cursor, face.Back, face.Bottom, face.Front, face.Left, face.Right, face.Top)
@@ -1038,7 +1073,14 @@ local facesCache: SerDes<Faces> = {
 
 	des = function(cursor)
 		local back, bottom, front, left, right, top = popbool(cursor)
-		return Faces.new(back, bottom, front, left, right, top)
+		return Faces.new(
+			back and Enum.NormalId.Back,
+			bottom and Enum.NormalId.Bottom,
+			front and Enum.NormalId.Front,
+			left and Enum.NormalId.Left,
+			right and Enum.NormalId.Right,
+			top and Enum.NormalId.Top
+		)
 	end,
 }
 function Squash.Faces(): SerDes<Faces>
@@ -1078,7 +1120,7 @@ local fontCache: SerDes<Font> = {
 
 	des = function(cursor)
 		local style = fontstyle.des(cursor) :: Enum.FontStyle
-		local weight = fontstyle.des(cursor) :: Enum.FontWeight
+		local weight = fontweight.des(cursor) :: Enum.FontWeight
 		local bold = popbool(cursor)
 		local family = popstr(cursor)
 		local font = Font.new(`rbxasset://fonts/families/{family}.json`, weight, style)
@@ -1138,7 +1180,7 @@ local function numbersequencekeypoint(serdes: SerDes<number>): SerDes<NumberSequ
 	numberSequenceKeypointCache[serdes] = sequencekeypoint
 	return sequencekeypoint
 end
-Squash.NumberSequenceEnvelope = numbersequencekeypoint
+Squash.NumberSequenceKeypoint = numbersequencekeypoint
 
 local numberSequenceCache = {}
 local function numbersequence(serdes: SerDes<number>): SerDes<NumberSequence>
@@ -1322,17 +1364,24 @@ local function rayserdes(serdes: SerDes<number>): SerDes<Ray>
 end
 Squash.Ray = rayserdes
 
+export type SquashRaycastResult = {
+	Distance: number,
+	Position: Vector3,
+	Normal: Vector3,
+	Material: Enum.Material,
+}
+
 local materialenum = enumitem(Enum.Material)
 local raycastResultCache = {}
-function Squash.RaycastResult(serdes: SerDes<number>)
+function Squash.RaycastResult(serdes: SerDes<number>): { ser: (Cursor, RaycastResult) -> (), des: (Cursor) -> SquashRaycastResult }
 	if raycastResultCache[serdes] then
 		return raycastParamsCache[serdes]
 	end
 
 	local push, pop = serdes.ser, serdes.des
 
-	local raycastresult: SerDes<RaycastResult> = {
-		ser = function(cursor, result)
+	local raycastresult = {
+		ser = function(cursor, result: RaycastResult)
 			pushf4(cursor, result.Distance)
 			push(cursor, result.Position.Z)
 			push(cursor, result.Position.Y)
@@ -1350,7 +1399,7 @@ function Squash.RaycastResult(serdes: SerDes<number>)
 				Position = Vector3.new(pop(cursor), pop(cursor), pop(cursor)),
 				Distance = popf4(cursor),
 				Instance = nil,
-			} :: any
+			} :: SquashRaycastResult
 		end,
 	}
 
@@ -1426,8 +1475,8 @@ function Squash.Region3(serdes: SerDes<number>): SerDes<Region3>
 		end,
 
 		des = function(cursor)
-			local size = 0.5 * Vector3.new(pop(cursor), pop(cursor), pop(cursor))
 			local position = Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+			local size = 0.5 * Vector3.new(pop(cursor), pop(cursor), pop(cursor))
 			return Region3.new(position - size, position + size)
 		end,
 	}
@@ -1457,23 +1506,31 @@ function Squash.Region3int16()
 	return region3int16Cache
 end
 
-local rotationCurveKeyCache: SerDes<RotationCurveKey> = {
-	ser = function(cursor, key)
-		keyinterpolationmode.ser(cursor, key.Interpolation)
-		cframeCache.ser(cursor, key.Value)
-		pushf4(cursor, key.Time)
-	end,
-	
-	des = function(cursor)
-		return RotationCurveKey.new(
-			popf4(cursor),
-			cframeCache.des(cursor),
-			keyinterpolationmode.des(cursor) :: Enum.KeyInterpolationMode
-		)
-	end,
-}
-function Squash.RotationCurveKey()
-	return rotationCurveKeyCache
+local rotationCurveKeyCache = {}
+function Squash.RotationCurveKey(positionSerDes: SerDes<number>): SerDes<RotationCurveKey>
+	if rotationCurveKeyCache[positionSerDes] then
+		return rotationCurveKeyCache[positionSerDes]
+	end
+
+	local push, pop = cframe(positionSerDes).ser, cframe(positionSerDes).des
+
+	local rot: SerDes<RotationCurveKey> = {
+		ser = function(cursor, key)
+			keyinterpolationmode.ser(cursor, key.Interpolation)
+			push(cursor, key.Value)
+			pushf4(cursor, key.Time)
+		end,
+		
+		des = function(cursor)
+			return RotationCurveKey.new(
+				popf4(cursor),
+				pop(cursor),
+				keyinterpolationmode.des(cursor) :: Enum.KeyInterpolationMode
+			)
+		end,
+	}
+	rotationCurveKeyCache[positionSerDes] = rot
+	return rot
 end
 
 local easingstyle = enumitem(Enum.EasingStyle)

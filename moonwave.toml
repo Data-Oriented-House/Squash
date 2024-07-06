@@ -15,14 +15,13 @@ image = "/bandwidth2.png"
 
 [[home.features]]
 title = "Serialization-Deserialization"
-description = "Pure and Stateless. No funny business."
+description = "Push and pop data from buffers for quick and composible SerDes!"
 image = "/Squash.png"
 
 [[home.features]]
 title = "Fully Comprehensive"
 description = "Can serialize and deserialize all serializable Luau and Roblox types, even the obscure ones."
 image = "/comprehensive2.png"
-
 
 [docusaurus]
 onBrokenLinks = "throw"
@@ -44,57 +43,68 @@ section = "Luau"
 collapsed = true
 classes = [
 	"string",
-	"number",
-	"uint",
-	"int",
-	"boolean"
+	# "number",
+	# "uint",
+	# "int",
+# 	"vlq",
+# 	"boolean",
+# 	"buffer",
+# 	"tuple",
+# 	"array",
+# 	"map",
+# 	"record",
+# 	"angle",
 ]
 
-[[classOrder]]
-section = "Roblox"
-collapsed = true
-classes = [
-	"Axes",
-	"BrickColor",
-	"CFrame",
-	"CatalogSearchParams",
-	"Color3",
-	"ColorSequence",
-	"ColorSequenceKeypoint",
-	"DateTime",
-	"DockWidgetPluginGuiInfo",
-	"Enum",
-	"EnumItem",
-	"Faces",
-	"FloatCurveKey",
-	"Font",
-	"NumberRange",
-	"NumberSequence",
-	"NumberSequenceKeypoint",
-	"OverlapParams",
-	"PathWaypoint",
-	"PhysicalProperties",
-	"Ray",
-	"RaycastParams",
-	"RaycastResult",
-	"Rect",
-	"Region3",
-	"Region3int16",
-	"TweenInfo",
-	"UDim",
-	"UDim2",
-	"Vector2",
-	"Vector2int16",
-	"Vector3",
-	"Vector3int16"
-]
+# [[classOrder]]
+# section = "Roblox"
+# collapsed = true
+# classes = [
+# 	"Axes",
+# 	"BrickColor",
+# 	"CatalogueSearchParams",
+# 	"CFrame",
+# 	"Color3",
+# 	"ColorSequence",
+# 	"ColorSequenceKeypoint",
+# 	"DateTime",
+# 	"EnumItem",
+# 	"Faces",
+# 	"FloatCurveKey",
+# 	"Font",
+# 	"NumberRange",
+# 	"NumberSequence",
+# 	"NumberSequenceKeypoint",
+# 	"OverlapParams",
+# 	"PathWaypoint",
+# 	"PhysicalProperties",
+# 	"Ray",
+# 	"RaycastParams",
+# 	"RaycastResult",
+# 	"Rect",
+# 	"Region3",
+# 	"Region3int16",
+# 	"RotationCurveKey",
+# 	"TweenInfo",
+# 	"UDim",
+# 	"UDim2",
+# 	"Vector2",
+# 	"Vector2int16",
+# 	"Vector3",
+# 	"Vector3int16"
+# ]
 
 [navbar]
 # hideableSidebar = true
 
+[[navbar.items]]
+href = "https://discord.com/channels/385151591524597761/1118427954377146378"
+label = "Discord"
+position = "right"
+
 [footer]
 style = "dark"
-copyright = "Copyright © 2023 SolarScuffle-Bot. Built with Moonwave and Docusaurus"
+copyright = "Copyright © 2024 SolarScuffle-Bot. Built with Moonwave and Docusaurus"
 
 # [[footer.links]]
 # title = "examples"
