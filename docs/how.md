@@ -440,7 +440,7 @@ local mytuple = S.tuple(
 
 local cursor = S.cursor()
 mytuple.ser(cursor, Vector3.new(123456789, 1, 0), CFrame.new(1, 2, 3), BrickColor.new(93), Enum.HumanoidStateType.Freefall)
-Squash.print(cursor)
+S.print(cursor)
 -- Pos: 40 / 40
 -- Buf: { 0 0 0 0 0 0 0 0 0 0 0 0 0 0 240 63 0 0 0 96 52 111 157 65 1 0 0 64 64 0 0 0 64 0 0 128 63 194 0 134   }
 --                                                                                                            ^
