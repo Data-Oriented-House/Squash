@@ -1,0 +1,19 @@
+[package]
+name = "data-oriented-house/squash"
+version = "2.0.4"
+registry = "https://github.com/UpliftGames/wally-index"
+licence = "MIT"
+authors = ["Sona"]
+
+description = "A comprehensive and flat library for compressing and decompressing all data types, optimized for minimizing size."
+
+realm = "shared"
+
+# exclude = ["**"]
+# include = [
+#     "src/**",
+#     "LICENSE",
+#     "wally.toml",
+# ]
+
+[dependencies]
