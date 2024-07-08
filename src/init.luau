@@ -648,6 +648,19 @@ str.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_
 local str = setmetatable(str, stringMeta)
 Squash.string = str
 
+local charserdes: SerDes<string> = {
+	ser = function(cursor, char)
+		pushu1(cursor, string.byte(char))
+	end,
+
+	des = function(cursor)
+		return string.char(popu1(cursor))
+	end,
+}
+function Squash.char(): SerDes<string>
+	return charserdes
+end
+
 local bufCache: SerDes<buffer> = {
 	ser = pushbuf,
 	des = popbuf,
@@ -782,20 +795,63 @@ local function map<K, V>(keySerDes: K, valueSerDes: V): SerDes<{[K]: V}>
 end
 Squash.map = map
 
-local pushangle, popangle = uint(1).ser, uint(1).des
-local angleCache: SerDes<number> = {
-	ser = function(cursor, angle)
-		pushangle(cursor, angle * 128 / math.pi)
-	end,
+local function tableserdes(schema: { [string]: SerDes<any> }): SerDes<any>
+	local typemap = {}
 
-	des = function(cursor)
-		return popangle(cursor) * math.pi / 128
-	end,
-}
-local function angle(): SerDes<number>
-	return angleCache
+	for key, serdes in schema do
+		table.insert(typemap, key)
+	end
+
+	return {
+		ser = function(cursor, tab)
+			local size = 0
+			for k, v in tab :: any do
+				local vtype = typeof(v)
+				local vserdes = schema[vtype]
+				if not vserdes then
+					continue
+				end
+
+				local ktype = typeof(k)
+				local kserdes = schema[ktype]
+				if not kserdes then
+					continue
+				end
+
+				vserdes.ser(cursor, v)
+				local vid = table.find(typemap, vtype) or error(``)
+				pushu1(cursor, vid)
+
+				kserdes.ser(cursor, k)
+				local kid = table.find(typemap, ktype) or error(``)
+				pushu1(cursor, kid)
+
+				size += 1
+			end
+			pushvlq(cursor, size)
+		end,
+
+		des = function(cursor)
+			local tab = {}
+			local size = popvlq(cursor)
+			for _ = 1, size do
+				local kid = popu1(cursor)
+				local ktype = typemap[kid]
+				local kserdes = schema[ktype]
+				local k = kserdes.des(cursor)
+
+				local vid = popu1(cursor)
+				local vtype = typemap[vid]
+				local vserdes = schema[vtype]
+				local v = vserdes.des(cursor)
+
+				tab[k] = v
+			end
+			return tab
+		end,
+	}
 end
-Squash.angle = angle
+Squash.table = tableserdes
 
 local axesCache: SerDes<Axes> = {
 	ser = function(cursor, axes)

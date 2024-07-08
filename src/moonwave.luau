@@ -144,6 +144,12 @@
 --- @within Squash
 --- @return SerDes<string>
 
+-- --- @class char
+
+--- @function char
+--- @within Squash
+--- @return SerDes<string>
+
 -- --- @class buffer
 
 --- @function buffer
@@ -185,12 +191,13 @@
 --- @param valueSerDes V
 --- @return SerDes<{[K]: V}>
 
--- --- @class angle
+-- --- @class table
 
---- @function angle
+--- @function table
 --- @within Squash
---- @return SerDes<number>
---- `u1 * 128 / pi` --> `u1 * pi / 128`
+--- @param schema { [string]: SerDes<any> }
+--- @return SerDes<any>
+--- Serializes tables given a schema mapping types to serializers. If a type is not defined in the schema, it will be ignored when serializing tables. **This is an expensive and heavy serializer compared to Record, Map, and Array. It is highly recommended that you do not use this for tables you know the type of already.**
 
 -- --- @class Axes
 
