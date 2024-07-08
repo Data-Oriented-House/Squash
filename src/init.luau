@@ -837,18 +837,6 @@ function Squash.BrickColor(): SerDes<BrickColor>
 	return brickcolorCache
 end
 
-local enumItems = {}
-do
-	for _, enum in Enum:GetEnums() do
-		local items = {}
-		for _, item in enum:GetEnumItems() do
-			items[item.Value] = item
-		end
-	
-		enumItems[enum] = items 
-	end
-end
-
 local enumItemCache = {}
 local function enumitem(enum: Enum): SerDes<EnumItem>
 	if enumItemCache[enum] then
@@ -881,11 +869,6 @@ local function enumitem(enum: Enum): SerDes<EnumItem>
 end
 Squash.EnumItem = enumitem
 
-local catalogsorttype = enumitem(Enum.CatalogSortType)
-local catalogsortaggregation = enumitem(Enum.CatalogSortAggregation)
-local catalogcategoryfilter = enumitem(Enum.CatalogCategoryFilter)
-local salestypefilter = enumitem(Enum.SalesTypeFilter)
-local assettype = enumitem(Enum.AssetType)
 local catalogueSearchParamsCache: SerDes<CatalogSearchParams> = {
 	ser = function(cursor, params)
 		pushbool(cursor, params.IncludeOffSale)
@@ -894,12 +877,12 @@ local catalogueSearchParamsCache: SerDes<CatalogSearchParams> = {
 		pushu4(cursor, params.MaxPrice)
 		pushstr(cursor, params.CreatorName)
 		pushstr(cursor, params.SearchKeyword)
-		catalogsorttype.ser(cursor, params.SortType)
-		catalogsortaggregation.ser(cursor, params.SortAggregation)
-		catalogcategoryfilter.ser(cursor, params.CategoryFilter)
-		salestypefilter.ser(cursor, params.SalesTypeFilter)
+		enumitem(Enum.CatalogSortType).ser(cursor, params.SortType)
+		enumitem(Enum.CatalogSortAggregation).ser(cursor, params.SortAggregation)
+		enumitem(Enum.CatalogCategoryFilter).ser(cursor, params.CategoryFilter)
+		enumitem(Enum.SalesTypeFilter).ser(cursor, params.SalesTypeFilter)
 		for _, assetType in params.AssetTypes do
-			assettype.ser(cursor, assetType)
+			enumitem(Enum.AssetType).ser(cursor, assetType)
 		end
 		pushvlq(cursor, #params.AssetTypes)
 	end,
@@ -909,14 +892,14 @@ local catalogueSearchParamsCache: SerDes<CatalogSearchParams> = {
 		local assetCount = popvlq(cursor)
 		local assetTypes = table.create(assetCount)
 		for i = assetCount, 1, -1 do
-			assetTypes[i] = enumItems[Enum.AssetType][popu1(cursor)]
+			assetTypes[i] = enumitem(Enum.AssetType).des(cursor) :: Enum.AssetType
 		end
 		params.AssetTypes = assetTypes
 		
-		params.SalesTypesFilter = salestypefilter.des(cursor)
-		params.CategoryFilter = catalogcategoryfilter.des(cursor)
-		params.SortAggregation = catalogsortaggregation.des(cursor)
-		params.SortType =  catalogsorttype.des(cursor)
+		params.SalesTypesFilter = enumitem(Enum.SalesTypeFilter).des(cursor)
+		params.CategoryFilter = enumitem(Enum.CatalogCategoryFilter).des(cursor) :: Enum.CatalogCategoryFilter
+		params.SortAggregation = enumitem(Enum.CatalogSortAggregation).des(cursor)
+		params.SortType = enumitem(Enum.CatalogSortType).des(cursor) :: Enum.CatalogSortType
 		params.SearchKeyword = popstr(cursor)
 		params.CreatorName = popstr(cursor)
 		params.MaxPrice = popu4(cursor)
@@ -929,37 +912,40 @@ function Squash.CatalogueSearchParams(): SerDes<CatalogSearchParams>
 	return catalogueSearchParamsCache
 end
 
-local idToCFrame = {
-	CFrame.Angles(0, 0, 0),
-	CFrame.Angles(math.rad(90), 0, 0),
-	CFrame.Angles(0, math.rad(180), math.rad(180)),
-	CFrame.Angles(math.rad(-90), 0, 0),
-	CFrame.Angles(0, math.rad(180), math.rad(90)),
-	CFrame.Angles(0, math.rad(90), math.rad(90)),
-	CFrame.Angles(0, 0, math.rad(90)),
-	CFrame.Angles(0, math.rad(-90), math.rad(90)),
-	CFrame.Angles(math.rad(-90), math.rad(-90), 0),
-	CFrame.Angles(0, math.rad(-90), 0),
-	CFrame.Angles(math.rad(90), math.rad(-90), 0),
-	CFrame.Angles(0, math.rad(90), math.rad(180)),
-	CFrame.Angles(0, math.rad(-90), math.rad(180)),
-	CFrame.Angles(0, math.rad(180), math.rad(0)),
-	CFrame.Angles(math.rad(-90), math.rad(-180), math.rad(0)),
-	CFrame.Angles(0, math.rad(0), math.rad(180)),
-	CFrame.Angles(math.rad(90), math.rad(180), math.rad(0)),
-	CFrame.Angles(0, math.rad(0), math.rad(-90)),
-	CFrame.Angles(0, math.rad(-90), math.rad(-90)),
-	CFrame.Angles(0, math.rad(-180), math.rad(-90)),
-	CFrame.Angles(0, math.rad(90), math.rad(-90)),
-	CFrame.Angles(math.rad(90), math.rad(90), 0),
-	CFrame.Angles(0, math.rad(90), 0),
-	CFrame.Angles(math.rad(-90), math.rad(90), 0),
-}
+local idToCFrame
 local cframeCache = {}
 local function cframe(positionSerDes: SerDes<number>): SerDes<CFrame>
 	if cframeCache[positionSerDes] then
 		return cframeCache[positionSerDes]
 	end
+
+	--? Not defined outside so pure Luau users don't suffer errors
+	idToCFrame = idToCFrame or {
+		CFrame.Angles(0, 0, 0),
+		CFrame.Angles(math.rad(90), 0, 0),
+		CFrame.Angles(0, math.rad(180), math.rad(180)),
+		CFrame.Angles(math.rad(-90), 0, 0),
+		CFrame.Angles(0, math.rad(180), math.rad(90)),
+		CFrame.Angles(0, math.rad(90), math.rad(90)),
+		CFrame.Angles(0, 0, math.rad(90)),
+		CFrame.Angles(0, math.rad(-90), math.rad(90)),
+		CFrame.Angles(math.rad(-90), math.rad(-90), 0),
+		CFrame.Angles(0, math.rad(-90), 0),
+		CFrame.Angles(math.rad(90), math.rad(-90), 0),
+		CFrame.Angles(0, math.rad(90), math.rad(180)),
+		CFrame.Angles(0, math.rad(-90), math.rad(180)),
+		CFrame.Angles(0, math.rad(180), math.rad(0)),
+		CFrame.Angles(math.rad(-90), math.rad(-180), math.rad(0)),
+		CFrame.Angles(0, math.rad(0), math.rad(180)),
+		CFrame.Angles(math.rad(90), math.rad(180), math.rad(0)),
+		CFrame.Angles(0, math.rad(0), math.rad(-90)),
+		CFrame.Angles(0, math.rad(-90), math.rad(-90)),
+		CFrame.Angles(0, math.rad(-180), math.rad(-90)),
+		CFrame.Angles(0, math.rad(90), math.rad(-90)),
+		CFrame.Angles(math.rad(90), math.rad(90), 0),
+		CFrame.Angles(0, math.rad(90), 0),
+		CFrame.Angles(math.rad(-90), math.rad(90), 0),
+	}
 
 	local push, pop = positionSerDes.ser, positionSerDes.des
 
@@ -1086,11 +1072,10 @@ local facesCache: SerDes<Faces> = {
 function Squash.Faces(): SerDes<Faces>
 	return facesCache
 end
-
-local keyinterpolationmode = enumitem(Enum.KeyInterpolationMode)
+ 
 local floatCurveKeyCache: SerDes<FloatCurveKey> = {
 	ser = function(cursor, key)
-		keyinterpolationmode.ser(cursor, key.Interpolation)
+		enumitem(Enum.KeyInterpolationMode).ser(cursor, key.Interpolation)
 		pushf4(cursor, key.Value)
 		pushf4(cursor, key.Time)
 	end,
@@ -1099,7 +1084,7 @@ local floatCurveKeyCache: SerDes<FloatCurveKey> = {
 		return FloatCurveKey.new(
 			popf4(cursor),
 			popf4(cursor),
-			keyinterpolationmode.des(cursor) :: any
+			enumitem(Enum.KeyInterpolationMode).des(cursor) :: any
 		)
 	end,
 }
@@ -1107,20 +1092,18 @@ function Squash.FloatCurveKey(): SerDes<FloatCurveKey>
 	return floatCurveKeyCache
 end
 
-local fontweight = enumitem(Enum.FontWeight)
-local fontstyle = enumitem(Enum.FontStyle)
 local fontCache: SerDes<Font> = {
 	ser = function(cursor, font)
 		local family = string.match(font.Family, "rbxasset://fonts/families/(.+).json") or error(`Invalid font family {font.Family}`)
 		pushstr(cursor, family)
 		pushbool(cursor, font.Bold)
-		fontweight.ser(cursor, font.Weight)
-		fontstyle.ser(cursor, font.Style)
+		enumitem(Enum.FontWeight).ser(cursor, font.Weight)
+		enumitem(Enum.FontStyle).ser(cursor, font.Style)
 	end,
 
 	des = function(cursor)
-		local style = fontstyle.des(cursor) :: Enum.FontStyle
-		local weight = fontweight.des(cursor) :: Enum.FontWeight
+		local style = enumitem(Enum.FontStyle).des(cursor) :: Enum.FontStyle
+		local weight = enumitem(Enum.FontWeight).des(cursor) :: Enum.FontWeight
 		local bold = popbool(cursor)
 		local family = popstr(cursor)
 		local font = Font.new(`rbxasset://fonts/families/{family}.json`, weight, style)
@@ -1213,20 +1196,19 @@ local function numbersequence(serdes: SerDes<number>): SerDes<NumberSequence>
 end
 Squash.NumberSequence = numbersequence
 
-local raycastfiltertype = enumitem(Enum.RaycastFilterType)
 --- Does not encode instance data at all.
 local overlapParamsCache: SerDes<OverlapParams> = {
 	ser = function(cursor, params)
 		pushbool(cursor, params.BruteForceAllSlow, params.RespectCanCollide)
 		pushu2(cursor, params.MaxParts)
-		raycastfiltertype.ser(cursor, params.FilterType)
+		enumitem(Enum.RaycastFilterType).ser(cursor, params.FilterType)
 		pushstr(cursor, params.CollisionGroup)
 	end,
 
 	des = function(cursor)
 		local params = OverlapParams.new()
 		params.CollisionGroup = popstr(cursor)
-		params.FilterType = raycastfiltertype.des(cursor) :: Enum.RaycastFilterType
+		params.FilterType = enumitem(Enum.RaycastFilterType).des(cursor) :: Enum.RaycastFilterType
 		params.MaxParts = popu2(cursor)
 		params.BruteForceAllSlow, params.RespectCanCollide = popbool(cursor)
 		return params
@@ -1239,14 +1221,14 @@ end
 local raycastParamsCache: SerDes<RaycastParams> = {
 	ser = function(cursor, params)
 		pushbool(cursor, params.BruteForceAllSlow, params.RespectCanCollide, params.IgnoreWater)
-		raycastfiltertype.ser(cursor, params.FilterType)
+		enumitem(Enum.RaycastFilterType).ser(cursor, params.FilterType)
 		pushstr(cursor, params.CollisionGroup)
 	end,
 
 	des = function(cursor)
 		local params = RaycastParams.new()
 		params.CollisionGroup = popstr(cursor)
-		params.FilterType = raycastfiltertype.des(cursor) :: Enum.RaycastFilterType
+		params.FilterType = enumitem(Enum.RaycastFilterType).des(cursor) :: Enum.RaycastFilterType
 		params.BruteForceAllSlow, params.RespectCanCollide, params.IgnoreWater = popbool(cursor)
 		return params
 	end,
@@ -1280,7 +1262,6 @@ local function vector3(serdes: SerDes<number>): SerDes<Vector3>
 end
 Squash.Vector3 = vector3
 
-local pathwaypointaction = enumitem(Enum.PathWaypointAction)
 local pathWaypointCache = {}
 local function pathwaypoint(serdes: SerDes<number>): SerDes<PathWaypoint>
 	if pathWaypointCache[serdes] then
@@ -1292,7 +1273,7 @@ local function pathwaypoint(serdes: SerDes<number>): SerDes<PathWaypoint>
 	local path: SerDes<PathWaypoint> = {
 		ser = function(cursor, waypoint)
 			pushstr(cursor, waypoint.Label)
-			pathwaypointaction.ser(cursor, waypoint.Action)
+			enumitem(Enum.PathWaypointAction).ser(cursor, waypoint.Action)
 			push(cursor, waypoint.Position.Z)
 			push(cursor, waypoint.Position.Y)
 			push(cursor, waypoint.Position.X)
@@ -1301,7 +1282,7 @@ local function pathwaypoint(serdes: SerDes<number>): SerDes<PathWaypoint>
 		des = function(cursor)
 			return PathWaypoint.new(
 				Vector3.new(pop(cursor), pop(cursor), pop(cursor)),
-				pathwaypointaction.des(cursor) :: Enum.PathWaypointAction,
+				enumitem(Enum.PathWaypointAction).des(cursor) :: Enum.PathWaypointAction,
 				popstr(cursor)
 			)
 		end,
@@ -1371,7 +1352,6 @@ export type SquashRaycastResult = {
 	Material: Enum.Material,
 }
 
-local materialenum = enumitem(Enum.Material)
 local raycastResultCache = {}
 function Squash.RaycastResult(serdes: SerDes<number>): { ser: (Cursor, RaycastResult) -> (), des: (Cursor) -> SquashRaycastResult }
 	if raycastResultCache[serdes] then
@@ -1389,12 +1369,12 @@ function Squash.RaycastResult(serdes: SerDes<number>): { ser: (Cursor, RaycastRe
 			push(cursor, result.Normal.Z)
 			push(cursor, result.Normal.Y)
 			push(cursor, result.Normal.X)
-			materialenum.ser(cursor, result.Material)
+			enumitem(Enum.Material).ser(cursor, result.Material)
 		end,
 
 		des = function(cursor)
 			return {
-				Material = materialenum.des(cursor) :: any,
+				Material = enumitem(Enum.Material).des(cursor) :: any,
 				Normal = Vector3.new(pop(cursor), pop(cursor), pop(cursor)),
 				Position = Vector3.new(pop(cursor), pop(cursor), pop(cursor)),
 				Distance = popf4(cursor),
@@ -1516,7 +1496,7 @@ function Squash.RotationCurveKey(positionSerDes: SerDes<number>): SerDes<Rotatio
 
 	local rot: SerDes<RotationCurveKey> = {
 		ser = function(cursor, key)
-			keyinterpolationmode.ser(cursor, key.Interpolation)
+			enumitem(Enum.KeyInterpolationMode).ser(cursor, key.Interpolation)
 			push(cursor, key.Value)
 			pushf4(cursor, key.Time)
 		end,
@@ -1525,7 +1505,7 @@ function Squash.RotationCurveKey(positionSerDes: SerDes<number>): SerDes<Rotatio
 			return RotationCurveKey.new(
 				popf4(cursor),
 				pop(cursor),
-				keyinterpolationmode.des(cursor) :: Enum.KeyInterpolationMode
+				enumitem(Enum.KeyInterpolationMode).des(cursor) :: Enum.KeyInterpolationMode
 			)
 		end,
 	}
@@ -1533,23 +1513,21 @@ function Squash.RotationCurveKey(positionSerDes: SerDes<number>): SerDes<Rotatio
 	return rot
 end
 
-local easingstyle = enumitem(Enum.EasingStyle)
-local easingdirection = enumitem(Enum.EasingDirection)
 local tweenInfoCache: SerDes<TweenInfo> = {
 	ser = function(cursor, info)
 		pushf4(cursor, info.DelayTime)
 		pushbool(cursor, info.Reverses)
 		pushvlq(cursor, info.RepeatCount)
-		easingdirection.ser(cursor, info.EasingDirection)
-		easingstyle.ser(cursor, info.EasingStyle)
+		enumitem(Enum.EasingDirection).ser(cursor, info.EasingDirection)
+		enumitem(Enum.EasingStyle).ser(cursor, info.EasingStyle)
 		pushf4(cursor, info.Time)
 	end,
 
 	des = function(cursor)
 		return TweenInfo.new(
 			popf4(cursor),
-			easingstyle.des(cursor) :: Enum.EasingStyle,
-			easingdirection.des(cursor) :: Enum.EasingDirection,
+			enumitem(Enum.EasingStyle).des(cursor) :: Enum.EasingStyle,
+			enumitem(Enum.EasingDirection).des(cursor) :: Enum.EasingDirection,
 			popvlq(cursor),
 			popbool(cursor),
 			popf4(cursor)
