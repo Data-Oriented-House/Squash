@@ -293,32 +293,15 @@ print(myarr.des(cursor))
 -- 1 2 3 4 5.5 6.599999904632568 -7.699999809265137 -8.899999618530273 10.01000022888184
 ```
 
-### T
-If using the TypeScript port of Squash this is irrelevant, but for Luau users, the type system is not powerful enough to take a table of serializers and infer the correct type. To get around this, the `Squash.T` function maps `SerDes<T> -> T` and returns what you give it. It's an identity function that *lies* about its type.
-
-```lua
-local T = Squash.T
-
-typeof(Squash.number(4))
--- SerDes<number>
-
-typeof(T(Squash.number(4)))
--- number
-```
-
 ### Maps
 
-Maps are a classic table type `{ [T]: U }` that map T's to U's. It requires using the `T` function to correctly map its types. A map can store a map or any other table type.
+Maps are a classic table type `{ [T]: U }` that map T's to U's. A map can store a map or any other table type.
 
 ```lua
-local T = Squash.T
 local u = Squash.uint
 local vec3 = Squash.Vector3
 local vec2 = Squash.Vector2
-local mymap = Squash.map(
-    T(vec2(u(2))),
-    T(vec3(u(3)))
-)
+local mymap = Squash.map(vec2(u(2)), vec3(u(3)))
 
 local cursor = Squash.cursor()
 mymap.ser(cursor, {
@@ -338,6 +321,18 @@ print(mymap.des(cursor))
 -- }
 ```
 
+### T
+If using the TypeScript port of Squash this is irrelevant, but for Luau users, the type system is not powerful enough to take a table of serializers and infer the correct type. To get around this, the `Squash.T` function maps `SerDes<T> -> T` and returns what you give it. It's an identity function that *lies* about its type.
+
+```lua
+local T = Squash.T
+
+typeof(Squash.number(4))
+-- SerDes<number>
+
+typeof(T(Squash.number(4)))
+-- number
+```
 ### Records
 
 Records (Structs) `{ prop1: any, prop2: any, ... }` map enumerated string identifiers to different values, like a named tuple. Because all keys are string literals known ahead of time, none of them have to be serialized! A record can store a record or any other table type.

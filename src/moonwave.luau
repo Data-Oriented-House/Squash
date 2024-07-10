@@ -187,17 +187,22 @@
 
 --- @function map
 --- @within Squash
---- @param keySerDes K
---- @param valueSerDes V
+--- @param keySerDes SerDes<K>
+--- @param valueSerDes SerDes<V>
 --- @return SerDes<{[K]: V}>
 
 -- --- @class table
 
---- @function table
---- @within Squash
---- @param schema { [string]: SerDes<any> }
---- @return SerDes<any>
---- Serializes tables given a schema mapping types to serializers. If a type is not defined in the schema, it will be ignored when serializing tables. **This is an expensive and heavy serializer compared to Record, Map, and Array. It is highly recommended that you do not use this for tables you know the type of already.**
+--[=[
+    @function table
+    @within Squash
+    @param schema { [string]: SerDes<any> }
+    @return SerDes<any>
+    Serializes tables given a schema mapping types to serializers.
+    If a type is not defined in the schema, it will be ignored when serializing tables.
+    **This is an expensive and heavy serializer compared to Record, Map, and Array.**
+    **It is highly recommended that you do not use this for tables you know the type of already.**
+]=]
 
 -- --- @class Axes
 

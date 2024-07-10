@@ -683,21 +683,23 @@ local function array<T>(serdes: SerDes<T>): SerDes<{T}>
 		return arrayCache[serdes]
 	end
 
-	local ser, des = serdes.ser, serdes.des
+	local push, pop = serdes.ser, serdes.des
 
 	local arr: SerDes<{T}> = {
 		ser = function(cursor, xs)
+			local push = push
 			for _, x in xs do
-				ser(cursor, x)
+				push(cursor, x)
 			end
 			pushvlq(cursor, #xs)
 		end,
 		
 		des = function(cursor)
+			local pop = pop
 			local len = popvlq(cursor)
 			local xs = table.create(len)
 			for i = len, 1, -1 do
-				xs[i] = des(cursor)
+				xs[i] = pop(cursor)
 			end
 			return xs
 		end,
@@ -767,7 +769,7 @@ local function record<T>(schema: T & {}): SerDes<T>
 end
 Squash.record = record
 
-local function map<K, V>(keySerDes: K, valueSerDes: V): SerDes<{[K]: V}>
+local function map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{[K]: V}>
 	return {
 		ser = function(cursor, map)
 			local count = 0
@@ -820,11 +822,11 @@ local function tableserdes(schema: { [string]: SerDes<any> }): SerDes<any>
 
 				vserdes.ser(cursor, v)
 				local vid = table.find(typemap, vtype) or error(``)
-				pushu1(cursor, vid)
+				pushu1(cursor, vid - 1)
 
 				kserdes.ser(cursor, k)
 				local kid = table.find(typemap, ktype) or error(``)
-				pushu1(cursor, kid)
+				pushu1(cursor, kid - 1)
 
 				size += 1
 			end
@@ -835,12 +837,12 @@ local function tableserdes(schema: { [string]: SerDes<any> }): SerDes<any>
 			local tab = {}
 			local size = popvlq(cursor)
 			for _ = 1, size do
-				local kid = popu1(cursor)
+				local kid = popu1(cursor) + 1
 				local ktype = typemap[kid]
 				local kserdes = schema[ktype]
 				local k = kserdes.des(cursor)
 
-				local vid = popu1(cursor)
+				local vid = popu1(cursor) + 1
 				local vtype = typemap[vid]
 				local vserdes = schema[vtype]
 				local v = vserdes.des(cursor)
@@ -1669,6 +1671,35 @@ local vector3int16Cache: SerDes<Vector3int16> = {
 }
 function Squash.Vector3int16(): SerDes<Vector3int16>
 	return vector3int16Cache
+end
+
+local m = Squash.map(Squash.string(), Squash.number(4))
+
+local serdes = Squash.record {
+	wow = Squash.T(Squash.string()),
+	powerful = Squash.T(Squash.boolean()),
+	weak = Squash.T(Squash.boolean()),
+}
+
+local c = Squash.cursor()
+Squash.array(Squash.uint(1)).ser(c, {
+	-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5
+})
+serdes.ser(c, {
+	wow = 'Hello World!',
+	powerful = true,
+	weak = false,
+})
+Squash.print(c)
+
+local t = serdes.des(c)
+for k, v in t do
+	print(k, v)
+end
+
+t = Squash.array(Squash.uint(1)).des(c)
+for k, v in t do
+	print(k, v)
 end
 
 return Squash
