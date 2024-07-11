@@ -4,7 +4,13 @@ sidebar_position: 3
 
 # How To Serialize?
 
-Every byte can represent 256 possible values. We can represent 256^2 = 65536 possible values with 2 bytes, 256^3 = 16777216 possible values with 3 bytes, and so on. There are many ways to interpret these bytes depending on context which is the key to serialization.
+Every byte can represent 256 possible values. We can represent 256^2 = 65536 possible values with 2 bytes, 256^3 = 16777216 possible values with 3 bytes, and so on. There are many ways to interpret these bytes depending on context which is the key to serialization. All serialization does is turn information into data, in this case datatype instances to buffers. If used smartly, less data can be used to represent the same information which is what Squash exploits as much as possible.
+
+## Cursors
+
+Buffers themselves are **statically sized**, which means that when a buffer is created it cannot be resized to fit more data. Squash uses something called a **Cursor** which wraps around buffers to treat them like **dynamically sized stacks**. This means users push and pop data off of the stack, and if it grows too big the buffer gets reallocated behind the scenes. Every serializer expects a cursor to push and pop from when serializing and deserializing.
+
+A fun consequence of using a stack is that multiple independent serializations are allowed on the same cursor in succession. This makes fine-tuned serdes a breeze, since a user can serialize a number, then a string, then an array of vectors, and it just works!
 
 ## Booleans
 
@@ -14,14 +20,13 @@ In Luau, the `boolean` type is 1 byte large, but only 1 bit is actually necessar
 | - | - | - | - | - | - | - | - |
 | 1 | 1 | 0 | 1 | 0 | 1 | 1 | 0 |
 
-All of this information fits inside a single character! We can use this to serialize 8 booleans in a single byte. This is called a *byte mask*.
+All of this information fits inside a single byte! We can use this to serialize 8 booleans in a single byte.
 
 ```lua
 local cursor = Squash.cursor()
 Squash.boolean().ser(cursor, true)
 Squash.print(cursor)
--- Len: 8
--- Pos: 1
+-- Pos: 1 / 8
 -- Buf: { 1 0 0 0 0 0 0 0 }
 --          ^
 print(Squash.boolean().des(cursor)) -- true false false false false false false false
@@ -30,8 +35,7 @@ print(Squash.boolean().des(cursor)) -- true false false false false false false 
 local cursor = Squash.cursor(3)
 Squash.boolean().ser(cursor, true, false, true, false, true, true, false, true)
 Squash.print(cursor)
---- Len: 3
---- Pos: 1
+--- Pos: 1 / 3
 --- Buf: { 181 0 0 }
 ---            ^
 print(Squash.boolean().des(cursor)) -- true false true false true true false true
@@ -63,8 +67,7 @@ They may only be positive and can represent all possible permutations of their b
 local cursor = Squash.cursor()
 Squash.uint(1).ser(cursor, 243)
 Squash.print(cursor)
--- Len: 8
--- Pos: 1
+-- Pos: 1 / 8
 -- Buf: { 243 0 0 0 0 0 0 0 }
 --            ^
 print(Squash.uint(1).des(cursor))
@@ -74,8 +77,7 @@ print(Squash.uint(1).des(cursor))
 local cursor = Squash.cursor(1)
 Squash.uint(1).ser(cursor, -13)
 Squash.print(cursor)
--- Len: 1
--- Pos: 1
+-- Pos: 1 / 1
 -- Buf: { 243   }
 --            ^
 print(Squash.uint(1).des(cursor))
@@ -85,8 +87,7 @@ print(Squash.uint(1).des(cursor))
 local cursor = Squash.cursor(4, 1)
 Squash.uint(2).ser(cursor, 7365)
 Squash.print(cursor)
--- Len: 4
--- Pos: 3
+-- Pos: 3 / 4
 -- Buf: { 0 197 28 0 }
 --                 ^
 print(Squash.uint(2).des(cursor))
@@ -115,8 +116,7 @@ They use [2's Compliment](https://en.wikipedia.org/wiki/Two%27s_complement) to r
 local cursor = Squash.cursor()
 Squash.int(1).ser(cursor, 127)
 Squash.print(cursor)
--- Len: 8
--- Pos: 1
+-- Pos: 1 / 8
 -- Buf: { 127 0 0 0 0 0 0 0 }
 --            ^
 print(Squash.int(1).des(cursor))
@@ -126,8 +126,7 @@ print(Squash.int(1).des(cursor))
 local cursor = Squash.cursor()
 Squash.int(1).ser(cursor, -127)
 Squash.print(cursor)
--- Len: 8
--- Pos: 1
+-- Pos: 1 / 8
 -- Buf: { 129 0 0 0 0 0 0 0 }
 --            ^
 print(Squash.int(1).des(cursor))
@@ -137,8 +136,7 @@ print(Squash.int(1).des(cursor))
 local cursor = Squash.cursor()
 Squash.int(1).ser(cursor, 128)
 Squash.print(cursor)
--- Len: 8
--- Pos: 1
+-- Pos: 1 / 8
 -- Buf: { 128 0 0 0 0 0 0 0 }
 --            ^
 print(Squash.int(1).des(cursor))
@@ -148,8 +146,7 @@ print(Squash.int(1).des(cursor))
 local cursor = Squash.cursor()
 Squash.int(1).ser(cursor, -128)
 Squash.print(cursor)
--- Len: 8
--- Pos: 1
+-- Pos: 1 / 8
 -- Buf: { 128 0 0 0 0 0 0 0 }
 --            ^
 print(Squash.int(1).des(cursor))
@@ -268,13 +265,7 @@ print(Squash.string.convert(y, Squash.string.binary, Squash.string.utf8))
 -- {
 ```
 
-## Tables
-
-Luau tables are extremely versatile data structures that can and do implement every other kind of data structure one can think of. They are *too* versatile to optimally serialize, which is why Squash has functions to serialize 3 kinds of common tables.
-
-When defining compound types the code can become verbose and difficult to read. If this is an issue, it is encouraged to store each SerDes in a variable with a shorter name.
-
-### Arrays
+## Arrays
 
 Arrays are a classic table type `{T}`. Like strings, which are also arrays (of bytes), after serializing every element in sequence we append a VLQ representing the count. An array can store an array or any other table type.
 
@@ -293,7 +284,7 @@ print(myarr.des(cursor))
 -- 1 2 3 4 5.5 6.599999904632568 -7.699999809265137 -8.899999618530273 10.01000022888184
 ```
 
-### Maps
+## Maps
 
 Maps are a classic table type `{ [T]: U }` that map T's to U's. A map can store a map or any other table type.
 
@@ -321,7 +312,8 @@ print(mymap.des(cursor))
 -- }
 ```
 
-### T
+## T
+
 If using the TypeScript port of Squash this is irrelevant, but for Luau users, the type system is not powerful enough to take a table of serializers and infer the correct type. To get around this, the `Squash.T` function maps `SerDes<T> -> T` and returns what you give it. It's an identity function that *lies* about its type.
 
 ```lua
@@ -329,13 +321,17 @@ local T = Squash.T
 
 typeof(Squash.number(4))
 -- SerDes<number>
-
 typeof(T(Squash.number(4)))
 -- number
+print(Squash.number(4) == T(Squash.number(4)))
+-- true
 ```
-### Records
+
+## Records
 
 Records (Structs) `{ prop1: any, prop2: any, ... }` map enumerated string identifiers to different values, like a named tuple. Because all keys are string literals known ahead of time, none of them have to be serialized! A record can store a record or any other table type.
+
+When defining compound types the code can become verbose and difficult to read. If this is an issue, it is encouraged to store each SerDes in a variable with a shorter name.
 
 ```lua
 local T = Squash.T
@@ -358,10 +354,7 @@ local playerserdes = record {
         count = T(vlq),
         name = T(str),
     })),
-    inns = T(map(
-        T(str),
-        T(bool)
-    )),
+    inns = T(map(str, bool)),
 }
 
 local cursor = Squash.cursor()
@@ -420,7 +413,7 @@ print(playerserdes.des(cursor))
 
 ## Tuples
 
-Tuple types `(T...)` are like arrays but without the table part, and each element can be a different type. Tuples cannot be used in table types, and cannot be nested in other tuples.
+Tuple types `(T...)` are like arrays but not wrapped in a table, and each element can be a different type. Tuples cannot be used in table types, and cannot be nested in other tuples.
 
 ```lua
 local S = Squash
@@ -441,4 +434,42 @@ S.print(cursor)
 --                                                                                                            ^
 print(mytuple.des(cursor))
 -- 123456792, 1, 0 1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1 Medium stone grey Enum.HumanoidStateType.Freefall
+```
+
+## Tables
+
+Luau tables are extremely versatile data structures that can and do implement every other kind of data structure one can think of. They are *too* versatile to optimally serialize in the general case, which is why Squash has the previously listed Array, Map, and Record serializers.
+
+Only use this serializer if you cannot guarantee the shape of your table beforehand, as it offers less control and worse size reduction. This is the algorithm that Roblox uses when serializing tables because they can't guarantee the shape of the tables users pass. If you do not know the type of your table but you still need to serialize it, then the `Squash.table` serializer is a last resort.
+
+It has to store data for every value, the type of every value, every key, and the type of every key, which makes it significantly larger than the specialized functions. It also does not offer property-specific granularity, instead only letting you map types to serializers for both keys and values alike.
+
+```lua
+local serdes = Squash.table {
+    number = Squash.number(8),
+    string = Squash.string(),
+    boolean, Squash.boolean(),
+    table = Squash.table {
+        CFrame = Squash.CFrame(Squash.number(4)),
+        Vector3 = Squash.Vector3(Squash.int(2)),
+        number = Squash.uint(1),
+    },
+}
+
+local cursor = Squash.cursor()
+serdes.ser(cursor, {
+    wow = -5.352345,
+    [23846.4522] = true,
+    [false] = 'Gaming!',
+    [{
+        CFrame.new(-24.2435, 2, 3), CFrame.new(), Vector3.new(354, -245, -23),
+        [100] = Vector3.zAxis,
+        [Vector3.zero] = 255,
+    }] = {
+        [1] = CFrame.identity,
+        [2] = Vector3.zero,
+        [3] = 256,
+    },
+})
+Squash.print(cursor)
 ```

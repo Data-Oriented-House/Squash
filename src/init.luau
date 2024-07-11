@@ -1673,33 +1673,4 @@ function Squash.Vector3int16(): SerDes<Vector3int16>
 	return vector3int16Cache
 end
 
-local m = Squash.map(Squash.string(), Squash.number(4))
-
-local serdes = Squash.record {
-	wow = Squash.T(Squash.string()),
-	powerful = Squash.T(Squash.boolean()),
-	weak = Squash.T(Squash.boolean()),
-}
-
-local c = Squash.cursor()
-Squash.array(Squash.uint(1)).ser(c, {
-	-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5
-})
-serdes.ser(c, {
-	wow = 'Hello World!',
-	powerful = true,
-	weak = false,
-})
-Squash.print(c)
-
-local t = serdes.des(c)
-for k, v in t do
-	print(k, v)
-end
-
-t = Squash.array(Squash.uint(1)).des(c)
-for k, v in t do
-	print(k, v)
-end
-
 return Squash

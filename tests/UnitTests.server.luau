@@ -703,3 +703,34 @@ Squash.print(cursor)
 --                                                                                                            ^
 print(mytuple.des(cursor))
 -- 123456792, 1, 0 1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1 Medium stone grey Enum.HumanoidStateType.Freefall
+
+--* Tables
+
+local serdes = Squash.table {
+    number = Squash.number(8),
+    string = Squash.string(),
+    boolean = Squash.boolean(),
+    table = Squash.table {
+        CFrame = Squash.CFrame(Squash.number(4)),
+        Vector3 = Squash.Vector3(Squash.int(2)),
+        number = Squash.vlq(),
+    },
+}
+
+local cursor = Squash.cursor()
+serdes.ser(cursor, {
+    wow = -5.352345,
+    [23846.4522] = true,
+    [false] = 'Gaming!',
+    ThisWontSerialize = DateTime.now(),
+    [{
+        CFrame.new(-24.2435, 2, 3), CFrame.new(), Vector3.new(354, -245, -23),
+        [100] = Vector3.zAxis,
+        [Vector3.zero] = 255,
+    }] = {
+        [1] = CFrame.identity,
+        [2] = Vector3.zero,
+        [3] = 256,
+    },
+})
+Squash.print(cursor)
