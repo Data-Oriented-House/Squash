@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[729],{7636:e=>{e.exports=JSON.parse('[{"type":"link","href":"/api/Squash","label":"\u200bSquash"},{"type":"category","label":"Luau","collapsible":true,"collapsed":true,"items":[{"type":"link","href":"/api/string","label":"string"}]}]')}}]);
