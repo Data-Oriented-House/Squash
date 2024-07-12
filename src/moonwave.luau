@@ -150,6 +150,13 @@
 --- @within Squash
 --- @return SerDes<string>
 
+-- --- @class opt
+
+--- @function opt
+--- @within Squash
+--- @param serdes SerDes<T>
+--- @return SerDes<T?>
+
 -- --- @class buffer
 
 --- @function buffer

@@ -82,6 +82,14 @@ local function test_allocvlq_and_popvlq()
     end
 end
 
+local function test_char()
+    local cursor = Squash.cursor()
+    local value = "H"
+    Squash.char().ser(cursor, value)
+    local result = Squash.char().des(cursor)
+    assert_equal(result, value, "Serialization and deserialization of char failed")
+end
+
 local function test_string()
     local cursor = Squash.cursor()
     local value = "Hello, World!"
@@ -107,14 +115,6 @@ local function test_buffer()
     Squash.buffer().ser(cursor, value)
     local result = Squash.buffer().des(cursor)
     assert_equal(buffer.readu32(result, 0), 12345678, "Serialization and deserialization of buffer failed")
-end
-
-local function test_angle()
-    local cursor = Squash.cursor()
-    local value = math.pi / 4
-    Squash.angle().ser(cursor, value)
-    local result = Squash.angle().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of angle failed")
 end
 
 local function test_axes()
@@ -339,10 +339,10 @@ local function run_tests()
     test_allocu_and_popu()
     test_allocvlq_and_popvlq()
     test_number()
+    test_char()
     test_string()
     test_bool()
     test_buffer()
-    test_angle()
     test_axes()
     test_brickcolor()
     test_cframe()
@@ -585,10 +585,7 @@ local T = Squash.T
 local u = Squash.uint
 local vec3 = Squash.Vector3
 local vec2 = Squash.Vector2
-local mymap = Squash.map(
-    T(vec2(u(2))),
-    T(vec3(u(3)))
-)
+local mymap = Squash.map(vec2(u(2)), vec3(u(3)))
 
 local cursor = Squash.cursor()
 mymap.ser(cursor, {
@@ -618,6 +615,7 @@ local float = Squash.number(4)
 local vec2 = Squash.Vector2
 local arr = Squash.array
 local map = Squash.map
+local opt = Squash.opt
 local record = Squash.record
 
 local playerserdes = record {
@@ -629,10 +627,8 @@ local playerserdes = record {
         count = T(vlq),
         name = T(str),
     })),
-    inns = T(map(
-        T(str),
-        T(bool)
-    )),
+    inns = T(map(str, bool)),
+    equipped = T(opt(str)),
 }
 
 local cursor = Squash.cursor()
@@ -651,37 +647,38 @@ playerserdes.ser(cursor, {
         Infirmary = true,
         ['His Recess'] = true,
     },
+    equipped = nil,
 })
 Squash.print(cursor)
--- Pos: 89 / 90
--- Buf: { 9 1 72 105 115 32 82 101 99 101 115 115 138 1 84 104 101 32 67 111 112 112 101 114 32 67 97 117 108 100 114 111 110 147 1 73 110 102 105 114 109 97 114 121 137 131 130 76 97 110 116 101 114 110 135 129 87 97 116 101 114 115 107 105 110 137 132 77 97 112 131 131 67 101 100 114 105 99 107 135 1 51 185 82 198 88 177 143 67 0 }
---                                                                                                                                                                                                                                                                                                                                          ^
+-- Pos: 90 / 90
+-- Buf: { 0 9 1 72 105 115 32 82 101 99 101 115 115 138 1 84 104 101 32 67 111 112 112 101 114 32 67 97 117 108 100 114 111 110 147 1 73 110 102 105 114 109 97 114 121 137 131 130 76 97 110 116 101 114 110 135 129 87 97 116 101 114 115 107 105 110 137 132 77 97 112 131 131 67 101 100 114 105 99 107 135 1 51 185 82 198 88 177 143 67   }
+--                                                                                                                                                                                                                                                                                                                                            ^                                                                                                                                                                                                                                                                                                                                     ^
 print(playerserdes.des(cursor))
 -- {
 --     ["health"] = 9,
 --     ["inns"] =  ▼  {
---         ["His Recess"] = true,
---         ["Infirmary"] = true,
---         ["The Copper Cauldron"] = true
+--        ["His Recess"] = true,
+--        ["Infirmary"] = true,
+--        ["The Copper Cauldron"] = true
 --     },
 --     ["items"] =  ▼  {
---         [1] =  ▼  {
---             ["count"] = 2,
---             ["name"] = "Lantern"
---         },
---         [2] =  ▼  {
---             ["count"] = 1,
---             ["name"] = "Waterskin"
---         },
---         [3] =  ▼  {
---             ["count"] = 4,
---             ["name"] = "Map"
---         }
+--        [1] =  ▼  {
+--           ["count"] = 2,
+--           ["name"] = "Lantern"
+--        },
+--        [2] =  ▼  {
+--           ["count"] = 1,
+--           ["name"] = "Waterskin"
+--        },
+--        [3] =  ▼  {
+--           ["count"] = 4,
+--           ["name"] = "Map"
+--        }
 --     },
 --     ["name"] = "Cedrick",
 --     ["poisoned"] = true,
 --     ["position"] = 287.385498, -13486.2998
--- }
+--  }
 
 --* Tuples
 
@@ -734,3 +731,17 @@ serdes.ser(cursor, {
     },
 })
 Squash.print(cursor)
+-- Pos: 131 / 135
+-- Buf: { 71 97 109 105 110 103 33 135 1 0 2 240 162 175 32 205 104 21 192 0 119 111 119 131 1 1 2 208 68 216 240 156 73 215 64 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 129 0 0 0 0 0 0 0 2 130 0 130 0 0 131 0 131 3 1 0 0 64 64 0 0 0 64 176 242 193 193 1 129 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 130 0 233 255 11 255 98 1 2 131 0 129 127 0 0 0 0 0 0 0 2 1 0 0 0 0 0 2 228 0 133 3 132 0 0 0 0 }
+--                                                                                                                                                                                                                                                                                                                                                                           ^
+print(serdes.des(cursor))
+-- {
+--     ["wow"] = -5.352345,
+--     [23846.4522] = true,
+--     [Table(24BE4A11A98)] =  ▼  {
+--         [1] = 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+--         [2] = 0, 0, 0,
+--         [3] = 256
+--     },
+--     [false] = "Gaming!"
+-- }

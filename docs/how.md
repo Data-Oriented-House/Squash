@@ -8,7 +8,7 @@ Every byte can represent 256 possible values. We can represent 256^2 = 65536 pos
 
 ## Cursors
 
-Buffers themselves are **statically sized**, which means that when a buffer is created it cannot be resized to fit more data. Squash uses something called a **Cursor** which wraps around buffers to treat them like **dynamically sized stacks**. This means users push and pop data off of the stack, and if it grows too big the buffer gets reallocated behind the scenes. Every serializer expects a cursor to push and pop from when serializing and deserializing.
+Buffers themselves are **statically sized**, which means that when a buffer is created it cannot be resized to fit more data. Squash uses something called a **Cursor** which wraps around buffers to treat them like **dynamically sized stacks**. This means users push and pop data off of the stack, and if it grows too big the buffer gets reallocated behind the scenes. Every serializer expects a cursor to push and pop from when serializing and deserializing. For more information, the internally used cursors have been extracted into a dedicated library called [Cursor](https://data-oriented-house.github.io/Cursor/).
 
 A fun consequence of using a stack is that multiple independent serializations are allowed on the same cursor in succession. This makes fine-tuned serdes a breeze, since a user can serialize a number, then a string, then an array of vectors, and it just works!
 
@@ -196,7 +196,36 @@ print(Squash.number(8).des(cursor))
 
 Sometimes we don't know how many bytes we need to represent a number, or we need to represent a number so large that 8 bytes isn't enough. This is where VLQs come in. They are a binary format to represent arbitrarily large numbers as a sequence of bytes. 7 bits encode the number, 1 bit encodes the end of the number. This means 127 serializes to 1 byte. 128 serializes to 2 bytes. It increments by powers of 128 instead of 256 like bytes because of the missing bit.
 
-
+```lua
+local cursor = Squash.cursor()
+Squash.vlq().ser(cursor, 10)
+Squash.print(cursor)
+-- Pos: 1 / 8
+-- Buf: { 138 0 0 0 0 0 0 0 }
+--            ^
+print(Squash.vlq().des(cursor))
+-- 10
+```
+```lua
+local cursor = Squash.cursor()
+Squash.vlq().ser(cursor, 130)
+Squash.print(cursor)
+-- Pos: 2 / 8
+-- Buf: { 129 2 0 0 0 0 0 0 }
+--              ^
+print(Squash.vlq().des(cursor))
+-- 130
+```
+```lua
+local cursor = Squash.cursor()
+Squash.vlq().ser(cursor, 547359474)
+Squash.print(cursor)
+-- Pos: 5 / 8
+-- Buf: { 130 5 0 21 114 0 0 0 }
+--                       ^
+print(Squash.vlq().des(cursor))
+-- 547359474
+```
 
 ## Strings
 
@@ -343,6 +372,7 @@ local float = Squash.number(4)
 local vec2 = Squash.Vector2
 local arr = Squash.array
 local map = Squash.map
+local opt = Squash.opt
 local record = Squash.record
 
 local playerserdes = record {
@@ -355,6 +385,7 @@ local playerserdes = record {
         name = T(str),
     })),
     inns = T(map(str, bool)),
+    equipped = T(opt(str)),
 }
 
 local cursor = Squash.cursor()
@@ -373,42 +404,38 @@ playerserdes.ser(cursor, {
         Infirmary = true,
         ['His Recess'] = true,
     },
+    equipped = nil,
 })
 Squash.print(cursor)
--- Pos: 89 / 90
--- Buf: { 9 1 72 105 115 32 82 101 99 101 115 115 138 1 84 104
--- 101 32 67 111 112 112 101 114 32 67 97 117 108 100 114 111
--- 110 147 1 73 110 102 105 114 109 97 114 121 137 131 130 76
--- 97 110 116 101 114 110 135 129 87 97 116 101 114 115 107 105
--- 110 137 132 77 97 112 131 131 67 101 100 114 105 99 107 135
--- 1 51 185 82 198 88 177 143 67 0 }
---                               ^
+-- Pos: 90 / 90
+-- Buf: { 0 9 1 72 105 115 32 82 101 99 101 115 115 138 1 84 104 101 32 67 111 112 112 101 114 32 67 97 117 108 100 114 111 110 147 1 73 110 102 105 114 109 97 114 121 137 131 130 76 97 110 116 101 114 110 135 129 87 97 116 101 114 115 107 105 110 137 132 77 97 112 131 131 67 101 100 114 105 99 107 135 1 51 185 82 198 88 177 143 67   }
+--                                                                                                                                                                                                                                                                                                                                            ^
 print(playerserdes.des(cursor))
 -- {
 --     ["health"] = 9,
 --     ["inns"] =  ▼  {
---         ["His Recess"] = true,
---         ["Infirmary"] = true,
---         ["The Copper Cauldron"] = true
+--        ["His Recess"] = true,
+--        ["Infirmary"] = true,
+--        ["The Copper Cauldron"] = true
 --     },
 --     ["items"] =  ▼  {
---         [1] =  ▼  {
---             ["count"] = 2,
---             ["name"] = "Lantern"
---         },
---         [2] =  ▼  {
---             ["count"] = 1,
---             ["name"] = "Waterskin"
---         },
---         [3] =  ▼  {
---             ["count"] = 4,
---             ["name"] = "Map"
---         }
+--        [1] =  ▼  {
+--           ["count"] = 2,
+--           ["name"] = "Lantern"
+--        },
+--        [2] =  ▼  {
+--           ["count"] = 1,
+--           ["name"] = "Waterskin"
+--        },
+--        [3] =  ▼  {
+--           ["count"] = 4,
+--           ["name"] = "Map"
+--        }
 --     },
 --     ["name"] = "Cedrick",
 --     ["poisoned"] = true,
 --     ["position"] = 287.385498, -13486.2998
--- }
+--  }
 ```
 
 ## Tuples
@@ -448,11 +475,11 @@ It has to store data for every value, the type of every value, every key, and th
 local serdes = Squash.table {
     number = Squash.number(8),
     string = Squash.string(),
-    boolean, Squash.boolean(),
+    boolean = Squash.boolean(),
     table = Squash.table {
         CFrame = Squash.CFrame(Squash.number(4)),
         Vector3 = Squash.Vector3(Squash.int(2)),
-        number = Squash.uint(1),
+        number = Squash.vlq(),
     },
 }
 
@@ -461,6 +488,7 @@ serdes.ser(cursor, {
     wow = -5.352345,
     [23846.4522] = true,
     [false] = 'Gaming!',
+    ThisWontSerialize = DateTime.now(),
     [{
         CFrame.new(-24.2435, 2, 3), CFrame.new(), Vector3.new(354, -245, -23),
         [100] = Vector3.zAxis,
@@ -472,4 +500,18 @@ serdes.ser(cursor, {
     },
 })
 Squash.print(cursor)
+-- Pos: 131 / 135
+-- Buf: { 71 97 109 105 110 103 33 135 1 0 2 240 162 175 32 205 104 21 192 0 119 111 119 131 1 1 2 208 68 216 240 156 73 215 64 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 129 0 0 0 0 0 0 0 2 130 0 130 0 0 131 0 131 3 1 0 0 64 64 0 0 0 64 176 242 193 193 1 129 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 130 0 233 255 11 255 98 1 2 131 0 129 127 0 0 0 0 0 0 0 2 1 0 0 0 0 0 2 228 0 133 3 132 0 0 0 0 }
+--                                                                                                                                                                                                                                                                                                                                                                           ^
+print(serdes.des(cursor))
+-- {
+--     ["wow"] = -5.352345,
+--     [23846.4522] = true,
+--     [Table(24BE4A11A98)] =  ▼  {
+--         [1] = 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+--         [2] = 0, 0, 0,
+--         [3] = 256
+--     },
+--     [false] = "Gaming!"
+-- }
 ```
