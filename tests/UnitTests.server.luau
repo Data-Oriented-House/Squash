@@ -82,14 +82,6 @@ local function test_allocvlq_and_popvlq()
     end
 end
 
-local function test_char()
-    local cursor = Squash.cursor()
-    local value = "H"
-    Squash.char().ser(cursor, value)
-    local result = Squash.char().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of char failed")
-end
-
 local function test_string()
     local cursor = Squash.cursor()
     local value = "Hello, World!"
@@ -339,7 +331,6 @@ local function run_tests()
     test_allocu_and_popu()
     test_allocvlq_and_popvlq()
     test_number()
-    test_char()
     test_string()
     test_bool()
     test_buffer()
@@ -520,6 +511,15 @@ Squash.print(cursor)
 --                                                           ^
 print(Squash.string().des(cursor))
 
+local cursor = Squash.cursor()
+Squash.string(13).ser(cursor, "Hello, World!")
+Squash.print(cursor)
+-- Pos: 13 / 18
+-- Buf: { 72 101 108 108 111 44 32 87 111 114 108 100 33 0 0 0 0 0 }
+--                                                       ^
+print(Squash.string(13).des(cursor))
+-- Hello, World!
+
 ----* Base Conversion
 
 local x = 'Hello, world!'
@@ -579,9 +579,30 @@ print(Squash.array(Squash.number(4)).des(cursor))
 --    [9] = 10.01000022888184
 -- }
 
+local arr = Squash.array
+local float = Squash.number(4)
+local myarr = arr(float, 8)
+
+local cursor = Squash.cursor()
+myarr.ser(cursor, {1, 2, 3, 4, 5.5, 6.6, -7.7, -8.9, 10.01})
+Squash.print(cursor)
+-- Pos: 32 / 40
+-- Buf: { 0 0 128 63 0 0 0 64 0 0 64 64 0 0 128 64 0 0 176 64 51 51 211 64 102 102 246 192 102 102 14 193 0 0 0 0 0 0 0 0 }
+--                                                                                                        ^
+print(myarr.des(cursor))
+-- {
+--    [1] = 1,
+--    [2] = 2,
+--    [3] = 3,
+--    [4] = 4,
+--    [5] = 5.5,
+--    [6] = 6.599999904632568,
+--    [7] = -7.699999809265137,
+--    [8] = -8.899999618530273,
+-- }
+
 --* Maps
 
-local T = Squash.T
 local u = Squash.uint
 local vec3 = Squash.Vector3
 local vec2 = Squash.Vector2

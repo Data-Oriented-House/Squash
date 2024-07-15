@@ -142,25 +142,14 @@
 
 --- @function string
 --- @within Squash
+--- @param length number?
 --- @return SerDes<string>
-
--- --- @class char
-
---- @function char
---- @within Squash
---- @return SerDes<string>
-
--- --- @class opt
-
---- @function opt
---- @within Squash
---- @param serdes SerDes<T>
---- @return SerDes<T?>
 
 -- --- @class buffer
 
 --- @function buffer
 --- @within Squash
+--- @param length number?
 --- @return SerDes<buffer>
 
 -- --- @class vlq
@@ -169,11 +158,19 @@
 --- @within Squash
 --- @return SerDes<number>
 
+-- --- @class opt
+
+--- @function opt
+--- @within Squash
+--- @param serdes SerDes<T>
+--- @return SerDes<T?>
+
 -- --- @class array
 
 --- @function array
 --- @within Squash
 --- @param serdes SerDes<T>
+--- @param length number?
 --- @return SerDes<{T}>
 
 -- --- @class tuple

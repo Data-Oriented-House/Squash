@@ -394,30 +394,36 @@ local function popvlq(cursor: Cursor)
 	error(`Not a valid vlq: {x} = {buffer.tostring(cursor.Buf)}`)
 end
 
-local function pushstr(cursor: Cursor, x: string)
-	local len = #x
+local function pushstr(cursor: Cursor, x: string, length: number?)
+	local len = length or #x
 	tryRealloc(cursor, len)
 	buffer.writestring(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += len
-	pushvlq(cursor, len)
+
+	if not length then
+		pushvlq(cursor, len)
+	end
 end
 
-local function popstr(cursor: Cursor)
-	local len = popvlq(cursor)
+local function popstr(cursor: Cursor, length: number?)
+	local len = length or popvlq(cursor)
 	cursor.Pos -= len
 	return buffer.readstring(cursor.Buf, cursor.Pos, len)
 end
 
-local function pushbuf(cursor: Cursor, x: buffer)
-	local len = buffer.len(x)
+local function pushbuf(cursor: Cursor, x: buffer, length: number?)
+	local len = length or buffer.len(x)
 	tryRealloc(cursor, len)
 	buffer.copy(cursor.Buf, cursor.Pos, x, 0, len)
 	cursor.Pos += len
-	pushvlq(cursor, len)
+
+	if not length then
+		pushvlq(cursor, len)
+	end
 end
 
-local function popbuf(cursor: Cursor)
-	local len = popvlq(cursor)
+local function popbuf(cursor: Cursor, length: number?)
+	local len = length or popvlq(cursor)
 	cursor.Pos -= len
 	local buf = buffer.create(len)
 	buffer.copy(buf, 0, cursor.Buf, cursor.Pos, len)
@@ -566,13 +572,32 @@ local function num(bytes: number): SerDes<number>
 end
 Squash.number = num
 
-local stringCache: SerDes<string> = {
+local stringSerDes: SerDes<string> = {
 	ser = pushstr,
 	des = popstr,
 }
+local stringCache = {}
 local stringMeta = {
-	__call = function(_)
-		return stringCache
+	__call = function(_, length: number?): SerDes<string>
+		if not length then
+			return stringSerDes
+		end
+
+		if stringCache[length] then
+			return stringCache[length]
+		end
+
+		local serdes: SerDes<string> = {
+			ser = function(cursor, string)
+				pushstr(cursor, string, length)
+			end,
+
+			des = function(cursor)
+				return popstr(cursor, length)
+			end,
+		}
+		stringCache[length] = serdes
+		return serdes
 	end,
 }
 local str = {}
@@ -648,19 +673,6 @@ str.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_
 local str = setmetatable(str, stringMeta)
 Squash.string = str
 
-local charserdes: SerDes<string> = {
-	ser = function(cursor, char)
-		pushu1(cursor, string.byte(char))
-	end,
-
-	des = function(cursor)
-		return string.char(popu1(cursor))
-	end,
-}
-function Squash.char(): SerDes<string>
-	return charserdes
-end
-
 local optCache = {}
 function Squash.opt<T>(serdes: SerDes<T>): SerDes<T?>
 	if optCache[serdes] then
@@ -689,12 +701,31 @@ function Squash.opt<T>(serdes: SerDes<T>): SerDes<T?>
 	return optSerDes
 end
 
-local bufCache: SerDes<buffer> = {
+local bufSerDes: SerDes<buffer> = {
 	ser = pushbuf,
 	des = popbuf,
 }
-function Squash.buffer(): SerDes<buffer>
-	return bufCache
+local bufCache = {}
+function Squash.buffer(length: number?): SerDes<buffer>
+	if not length then
+		return bufSerDes
+	end
+
+	if bufCache[length] then
+		return bufCache[length]
+	end
+
+	local serdes: SerDes<buffer> = {
+		ser = function(cursor, buf)
+			pushbuf(cursor, buf, length)
+		end,
+
+		des = function(cursor)
+			return popbuf(cursor, length)
+		end,
+	}
+	bufCache[length] = serdes
+	return serdes
 end
 
 local vlqCache: SerDes<number> = {
@@ -706,7 +737,7 @@ function Squash.vlq(): SerDes<number>
 end
 
 local arrayCache = {}
-local function array<T>(serdes: SerDes<T>): SerDes<{T}>
+local function array<T>(serdes: SerDes<T>, length: number?): SerDes<{T}>
 	if arrayCache[serdes] then
 		return arrayCache[serdes]
 	end
@@ -714,8 +745,13 @@ local function array<T>(serdes: SerDes<T>): SerDes<{T}>
 	local push, pop = serdes.ser, serdes.des
 
 	local arr: SerDes<{T}> = {
-		ser = function(cursor, xs)
-			local push = push
+		ser = if length then function(cursor, xs)
+			local push = push --? Store repeatedly-accessed Upvalue in local variable
+			for i = 1, length do
+				push(cursor, xs[i])
+			end
+		end else function(cursor, xs)
+			local push = push --? Store repeatedly-accessed Upvalue in local variable
 			for _, x in xs do
 				push(cursor, x)
 			end
@@ -723,8 +759,8 @@ local function array<T>(serdes: SerDes<T>): SerDes<{T}>
 		end,
 
 		des = function(cursor)
-			local pop = pop
-			local len = popvlq(cursor)
+			local pop = pop --? Store repeatedly-accessed Upvalue in local variable
+			local len = length or popvlq(cursor)
 			local xs = table.create(len)
 			for i = len, 1, -1 do
 				xs[i] = pop(cursor)
@@ -745,21 +781,21 @@ function Squash.tuple<T...>(...: T...): SerDes<T...>
 		return serdesargs[1]
 	end
 
-	local tuple = {}
+	local tuple: SerDes<T...> = {
+		ser = function(cursor, ...)
+			for i, x in { ... } :: { any } do
+				serdesargs[i].ser(cursor, x)
+			end
+		end,
 
-	function tuple.ser(cursor: Cursor, ...: T...)
-		for i, x in { ... } :: { any } do
-			serdesargs[i].ser(cursor, x)
-		end
-	end
-
-	function tuple.des(cursor: Cursor)
-		local xs = table.create(count)
-		for i = count, 1, -1 do
-			xs[i] = serdesargs[i].des(cursor)
-		end
-		return table.unpack(xs)
-	end
+		des = function(cursor)
+			local xs = table.create(count)
+			for i = count, 1, -1 do
+				xs[i] = serdesargs[i].des(cursor)
+			end
+			return table.unpack(xs)
+		end,
+	}
 
 	return tuple
 end
@@ -800,20 +836,20 @@ Squash.record = record
 local function map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{[K]: V}>
 	return {
 		ser = function(cursor, map)
-			local count = 0
+			local size = 0
 			for k, v in map :: any do
 				(valueSerDes :: any).ser(cursor, v)
 				;(keySerDes :: any).ser(cursor, k)
-				count += 1
+				size += 1
 			end
-			pushvlq(cursor, count)
+			pushvlq(cursor, size)
 		end,
 
-		des = function(cursor: Cursor)
+		des = function(cursor)
 			local map = {}
 
-			local count = popvlq(cursor)
-			for _ = 1, count do
+			local size = popvlq(cursor)
+			for _ = 1, size do
 				local key = (keySerDes :: any).des(cursor)
 				local value = (valueSerDes :: any).des(cursor)
 				map[key] = value
@@ -858,6 +894,7 @@ local function tableserdes(schema: { [string]: SerDes<any> }): SerDes<any>
 
 				size += 1
 			end
+
 			pushvlq(cursor, size)
 		end,
 

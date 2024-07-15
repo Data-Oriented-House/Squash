@@ -194,7 +194,7 @@ print(Squash.number(8).des(cursor))
 
 ### [Variable Length Quantities](https://en.wikipedia.org/wiki/Variable-length_quantity)
 
-Sometimes we don't know how many bytes we need to represent a number, or we need to represent a number so large that 8 bytes isn't enough. This is where VLQs come in. They are a binary format to represent arbitrarily large numbers as a sequence of bytes. 7 bits encode the number, 1 bit encodes the end of the number. This means 127 serializes to 1 byte. 128 serializes to 2 bytes. It increments by powers of 128 instead of 256 like bytes because of the missing bit.
+Sometimes we don't know how many bytes we need to represent a number, or we need to represent a number so large that 8 bytes isn't enough. This is where VLQs come in. They are a binary format to represent arbitrarily large numbers as a sequence of bytes. 7 bits encode the number, 1 bit encodes the end of the number. This means 127 serializes to 1 byte. 128 serializes to 2 bytes. It increments by powers of 128 instead of 256 like bytes do because of the missing bit.
 
 ```lua
 local cursor = Squash.cursor()
@@ -239,6 +239,17 @@ Squash.print(cursor)
 -- Buf: { 72 101 108 108 111 44 32 87 111 114 108 100 33 141 0 0 0 0 }
 --                                                           ^
 print(Squash.string().des(cursor))
+-- Hello, World!
+```
+
+```lua
+local cursor = Squash.cursor()
+Squash.string(13).ser(cursor, "Hello, World!")
+Squash.print(cursor)
+-- Pos: 13 / 18
+-- Buf: { 72 101 108 108 111 44 32 87 111 114 108 100 33 0 0 0 0 0 }
+--                                                       ^
+print(Squash.string(13).des(cursor))
 -- Hello, World!
 ```
 
@@ -311,6 +322,21 @@ Squash.print(cursor)
 --                                                                                                                         ^
 print(myarr.des(cursor))
 -- 1 2 3 4 5.5 6.599999904632568 -7.699999809265137 -8.899999618530273 10.01000022888184
+```
+
+```lua
+local arr = Squash.array
+local float = Squash.number(4)
+local myarr = arr(float, 8)
+
+local cursor = Squash.cursor()
+myarr.ser(cursor, {1, 2, 3, 4, 5.5, 6.6, -7.7, -8.9, 10.01})
+Squash.print(cursor)
+-- Pos: 32 / 40
+-- Buf: { 0 0 128 63 0 0 0 64 0 0 64 64 0 0 128 64 0 0 176 64 51 51 211 64 102 102 246 192 102 102 14 193 0 0 0 0 0 0 0 0 }
+--                                                                                                        ^
+print(myarr.des(cursor))
+-- 1 2 3 4 5.5 6.599999904632568 -7.699999809265137 -8.899999618530273
 ```
 
 ## Maps
