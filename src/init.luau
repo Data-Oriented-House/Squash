@@ -738,8 +738,15 @@ end
 
 local arrayCache = {}
 local function array<T>(serdes: SerDes<T>, length: number?): SerDes<{T}>
-	if arrayCache[serdes] then
-		return arrayCache[serdes]
+	local cached = arrayCache[serdes]
+	local key = length or 0
+	if cached then
+		if cached[key] then
+			return cached[key]
+		end
+	else
+		cached = {}
+		arrayCache[serdes] = cached
 	end
 
 	local push, pop = serdes.ser, serdes.des
@@ -769,7 +776,7 @@ local function array<T>(serdes: SerDes<T>, length: number?): SerDes<{T}>
 		end,
 	}
 
-	arrayCache[serdes] = arr
+	cached[key] = arr
 	return arr
 end
 Squash.array = array
