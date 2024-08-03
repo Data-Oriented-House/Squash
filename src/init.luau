@@ -868,6 +868,38 @@ local function map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{
 end
 Squash.map = map
 
+local function literal<T>(literals: T & {}): SerDes<T>
+	local literalsSet = {}
+	local reverseLiteralsSet = {}
+
+	local count = 0
+	for _, literal in literals :: any do
+		if literalsSet[literal] then
+			continue
+		end
+
+		literalsSet[literal] = count
+		reverseLiteralsSet[count] = literal
+
+		count += 1
+	end
+
+	-- It is unrealistic for more than 2^16 literals to be used.
+	local push: (cursor: Cursor, literal: number) -> () = if count < 256 then pushu1 else pushu2
+	local pop: (cursor: Cursor) -> number = if count < 256 then popu1 else popu2
+
+	return {
+		ser = function(cursor, literal)
+			push(cursor, literalsSet[literal])
+		end,
+
+		des = function(cursor)
+			return reverseLiteralsSet[pop(cursor)]
+		end,
+	}
+end
+Squash.literal = literal
+
 local function tableserdes(schema: { [string]: SerDes<any> }): SerDes<any>
 	local typemap = {}
 
