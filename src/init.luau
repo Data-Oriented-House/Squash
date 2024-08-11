@@ -868,12 +868,12 @@ local function map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{
 end
 Squash.map = map
 
-local function literal<T>(literals: {T}): SerDes<T>
+local function literal(literals: { any }): SerDes<any>
 	local literalsSet = {}
 	local reverseLiteralsSet = {}
 
 	local count = 0
-	for _, literal in literals :: any do
+	for _, literal in literals do
 		if literalsSet[literal] then
 			continue
 		end
