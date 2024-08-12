@@ -703,7 +703,7 @@ print(playerserdes.des(cursor))
 
 --* Literals
 
-local literal = Squash.literal({"a", "b", "c", "d", "e"})
+local literal = Squash.literal("a", "b", "c", "d", "e")
 
 local cursor = Squash.cursor()
 literal.ser(cursor, "d")

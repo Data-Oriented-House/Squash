@@ -199,7 +199,7 @@
 
 --- @function literal
 --- @within Squash
---- @param literals { any }
+--- @param literals ... any
 --- @return SerDes<any>
 
 -- --- @class table
