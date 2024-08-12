@@ -1765,16 +1765,4 @@ function Squash.Vector3int16(): SerDes<Vector3int16>
 	return vector3int16Cache
 end
 
-local literal = Squash.literal("a", 2, "c", true, "e")
-
-local cursor = Squash.cursor()
-literal.ser(cursor, "c")
-Squash.print(cursor)
--- Pos: 1 / 8
--- Buf: { 2 0 0 0 0 0 0 0 }
---          ^
-print(literal.des(cursor))
--- "c"
-
-
 return Squash
