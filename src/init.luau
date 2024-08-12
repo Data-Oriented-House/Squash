@@ -873,7 +873,7 @@ local function literal(...: any): SerDes<any>
 	local lookup = {}
 
 	for i, literal in literals do
-		lookup[literal] = i
+		lookup[literal] = i - 1
 	end
 
 	return {
@@ -882,7 +882,7 @@ local function literal(...: any): SerDes<any>
 		end,
 
 		des = function(cursor)
-			return literals[popu1(cursor)]
+			return literals[popu1(cursor) + 1]
 		end,
 	}
 end
@@ -1764,5 +1764,17 @@ local vector3int16Cache: SerDes<Vector3int16> = {
 function Squash.Vector3int16(): SerDes<Vector3int16>
 	return vector3int16Cache
 end
+
+local literal = Squash.literal("a", 2, "c", true, "e")
+
+local cursor = Squash.cursor()
+literal.ser(cursor, "c")
+Squash.print(cursor)
+-- Pos: 1 / 8
+-- Buf: { 2 0 0 0 0 0 0 0 }
+--          ^
+print(literal.des(cursor))
+-- "c"
+
 
 return Squash

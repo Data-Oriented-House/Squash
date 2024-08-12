@@ -703,16 +703,16 @@ print(playerserdes.des(cursor))
 
 --* Literals
 
-local literal = Squash.literal("a", "b", "c", "d", "e")
+local literal = Squash.literal("a", 2, "c", true, "e")
 
 local cursor = Squash.cursor()
-literal.ser(cursor, "d")
+literal.ser(cursor, "c")
 Squash.print(cursor)
 -- Pos: 1 / 8
--- Buf: { 3 0 0 0 0 0 0 0 }
+-- Buf: { 2 0 0 0 0 0 0 0 }
 --          ^
 print(literal.des(cursor))
--- "d"
+-- "c"
 
 --* Tuples
 

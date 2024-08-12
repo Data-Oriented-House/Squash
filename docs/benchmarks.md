@@ -6,7 +6,7 @@ sidebar_position: 5
 
 ## Eyeballed Lookup Table
 
-Before we had access to the raw binary data, we ran benchmarks! Below is our first attempt at measuring bandwidth. Is is an eye-measured median of the incoming kB/s from the Networking window in studio after stabilization. The code is on the server and fires a remote with the Value every task.wait().
+Before we had access to the raw binary data, we ran benchmarks! Below is our first attempt at measuring bandwidth. It is an eye-measured median of the incoming kB/s from the Networking window in studio after stabilization. The code is on the server and fires a remote with the Value every task.wait().
 
 | Value | Median Bandwidth (kB/s) | Notes | Conclusions |
 |-|-|-|-|

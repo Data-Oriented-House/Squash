@@ -305,6 +305,23 @@ print(Squash.string.convert(y, Squash.string.binary, Squash.string.utf8))
 -- {
 ```
 
+## Literals
+
+Literals are individual values that can be enumerated and distinguished using just `u1`s. This is useful for encoding enums of names, orientations, and other unique identifiers with minimal data.
+
+```lua
+local literal = Squash.literal("a", 2, "c", true, "e")
+
+local cursor = Squash.cursor()
+literal.ser(cursor, "c")
+Squash.print(cursor)
+-- Pos: 1 / 8
+-- Buf: { 2 0 0 0 0 0 0 0 }
+--          ^
+print(literal.des(cursor))
+-- "c"
+```
+
 ## Arrays
 
 Arrays are a classic table type `{T}`. Like strings, which are also arrays (of bytes), after serializing every element in sequence we append a VLQ representing the count. An array can store an array or any other table type.
