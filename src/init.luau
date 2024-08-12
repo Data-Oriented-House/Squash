@@ -868,7 +868,7 @@ local function map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{
 end
 Squash.map = map
 
-local function literal(...:any): SerDes<any>
+local function literal(...: any): SerDes<any>
 	local literals = { ... }
 	local lookup = {}
 
