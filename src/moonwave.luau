@@ -195,6 +195,13 @@
 --- @param valueSerDes SerDes<V>
 --- @return SerDes<{[K]: V}>
 
+-- --- @class literal
+
+--- @function literal
+--- @within Squash
+--- @param literals ... any
+--- @return SerDes<any>
+
 -- --- @class table
 
 --[=[
