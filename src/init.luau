@@ -845,8 +845,8 @@ local function map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{
 		ser = function(cursor, map)
 			local size = 0
 			for k, v in map :: any do
-				(valueSerDes :: any).ser(cursor, v);
-(keySerDes :: any).ser(cursor, k)
+				(valueSerDes :: any).ser(cursor, v)
+				;(keySerDes :: any).ser(cursor, k)
 				size += 1
 			end
 			pushvlq(cursor, size)
