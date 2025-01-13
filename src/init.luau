@@ -1100,36 +1100,40 @@ local function cframe(positionSerDes: SerDes<number>): SerDes<CFrame>
 	local push, pop = positionSerDes.ser, positionSerDes.des
 
 	local cframeserdes: SerDes<CFrame> = {
-		ser = function(cursor, cframe)
-			local specialId = table.find(idToCFrame, cframe.Rotation)
-			if specialId then
-				pushu1(cursor, specialId)
-			else
-				local axis, theta = cframe:ToAxisAngle()
-				local rotaxis = axis * theta * 256
-				pushi2(cursor, rotaxis.Z)
-				pushi2(cursor, rotaxis.Y)
-				pushi2(cursor, rotaxis.X)
-				pushu1(cursor, 0)
-			end
-			local pos = cframe.Position
-			push(cursor, pos.Z)
-			push(cursor, pos.Y)
-			push(cursor, pos.X)
-		end,
+        ser = function(cursor, cframe)
+            local specialId = table.find(idToCFrame, cframe.Rotation)
+            if specialId then
+                pushu1(cursor, specialId)
+            else
+                local axis, theta = cframe:ToAxisAngle()
+                axis*=math.sin(theta/2)
+                pushu2(cursor, (axis.Z + 1) * (65535/2))
+                pushu2(cursor, (axis.Y + 1) * (65535/2))
+                pushu2(cursor, (axis.X + 1) * (65535/2))
+                pushu1(cursor, 0)
+            end
+            local pos = cframe.Position
+            push(cursor, pos.Z)
+            push(cursor, pos.Y)
+            push(cursor, pos.X)
+        end,
 
-		des = function(cursor)
-			local pos = Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+        des = function(cursor)
+            local x,y,z = pop(cursor), pop(cursor), pop(cursor)
 
-			local specialId = popu1(cursor)
-			if specialId ~= 0 then
-				return idToCFrame[specialId] + pos
-			end
+            local specialId = popu1(cursor)
+            if specialId ~= 0 then
+                return idToCFrame[specialId] + Vector3.new(x,y,z)
+            end
 
-			local rotaxis = Vector3.new(popi2(cursor), popi2(cursor), popi2(cursor)) / 256
-			return CFrame.fromAxisAngle(rotaxis.Unit, rotaxis.Magnitude) + pos
-		end,
-	}
+            local qx = popu2(cursor) * (2 / 65535) - 1 
+            local qy = popu2(cursor) * (2 / 65535) - 1 
+            local qz = popu2(cursor) * (2 / 65535) - 1 
+            local qw = math.sqrt(1- qx*qx - qy*qy - qz*qz)
+            
+            return CFrame.new(x,y,z,qx,qy,qz,qw)
+        end,
+    }
 	cframeCache[positionSerDes] = cframeserdes
 	return cframeserdes
 end
