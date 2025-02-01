@@ -29,7 +29,11 @@ Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 1 0 0 0 0 0 0 0 }
 --          ^
-print(Squash.boolean().des(cursor)) -- true false false false false false false false
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
+print(Squash.boolean().des(cursor))
+-- true false false false false false false false
 ```
 ```lua
 local cursor = Squash.cursor(3)
@@ -38,7 +42,11 @@ Squash.print(cursor)
 --- Pos: 1 / 3
 --- Buf: { 181 0 0 }
 ---            ^
-print(Squash.boolean().des(cursor)) -- true false true false true true false true
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
+print(Squash.boolean().des(cursor))
+-- true false true false true true false true
 ```
 
 ## Numbers
@@ -70,6 +78,9 @@ Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 243 0 0 0 0 0 0 0 }
 --            ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.uint(1).des(cursor))
 -- 243
 ```
@@ -80,6 +91,9 @@ Squash.print(cursor)
 -- Pos: 1 / 1
 -- Buf: { 243   }
 --            ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.uint(1).des(cursor))
 -- 243
 ```
@@ -90,6 +104,9 @@ Squash.print(cursor)
 -- Pos: 3 / 4
 -- Buf: { 0 197 28 0 }
 --                 ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.uint(2).des(cursor))
 -- 7365
 ```
@@ -119,6 +136,9 @@ Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 127 0 0 0 0 0 0 0 }
 --            ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.int(1).des(cursor))
 -- 127
 ```
@@ -129,6 +149,9 @@ Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 129 0 0 0 0 0 0 0 }
 --            ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.int(1).des(cursor))
 -- -127
 ```
@@ -139,6 +162,9 @@ Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 128 0 0 0 0 0 0 0 }
 --            ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.int(1).des(cursor))
 -- -128
 ```
@@ -149,6 +175,9 @@ Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 128 0 0 0 0 0 0 0 }
 --            ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.int(1).des(cursor))
 -- -128
 ```
@@ -178,6 +207,9 @@ Squash.print(cursor)
 -- Pos: 4 / 8
 -- Buf: { 187 55 42 72 0 0 0 0 }
 --                     ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.number(4).des(cursor))
 -- 174302.921875
 ```
@@ -188,6 +220,9 @@ Squash.print(cursor)
 -- Pos: 8 / 8
 -- Buf: { 34 178 187 183 161 84 16 194   }
 --                                     ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.number(8).des(cursor))
 -- -17534840302.923958
 ```
@@ -203,6 +238,9 @@ Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 138 0 0 0 0 0 0 0 }
 --            ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.vlq().des(cursor))
 -- 10
 ```
@@ -213,6 +251,9 @@ Squash.print(cursor)
 -- Pos: 2 / 8
 -- Buf: { 129 2 0 0 0 0 0 0 }
 --              ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.vlq().des(cursor))
 -- 130
 ```
@@ -223,6 +264,9 @@ Squash.print(cursor)
 -- Pos: 5 / 8
 -- Buf: { 130 5 0 21 114 0 0 0 }
 --                       ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.vlq().des(cursor))
 -- 547359474
 ```
@@ -238,6 +282,9 @@ Squash.print(cursor)
 -- Pos: 14 / 18
 -- Buf: { 72 101 108 108 111 44 32 87 111 114 108 100 33 141 0 0 0 0 }
 --                                                           ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.string().des(cursor))
 -- Hello, World!
 ```
@@ -249,6 +296,9 @@ Squash.print(cursor)
 -- Pos: 13 / 18
 -- Buf: { 72 101 108 108 111 44 32 87 111 114 108 100 33 0 0 0 0 0 }
 --                                                       ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(Squash.string(13).des(cursor))
 -- Hello, World!
 ```
@@ -318,6 +368,9 @@ Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 2 0 0 0 0 0 0 0 }
 --          ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(literal.des(cursor))
 -- "c"
 ```
@@ -337,6 +390,9 @@ Squash.print(cursor)
 -- Pos: 37 / 40
 -- Buf: { 0 0 128 63 0 0 0 64 0 0 64 64 0 0 128 64 0 0 176 64 51 51 211 64 102 102 246 192 102 102 14 193 246 40 32 65 137 0 0 0 }
 --                                                                                                                         ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(myarr.des(cursor))
 -- 1 2 3 4 5.5 6.599999904632568 -7.699999809265137 -8.899999618530273 10.01000022888184
 ```
@@ -352,6 +408,9 @@ Squash.print(cursor)
 -- Pos: 32 / 40
 -- Buf: { 0 0 128 63 0 0 0 64 0 0 64 64 0 0 128 64 0 0 176 64 51 51 211 64 102 102 246 192 102 102 14 193 0 0 0 0 0 0 0 0 }
 --                                                                                                        ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(myarr.des(cursor))
 -- 1 2 3 4 5.5 6.599999904632568 -7.699999809265137 -8.899999618530273
 ```
@@ -376,6 +435,9 @@ Squash.print(cursor)
 -- Pos: 40 / 40
 -- Buf: { 43 2 0 227 1 0 72 0 0 227 1 72 0 33 0 0 29 0 0 4 0 0 29 0 4 0 3 0 0 2 0 0 1 0 0 2 0 1 0 131   }
 --                                                                                                    ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(mymap.des(cursor))
 -- {
 --    [Vector2(24346692898)] = 72, 483, 555,
@@ -453,6 +515,9 @@ Squash.print(cursor)
 -- Pos: 90 / 90
 -- Buf: { 0 9 1 72 105 115 32 82 101 99 101 115 115 138 1 84 104 101 32 67 111 112 112 101 114 32 67 97 117 108 100 114 111 110 147 1 73 110 102 105 114 109 97 114 121 137 131 130 76 97 110 116 101 114 110 135 129 87 97 116 101 114 115 107 105 110 137 132 77 97 112 131 131 67 101 100 114 105 99 107 135 1 51 185 82 198 88 177 143 67   }
 --                                                                                                                                                                                                                                                                                                                                            ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(playerserdes.des(cursor))
 -- {
 --     ["health"] = 9,
@@ -502,6 +567,9 @@ S.print(cursor)
 -- Pos: 40 / 40
 -- Buf: { 0 0 0 0 0 0 0 0 0 0 0 0 0 0 240 63 0 0 0 96 52 111 157 65 1 0 0 64 64 0 0 0 64 0 0 128 63 194 0 134   }
 --                                                                                                            ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(mytuple.des(cursor))
 -- 123456792, 1, 0 1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1 Medium stone grey Enum.HumanoidStateType.Freefall
 ```
@@ -546,6 +614,9 @@ Squash.print(cursor)
 -- Pos: 131 / 135
 -- Buf: { 71 97 109 105 110 103 33 135 1 0 2 240 162 175 32 205 104 21 192 0 119 111 119 131 1 1 2 208 68 216 240 156 73 215 64 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 129 0 0 0 0 0 0 0 2 130 0 130 0 0 131 0 131 3 1 0 0 64 64 0 0 0 64 176 242 193 193 1 129 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 130 0 233 255 11 255 98 1 2 131 0 129 127 0 0 0 0 0 0 0 2 1 0 0 0 0 0 2 228 0 133 3 132 0 0 0 0 }
 --                                                                                                                                                                                                                                                                                                                                                                           ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
 print(serdes.des(cursor))
 -- {
 --     ["wow"] = -5.352345,
