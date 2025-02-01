@@ -247,6 +247,12 @@
 --- @param positionSerDes SerDes<number>
 --- @return SerDes<CFrame>
 
+-- --- @class rotation
+
+--- @function rotation
+--- @within Squash
+--- @return SerDes<CFrame>
+
 -- --- @class Color3
 
 --- @function Color3

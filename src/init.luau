@@ -1193,45 +1193,72 @@ local function cframeLookupEntries()
 		CFrame.Angles(math.rad(90), math.rad(90), 0),
 		CFrame.Angles(0, math.rad(90), 0),
 		CFrame.Angles(math.rad(-90), math.rad(90), 0),
+	}
 end
 
 local function cframeSpecialCaseLookup(entries: { CFrame })
 	local lookup = {}
 
-	for i, v in pairs(entries) do
+	for i, v in entries do
 		lookup[Vector3.new(v:ToOrientation())] = i
 	end
 
 	return lookup
 end
 
-local idToCFrame
-local cframeToId
+local idToRotation
+local rotationToId
+local function rotser(cursor, cframe)
+	--? Not defined outside so pure Luau users don't suffer errors
+	idToRotation = idToRotation or cframeLookupEntries()
+	rotationToId = rotationToId or cframeSpecialCaseLookup(idToRotation)
+
+	local specialId = rotationToId[Vector3.new(cframe:ToOrientation())]
+	if specialId then
+		pushu1(cursor, specialId)
+	else
+		local axis, theta = cframe:ToAxisAngle()
+		axis *= math.sin(theta / 2)
+		pushu2(cursor, (axis.Z + 1) * (65535 / 2))
+		pushu2(cursor, (axis.Y + 1) * (65535 / 2))
+		pushu2(cursor, (axis.X + 1) * (65535 / 2))
+		pushu1(cursor, 0)
+	end
+end
+
+local function rotdes(cursor)
+	local specialId = popu1(cursor)
+	if specialId ~= 0 then
+		return idToRotation[specialId]
+	end
+
+	local qx = popu2(cursor) * (2 / 65535) - 1
+	local qy = popu2(cursor) * (2 / 65535) - 1
+	local qz = popu2(cursor) * (2 / 65535) - 1
+	local qw = math.sqrt(1 - qx * qx - qy * qy - qz * qz)
+	return CFrame.new(0, 0, 0, qx, qy, qz, qw)
+end
+
+local rotationCache: SerDes<CFrame> = {
+	ser = rotser,
+	des = rotdes,
+}
+function Squash.rotation()
+	return rotationCache
+end
+
 local cframeCache = {}
 local function cframe(positionSerDes: SerDes<number>): SerDes<CFrame>
 	if cframeCache[positionSerDes] then
 		return cframeCache[positionSerDes]
 	end
 
-	--? Not defined outside so pure Luau users don't suffer errors
-	idToCFrame = idToCFrame or cframeLookupEntries()
-	cframeToId = cframeToId or cframeSpecialCaseLookup(idToCFrame)
-
 	local push, pop = positionSerDes.ser, positionSerDes.des
 
 	local cframeserdes: SerDes<CFrame> = {
 		ser = function(cursor, cframe)
-			local specialId = cframeToId[Vector3.new(cframe:ToOrientation())]
-			if specialId then
-				pushu1(cursor, specialId)
-			else
-				local axis, theta = cframe:ToAxisAngle()
-				axis *= math.sin(theta / 2)
-				pushu2(cursor, (axis.Z + 1) * (65535 / 2))
-				pushu2(cursor, (axis.Y + 1) * (65535 / 2))
-				pushu2(cursor, (axis.X + 1) * (65535 / 2))
-				pushu1(cursor, 0)
-			end
+			rotser(cursor, cframe)
+
 			local pos = cframe.Position
 			push(cursor, pos.Z)
 			push(cursor, pos.Y)
@@ -1240,18 +1267,8 @@ local function cframe(positionSerDes: SerDes<number>): SerDes<CFrame>
 
 		des = function(cursor)
 			local x, y, z = pop(cursor), pop(cursor), pop(cursor)
-
-			local specialId = popu1(cursor)
-			if specialId ~= 0 then
-				return idToCFrame[specialId] + Vector3.new(x, y, z)
-			end
-
-			local qx = popu2(cursor) * (2 / 65535) - 1
-			local qy = popu2(cursor) * (2 / 65535) - 1
-			local qz = popu2(cursor) * (2 / 65535) - 1
-			local qw = math.sqrt(1 - qx * qx - qy * qy - qz * qz)
-
-			return CFrame.new(x, y, z, qx, qy, qz, qw)
+			local rotation = rotdes(cursor)
+			return rotation + Vector3.new(x, y, z)
 		end,
 	}
 	cframeCache[positionSerDes] = cframeserdes
