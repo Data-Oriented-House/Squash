@@ -125,6 +125,14 @@ local function test_brickcolor()
 	assert_equal(result, value, "Serialization and deserialization of BrickColor failed")
 end
 
+local function test_rotation()
+	local cursor = Squash.cursor()
+	local value = CFrame.fromOrientation(1, 2, 3)
+	Squash.rotation().ser(cursor, value)
+	local result = Squash.rotation().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Rotation failed")
+end
+
 local function test_cframe()
 	local cursor = Squash.cursor()
 	local value = CFrame.new(1, 2, 3)
@@ -336,6 +344,7 @@ local function run_tests()
 	test_buffer()
 	test_axes()
 	test_brickcolor()
+	test_rotation()
 	test_cframe()
 	test_color3()
 	test_colorsequence()
