@@ -808,18 +808,49 @@ function Squash.tuple<T...>(...: T...): SerDes<T...>
 end
 
 local function record<T>(schema: T & {}): SerDes<T>
+	local boolProperties = {}
 	local properties = {}
-	for prop in schema :: any do
+	for prop, val in schema :: any do
 		if type(prop) == 'string' then
-			table.insert(properties, prop)
+			if val == booleanCache then
+				table.insert(boolProperties, prop)
+			else
+				table.insert(properties, prop)
+			end
 		end
 	end
+
 	table.sort(properties)
 	table.insert(properties, (schema :: any)[true])
 	table.insert(properties, (schema :: any)[false])
 
+	local boolCount = #boolProperties
+	if boolCount > 0 then
+		table.sort(boolProperties)
+	end
+
 	return {
-		ser = function(cursor, rec)
+		ser = if boolCount == 0 then function(cursor, rec)
+			for _, prop in properties do
+				local ser = (schema :: any)[prop].ser
+				local x = (rec :: any)[prop]
+				ser(cursor, x)
+			end
+		end else function(cursor, rec)
+			for i = 0, boolCount // 8 do
+				local j = 1 + i * 8
+				pushbool(cursor,
+					(rec :: any)[boolProperties[j + 0]], -- tab[nil] = nil
+					(rec :: any)[boolProperties[j + 1]],
+					(rec :: any)[boolProperties[j + 2]],
+					(rec :: any)[boolProperties[j + 3]],
+					(rec :: any)[boolProperties[j + 4]],
+					(rec :: any)[boolProperties[j + 5]],
+					(rec :: any)[boolProperties[j + 6]],
+					(rec :: any)[boolProperties[j + 7]]
+				)
+			end
+
 			for _, prop in properties do
 				local ser = (schema :: any)[prop].ser
 				local x = (rec :: any)[prop]
@@ -827,13 +858,87 @@ local function record<T>(schema: T & {}): SerDes<T>
 			end
 		end,
 
-		des = function(cursor)
+		des = if boolCount == 0 then function(cursor)
 			local tab = {}
 			for i = #properties, 1, -1 do
 				local prop = properties[i]
 				local des = (schema :: any)[prop].des
 				tab[prop] = des(cursor)
 			end
+			return tab :: any
+		end else function(cursor)
+			local tab = {}
+			for i = #properties, 1, -1 do
+				local prop = properties[i]
+				local des = (schema :: any)[prop].des
+				tab[prop] = des(cursor)
+			end
+
+			do
+				local i = boolCount // 8
+				local j = 1 + i * 8
+				local k = boolCount % 8
+				local b0, b1, b2, b3, b4, b5, b6, b7 = popbool(cursor)
+				if k == 1 then
+					tab[boolProperties[j + 0]] = b0
+				elseif k == 2 then
+					tab[boolProperties[j + 0]] = b0
+					tab[boolProperties[j + 1]] = b1
+				elseif k == 3 then
+					tab[boolProperties[j + 0]] = b0
+					tab[boolProperties[j + 1]] = b1
+					tab[boolProperties[j + 2]] = b2
+				elseif k == 4 then
+					tab[boolProperties[j + 0]] = b0
+					tab[boolProperties[j + 1]] = b1
+					tab[boolProperties[j + 2]] = b2
+					tab[boolProperties[j + 3]] = b3
+				elseif k == 5 then
+					tab[boolProperties[j + 0]] = b0
+					tab[boolProperties[j + 1]] = b1
+					tab[boolProperties[j + 2]] = b2
+					tab[boolProperties[j + 3]] = b3
+					tab[boolProperties[j + 4]] = b4
+				elseif k == 6 then
+					tab[boolProperties[j + 0]] = b0
+					tab[boolProperties[j + 1]] = b1
+					tab[boolProperties[j + 2]] = b2
+					tab[boolProperties[j + 3]] = b3
+					tab[boolProperties[j + 4]] = b4
+					tab[boolProperties[j + 5]] = b5
+				elseif k == 7 then
+					tab[boolProperties[j + 0]] = b0
+					tab[boolProperties[j + 1]] = b1
+					tab[boolProperties[j + 2]] = b2
+					tab[boolProperties[j + 3]] = b3
+					tab[boolProperties[j + 4]] = b4
+					tab[boolProperties[j + 5]] = b5
+					tab[boolProperties[j + 6]] = b6
+				else
+					tab[boolProperties[j + 0]] = b0
+					tab[boolProperties[j + 1]] = b1
+					tab[boolProperties[j + 2]] = b2
+					tab[boolProperties[j + 3]] = b3
+					tab[boolProperties[j + 4]] = b4
+					tab[boolProperties[j + 5]] = b5
+					tab[boolProperties[j + 6]] = b6
+					tab[boolProperties[j + 7]] = b7
+				end
+			end
+
+			for i = boolCount // 8 - 1, 0, -1 do
+				local j = 1 + i * 8
+				local prop0 = boolProperties[j + 0]
+				local prop1 = boolProperties[j + 1]
+				local prop2 = boolProperties[j + 2]
+				local prop3 = boolProperties[j + 3]
+				local prop4 = boolProperties[j + 4]
+				local prop5 = boolProperties[j + 5]
+				local prop6 = boolProperties[j + 6]
+				local prop7 = boolProperties[j + 7]
+				tab[prop0], tab[prop1], tab[prop2], tab[prop3], tab[prop4], tab[prop5], tab[prop6], tab[prop7] = popbool(cursor)
+			end
+
 			return tab :: any
 		end,
 	}

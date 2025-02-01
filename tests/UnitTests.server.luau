@@ -3,364 +3,364 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Squash = require(ReplicatedStorage.Squash)
 
 local function assert_equal(actual, expected, message)
-    if actual ~= expected then
-        warn(message .. ": expected " .. tostring(expected) .. " --> " .. tostring(actual))
-    end
+	if actual ~= expected then
+		warn(message .. ": expected " .. tostring(expected) .. " --> " .. tostring(actual))
+	end
 end
 
 local function test_alloci_and_popi()
-    local test_cases = {
-        {push = Squash.int(1).ser, pop = Squash.int(1).des, value = -128},
-        {push = Squash.int(2).ser, pop = Squash.int(2).des, value = -32768},
-        {push = Squash.int(3).ser, pop = Squash.int(3).des, value = -8388608},
-        {push = Squash.int(4).ser, pop = Squash.int(4).des, value = -2147483648},
-        {push = Squash.int(5).ser, pop = Squash.int(5).des, value = -549755813888},
-        {push = Squash.int(6).ser, pop = Squash.int(6).des, value = -140737488355328},
-        {push = Squash.int(7).ser, pop = Squash.int(7).des, value = -36028797018963968},
-        {push = Squash.int(8).ser, pop = Squash.int(8).des, value = -9223372036854775808},
-    }
+	local test_cases = {
+		{push = Squash.int(1).ser, pop = Squash.int(1).des, value = -128},
+		{push = Squash.int(2).ser, pop = Squash.int(2).des, value = -32768},
+		{push = Squash.int(3).ser, pop = Squash.int(3).des, value = -8388608},
+		{push = Squash.int(4).ser, pop = Squash.int(4).des, value = -2147483648},
+		{push = Squash.int(5).ser, pop = Squash.int(5).des, value = -549755813888},
+		{push = Squash.int(6).ser, pop = Squash.int(6).des, value = -140737488355328},
+		{push = Squash.int(7).ser, pop = Squash.int(7).des, value = -36028797018963968},
+		{push = Squash.int(8).ser, pop = Squash.int(8).des, value = -9223372036854775808},
+	}
 
-    for i, test_case in ipairs(test_cases) do
-        local cursor = Squash.cursor()
-        test_case.push(cursor, test_case.value)
-        local result = test_case.pop(cursor)
-        assert_equal(result, test_case.value, "Serialization and deserialization of int " .. i .. " failed")
-    end
+	for i, test_case in ipairs(test_cases) do
+		local cursor = Squash.cursor()
+		test_case.push(cursor, test_case.value)
+		local result = test_case.pop(cursor)
+		assert_equal(result, test_case.value, "Serialization and deserialization of int " .. i .. " failed")
+	end
 end
 
 local function test_allocu_and_popu()
-    local test_cases = {
-        {push = Squash.uint(1).ser, pop = Squash.uint(1).des, value = 255},
-        {push = Squash.uint(2).ser, pop = Squash.uint(2).des, value = 65535},
-        {push = Squash.uint(3).ser, pop = Squash.uint(3).des, value = 16777215},
-        {push = Squash.uint(4).ser, pop = Squash.uint(4).des, value = 4294967295},
-        {push = Squash.uint(5).ser, pop = Squash.uint(5).des, value = 1099511627775},
-        {push = Squash.uint(6).ser, pop = Squash.uint(6).des, value = 281474976710655},
-        {push = Squash.uint(7).ser, pop = Squash.uint(7).des, value = 72057594037927935},
-        {push = Squash.uint(8).ser, pop = Squash.uint(8).des, value = 18446744073709551615},
-    }
+	local test_cases = {
+		{push = Squash.uint(1).ser, pop = Squash.uint(1).des, value = 255},
+		{push = Squash.uint(2).ser, pop = Squash.uint(2).des, value = 65535},
+		{push = Squash.uint(3).ser, pop = Squash.uint(3).des, value = 16777215},
+		{push = Squash.uint(4).ser, pop = Squash.uint(4).des, value = 4294967295},
+		{push = Squash.uint(5).ser, pop = Squash.uint(5).des, value = 1099511627775},
+		{push = Squash.uint(6).ser, pop = Squash.uint(6).des, value = 281474976710655},
+		{push = Squash.uint(7).ser, pop = Squash.uint(7).des, value = 72057594037927935},
+		{push = Squash.uint(8).ser, pop = Squash.uint(8).des, value = 18446744073709551615},
+	}
 
-    for i, test_case in ipairs(test_cases) do
-        local cursor = Squash.cursor()
-        test_case.push(cursor, test_case.value)
-        local result = test_case.pop(cursor)
-        assert_equal(result, test_case.value, "Serialization and deserialization of uint " .. i .. " failed")
-    end
+	for i, test_case in ipairs(test_cases) do
+		local cursor = Squash.cursor()
+		test_case.push(cursor, test_case.value)
+		local result = test_case.pop(cursor)
+		assert_equal(result, test_case.value, "Serialization and deserialization of uint " .. i .. " failed")
+	end
 end
 
 local function test_number()
-    local test_cases = {
-        {push = Squash.number(4).ser, pop = Squash.number(4).des, value = 3.14},
-        {push = Squash.number(8).ser, pop = Squash.number(8).des, value = 2.718281828459045},
-    }
+	local test_cases = {
+		{push = Squash.number(4).ser, pop = Squash.number(4).des, value = 3.14},
+		{push = Squash.number(8).ser, pop = Squash.number(8).des, value = 2.718281828459045},
+	}
 
-    for i, test_case in ipairs(test_cases) do
-        local cursor = Squash.cursor()
-        test_case.push(cursor, test_case.value)
-        local result = test_case.pop(cursor)
-        assert_equal(result, test_case.value, "Serialization and deserialization of number " .. i .. " failed")
-    end
+	for i, test_case in ipairs(test_cases) do
+		local cursor = Squash.cursor()
+		test_case.push(cursor, test_case.value)
+		local result = test_case.pop(cursor)
+		assert_equal(result, test_case.value, "Serialization and deserialization of number " .. i .. " failed")
+	end
 end
 
 local function test_allocvlq_and_popvlq()
-    local test_cases = {
-        {push = Squash.vlq().ser, pop = Squash.vlq().des, value = 255},
-        {push = Squash.vlq().ser, pop = Squash.vlq().des, value = 65535},
-        {push = Squash.vlq().ser, pop = Squash.vlq().des, value = 16777215},
-        {push = Squash.vlq().ser, pop = Squash.vlq().des, value = 4294967295},
-        {push = Squash.vlq().ser, pop = Squash.vlq().des, value = 1099511627775},
-        {push = Squash.vlq().ser, pop = Squash.vlq().des, value = 281474976710655},
-        {push = Squash.vlq().ser, pop = Squash.vlq().des, value = 72057594037927935},
-        {push = Squash.vlq().ser, pop = Squash.vlq().des, value = 18446744073709551615},
-    }
+	local test_cases = {
+		{push = Squash.vlq().ser, pop = Squash.vlq().des, value = 255},
+		{push = Squash.vlq().ser, pop = Squash.vlq().des, value = 65535},
+		{push = Squash.vlq().ser, pop = Squash.vlq().des, value = 16777215},
+		{push = Squash.vlq().ser, pop = Squash.vlq().des, value = 4294967295},
+		{push = Squash.vlq().ser, pop = Squash.vlq().des, value = 1099511627775},
+		{push = Squash.vlq().ser, pop = Squash.vlq().des, value = 281474976710655},
+		{push = Squash.vlq().ser, pop = Squash.vlq().des, value = 72057594037927935},
+		{push = Squash.vlq().ser, pop = Squash.vlq().des, value = 18446744073709551615},
+	}
 
-    for i, test_case in ipairs(test_cases) do
-        local cursor = Squash.cursor()
-        test_case.push(cursor, test_case.value)
-        local result = test_case.pop(cursor)
-        assert_equal(result, test_case.value, "Serialization and deserialization of vlq failed")
-    end
+	for i, test_case in ipairs(test_cases) do
+		local cursor = Squash.cursor()
+		test_case.push(cursor, test_case.value)
+		local result = test_case.pop(cursor)
+		assert_equal(result, test_case.value, "Serialization and deserialization of vlq failed")
+	end
 end
 
 local function test_string()
-    local cursor = Squash.cursor()
-    local value = "Hello, World!"
-    Squash.string().ser(cursor, value)
-    local result = Squash.string().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of string failed")
+	local cursor = Squash.cursor()
+	local value = "Hello, World!"
+	Squash.string().ser(cursor, value)
+	local result = Squash.string().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of string failed")
 end
 
 local function test_bool()
-    local value = { true, false, true, false, true, false, true, false }
-    local cursor = Squash.cursor()
-    Squash.boolean().ser(cursor, table.unpack(value))
-    local result = {Squash.boolean().des(cursor)}
-    for i = 1, 8 do
-        assert_equal(result[i], value[i], "Serialization and deserialization of boolean failed")
-    end
+	local value = { true, false, true, false, true, false, true, false }
+	local cursor = Squash.cursor()
+	Squash.boolean().ser(cursor, table.unpack(value))
+	local result = {Squash.boolean().des(cursor)}
+	for i = 1, 8 do
+		assert_equal(result[i], value[i], "Serialization and deserialization of boolean failed")
+	end
 end
 
 local function test_buffer()
-    local cursor = Squash.cursor()
-    local value = buffer.create(8)
-    buffer.writeu32(value, 0, 12345678)
-    Squash.buffer().ser(cursor, value)
-    local result = Squash.buffer().des(cursor)
-    assert_equal(buffer.readu32(result, 0), 12345678, "Serialization and deserialization of buffer failed")
+	local cursor = Squash.cursor()
+	local value = buffer.create(8)
+	buffer.writeu32(value, 0, 12345678)
+	Squash.buffer().ser(cursor, value)
+	local result = Squash.buffer().des(cursor)
+	assert_equal(buffer.readu32(result, 0), 12345678, "Serialization and deserialization of buffer failed")
 end
 
 local function test_axes()
-    local cursor = Squash.cursor()
-    local value = Axes.new(Enum.Axis.X, Enum.Axis.Y)
-    Squash.Axes().ser(cursor, value)
-    local result = Squash.Axes().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of axes failed")
+	local cursor = Squash.cursor()
+	local value = Axes.new(Enum.Axis.X, Enum.Axis.Y)
+	Squash.Axes().ser(cursor, value)
+	local result = Squash.Axes().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of axes failed")
 end
 
 local function test_brickcolor()
-    local cursor = Squash.cursor()
-    local value = BrickColor.new("Bright red")
-    Squash.BrickColor().ser(cursor, value)
-    local result = Squash.BrickColor().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of BrickColor failed")
+	local cursor = Squash.cursor()
+	local value = BrickColor.new("Bright red")
+	Squash.BrickColor().ser(cursor, value)
+	local result = Squash.BrickColor().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of BrickColor failed")
 end
 
 local function test_cframe()
-    local cursor = Squash.cursor()
-    local value = CFrame.new(1, 2, 3)
-    Squash.CFrame(Squash.number(4)).ser(cursor, value)
-    local result = Squash.CFrame(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of CFrame failed")
+	local cursor = Squash.cursor()
+	local value = CFrame.new(1, 2, 3)
+	Squash.CFrame(Squash.number(4)).ser(cursor, value)
+	local result = Squash.CFrame(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of CFrame failed")
 end
 
 local function test_color3()
-    local cursor = Squash.cursor()
-    local value = Color3.new(1, 0, 0)
-    Squash.Color3().ser(cursor, value)
-    local result = Squash.Color3().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Color3 failed")
+	local cursor = Squash.cursor()
+	local value = Color3.new(1, 0, 0)
+	Squash.Color3().ser(cursor, value)
+	local result = Squash.Color3().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Color3 failed")
 end
 
 local function test_colorsequence()
-    local cursor = Squash.cursor()
-    local value = ColorSequence.new(Color3.new(1, 0, 0), Color3.new(0, 1, 0))
-    Squash.ColorSequence().ser(cursor, value)
-    local result = Squash.ColorSequence().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of ColorSequence failed")
+	local cursor = Squash.cursor()
+	local value = ColorSequence.new(Color3.new(1, 0, 0), Color3.new(0, 1, 0))
+	Squash.ColorSequence().ser(cursor, value)
+	local result = Squash.ColorSequence().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of ColorSequence failed")
 end
 
 local function test_datetime()
-    local cursor = Squash.cursor()
-    local value = DateTime.now()
-    Squash.DateTime().ser(cursor, value)
-    local result = Squash.DateTime().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of DateTime failed")
+	local cursor = Squash.cursor()
+	local value = DateTime.now()
+	Squash.DateTime().ser(cursor, value)
+	local result = Squash.DateTime().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of DateTime failed")
 end
 
 local function test_faces()
-    local cursor = Squash.cursor()
-    local value = Faces.new(Enum.NormalId.Front, Enum.NormalId.Top)
-    Squash.Faces().ser(cursor, value)
-    local result = Squash.Faces().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Faces failed")
+	local cursor = Squash.cursor()
+	local value = Faces.new(Enum.NormalId.Front, Enum.NormalId.Top)
+	Squash.Faces().ser(cursor, value)
+	local result = Squash.Faces().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Faces failed")
 end
 
 local function test_floatcurvekey()
-    local cursor = Squash.cursor()
-    local value = FloatCurveKey.new(1, 0.5, Enum.KeyInterpolationMode.Linear)
-    Squash.FloatCurveKey().ser(cursor, value)
-    local result = Squash.FloatCurveKey().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of FloatCurveKey failed")
+	local cursor = Squash.cursor()
+	local value = FloatCurveKey.new(1, 0.5, Enum.KeyInterpolationMode.Linear)
+	Squash.FloatCurveKey().ser(cursor, value)
+	local result = Squash.FloatCurveKey().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of FloatCurveKey failed")
 end
 
 local function test_font()
-    local cursor = Squash.cursor()
-    local value = Font.new("rbxasset://fonts/families/Arial.json", Enum.FontWeight.Bold, Enum.FontStyle.Italic)
-    Squash.Font().ser(cursor, value)
-    local result = Squash.Font().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Font failed")
+	local cursor = Squash.cursor()
+	local value = Font.new("rbxasset://fonts/families/Arial.json", Enum.FontWeight.Bold, Enum.FontStyle.Italic)
+	Squash.Font().ser(cursor, value)
+	local result = Squash.Font().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Font failed")
 end
 
 local function test_numberrange()
-    local cursor = Squash.cursor()
-    local value = NumberRange.new(1, 2)
-    Squash.NumberRange(Squash.number(4)).ser(cursor, value)
-    local result = Squash.NumberRange(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of NumberRange failed")
+	local cursor = Squash.cursor()
+	local value = NumberRange.new(1, 2)
+	Squash.NumberRange(Squash.number(4)).ser(cursor, value)
+	local result = Squash.NumberRange(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of NumberRange failed")
 end
 
 local function test_numbersequence()
-    local cursor = Squash.cursor()
-    local value = NumberSequence.new {NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0) }
-    Squash.NumberSequence(Squash.number(4)).ser(cursor, value)
-    local result = Squash.NumberSequence(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of NumberSequence failed")
+	local cursor = Squash.cursor()
+	local value = NumberSequence.new {NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0) }
+	Squash.NumberSequence(Squash.number(4)).ser(cursor, value)
+	local result = Squash.NumberSequence(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of NumberSequence failed")
 end
 
 local function test_ray()
-    local cursor = Squash.cursor()
-    local value = Ray.new(Vector3.new(0, 0, 0), Vector3.new(1, 0, 0))
-    Squash.Ray(Squash.number(4)).ser(cursor, value)
-    local result = Squash.Ray(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Ray failed")
+	local cursor = Squash.cursor()
+	local value = Ray.new(Vector3.new(0, 0, 0), Vector3.new(1, 0, 0))
+	Squash.Ray(Squash.number(4)).ser(cursor, value)
+	local result = Squash.Ray(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Ray failed")
 end
 
 local function test_region3()
-    local cursor = Squash.cursor()
-    local value = Region3.new(Vector3.new(0, 0, 0), Vector3.new(1, 1, 1))
-    Squash.Region3(Squash.number(4)).ser(cursor, value)
-    local result = Squash.Region3(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Region3 failed")
+	local cursor = Squash.cursor()
+	local value = Region3.new(Vector3.new(0, 0, 0), Vector3.new(1, 1, 1))
+	Squash.Region3(Squash.number(4)).ser(cursor, value)
+	local result = Squash.Region3(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Region3 failed")
 end
 
 local function test_region3int16()
-    local cursor = Squash.cursor()
-    local value = Region3int16.new(Vector3int16.new(0, 0, 0), Vector3int16.new(1, 1, 1))
-    Squash.Region3int16().ser(cursor, value)
-    local result = Squash.Region3int16().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Region3int16 failed")
+	local cursor = Squash.cursor()
+	local value = Region3int16.new(Vector3int16.new(0, 0, 0), Vector3int16.new(1, 1, 1))
+	Squash.Region3int16().ser(cursor, value)
+	local result = Squash.Region3int16().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Region3int16 failed")
 end
 
 local function test_rotationcurvekey()
-    local cursor = Squash.cursor()
-    local value = RotationCurveKey.new(1, CFrame.new(0, 0, 0), Enum.KeyInterpolationMode.Linear)
-    Squash.RotationCurveKey(Squash.number(4)).ser(cursor, value)
-    local result = Squash.RotationCurveKey(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of RotationCurveKey failed")
+	local cursor = Squash.cursor()
+	local value = RotationCurveKey.new(1, CFrame.new(0, 0, 0), Enum.KeyInterpolationMode.Linear)
+	Squash.RotationCurveKey(Squash.number(4)).ser(cursor, value)
+	local result = Squash.RotationCurveKey(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of RotationCurveKey failed")
 end
 
 local function test_tweeninfo()
-    local cursor = Squash.cursor()
-    local value = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, false, 0)
-    Squash.TweenInfo().ser(cursor, value)
-    local result = Squash.TweenInfo().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of TweenInfo failed")
+	local cursor = Squash.cursor()
+	local value = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, false, 0)
+	Squash.TweenInfo().ser(cursor, value)
+	local result = Squash.TweenInfo().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of TweenInfo failed")
 end
 
 local function test_udim()
-    local cursor = Squash.cursor()
-    local value = UDim.new(1, 2)
-    Squash.UDim(Squash.number(4)).ser(cursor, value)
-    local result = Squash.UDim(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of UDim failed")
+	local cursor = Squash.cursor()
+	local value = UDim.new(1, 2)
+	Squash.UDim(Squash.number(4)).ser(cursor, value)
+	local result = Squash.UDim(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of UDim failed")
 end
 
 local function test_udim2()
-    local cursor = Squash.cursor()
-    local value = UDim2.new(1, 2, 3, 4)
-    Squash.UDim2(Squash.number(4)).ser(cursor, value)
-    local result = Squash.UDim2(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of UDim2 failed")
+	local cursor = Squash.cursor()
+	local value = UDim2.new(1, 2, 3, 4)
+	Squash.UDim2(Squash.number(4)).ser(cursor, value)
+	local result = Squash.UDim2(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of UDim2 failed")
 end
 
 local function test_vector2()
-    local cursor = Squash.cursor()
-    local value = Vector2.new(1, 2)
-    Squash.Vector2(Squash.number(4)).ser(cursor, value)
-    local result = Squash.Vector2(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Vector2 failed")
+	local cursor = Squash.cursor()
+	local value = Vector2.new(1, 2)
+	Squash.Vector2(Squash.number(4)).ser(cursor, value)
+	local result = Squash.Vector2(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Vector2 failed")
 end
 
 local function test_vector2int16()
-    local cursor = Squash.cursor()
-    local value = Vector2int16.new(1, 2)
-    Squash.Vector2int16().ser(cursor, value)
-    local result = Squash.Vector2int16().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Vector2int16 failed")
+	local cursor = Squash.cursor()
+	local value = Vector2int16.new(1, 2)
+	Squash.Vector2int16().ser(cursor, value)
+	local result = Squash.Vector2int16().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Vector2int16 failed")
 end
 
 local function test_vector3()
-    local cursor = Squash.cursor()
-    local value = Vector3.new(1, 2, 3)
-    Squash.Vector3(Squash.number(4)).ser(cursor, value)
-    local result = Squash.Vector3(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Vector3 failed")
+	local cursor = Squash.cursor()
+	local value = Vector3.new(1, 2, 3)
+	Squash.Vector3(Squash.number(4)).ser(cursor, value)
+	local result = Squash.Vector3(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Vector3 failed")
 end
 
 local function test_vector3int16()
-    local cursor = Squash.cursor()
-    local value = Vector3int16.new(1, 2, 3)
-    Squash.Vector3int16().ser(cursor, value)
-    local result = Squash.Vector3int16().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of Vector3int16 failed")
+	local cursor = Squash.cursor()
+	local value = Vector3int16.new(1, 2, 3)
+	Squash.Vector3int16().ser(cursor, value)
+	local result = Squash.Vector3int16().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of Vector3int16 failed")
 end
 
 local function test_pathwaypoint()
-    local cursor = Squash.cursor()
-    local value = PathWaypoint.new(Vector3.new(1, 2, 3), Enum.PathWaypointAction.Jump, "Label")
-    Squash.PathWaypoint(Squash.number(4)).ser(cursor, value)
-    local result = Squash.PathWaypoint(Squash.number(4)).des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of PathWaypoint failed")
+	local cursor = Squash.cursor()
+	local value = PathWaypoint.new(Vector3.new(1, 2, 3), Enum.PathWaypointAction.Jump, "Label")
+	Squash.PathWaypoint(Squash.number(4)).ser(cursor, value)
+	local result = Squash.PathWaypoint(Squash.number(4)).des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of PathWaypoint failed")
 end
 
 local function test_physicalproperties()
-    local cursor = Squash.cursor()
-    local value = PhysicalProperties.new(1, 2, 0.5, 4, 5)
-    Squash.PhysicalProperties().ser(cursor, value)
-    local result = Squash.PhysicalProperties().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of PhysicalProperties failed")
+	local cursor = Squash.cursor()
+	local value = PhysicalProperties.new(1, 2, 0.5, 4, 5)
+	Squash.PhysicalProperties().ser(cursor, value)
+	local result = Squash.PhysicalProperties().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of PhysicalProperties failed")
 end
 
 local function test_raycastparams()
-    local cursor = Squash.cursor()
-    local value = RaycastParams.new()
-    value.CollisionGroup = "Default"
-    value.FilterType = Enum.RaycastFilterType.Include
-    value.BruteForceAllSlow = true
-    value.RespectCanCollide = true
-    Squash.RaycastParams().ser(cursor, value)
-    local result = Squash.RaycastParams().des(cursor)
-    assert_equal(result, value, "Serialization and deserialization of RaycastParams failed")
+	local cursor = Squash.cursor()
+	local value = RaycastParams.new()
+	value.CollisionGroup = "Default"
+	value.FilterType = Enum.RaycastFilterType.Include
+	value.BruteForceAllSlow = true
+	value.RespectCanCollide = true
+	Squash.RaycastParams().ser(cursor, value)
+	local result = Squash.RaycastParams().des(cursor)
+	assert_equal(result, value, "Serialization and deserialization of RaycastParams failed")
 end
 
 local function test_raycastresult()
-    local cursor = Squash.cursor()
-    local value = workspace:Raycast(Vector3.new(1, 2, 3), Vector3.new(-4, -5, -6))
-    assert(value, `No RaycastResult`)
-    Squash.RaycastResult(Squash.number(4)).ser(cursor, value)
-    local result = Squash.RaycastResult(Squash.number(4)).des(cursor)
-    assert_equal(result.Distance, value.Distance, "Serialization and deserialization of RaycastResult.Distance failed")
-    assert_equal(result.Instance, nil, "Serialization and deserialization of RaycastResult.Instance failed")
-    assert_equal(result.Material, value.Material, "Serialization and deserialization of RaycastResult.Material failed")
-    assert_equal(result.Normal, value.Normal, "Serialization and deserialization of RaycastResult.Normal failed")
-    assert_equal(result.Position, value.Position, "Serialization and deserialization of RaycastResult.Position failed")
+	local cursor = Squash.cursor()
+	local value = workspace:Raycast(Vector3.new(1, 2, 3), Vector3.new(-4, -5, -6))
+	assert(value, `No RaycastResult`)
+	Squash.RaycastResult(Squash.number(4)).ser(cursor, value)
+	local result = Squash.RaycastResult(Squash.number(4)).des(cursor)
+	assert_equal(result.Distance, value.Distance, "Serialization and deserialization of RaycastResult.Distance failed")
+	assert_equal(result.Instance, nil, "Serialization and deserialization of RaycastResult.Instance failed")
+	assert_equal(result.Material, value.Material, "Serialization and deserialization of RaycastResult.Material failed")
+	assert_equal(result.Normal, value.Normal, "Serialization and deserialization of RaycastResult.Normal failed")
+	assert_equal(result.Position, value.Position, "Serialization and deserialization of RaycastResult.Position failed")
 end
 
 local function run_tests()
-    test_alloci_and_popi()
-    test_allocu_and_popu()
-    test_allocvlq_and_popvlq()
-    test_number()
-    test_string()
-    test_bool()
-    test_buffer()
-    test_axes()
-    test_brickcolor()
-    test_cframe()
-    test_color3()
-    test_colorsequence()
-    test_datetime()
-    test_faces()
-    test_floatcurvekey()
-    test_font()
-    test_numberrange()
-    test_numbersequence()
-    test_ray()
-    test_region3()
-    test_region3int16()
-    test_rotationcurvekey()
-    test_tweeninfo()
-    test_udim()
-    test_udim2()
-    test_vector2()
-    test_vector2int16()
-    test_vector3()
-    test_vector3int16()
-    test_pathwaypoint()
-    test_physicalproperties()
-    test_raycastparams()
-    test_raycastresult()
-    print("All tests passed!")
+	test_alloci_and_popi()
+	test_allocu_and_popu()
+	test_allocvlq_and_popvlq()
+	test_number()
+	test_string()
+	test_bool()
+	test_buffer()
+	test_axes()
+	test_brickcolor()
+	test_cframe()
+	test_color3()
+	test_colorsequence()
+	test_datetime()
+	test_faces()
+	test_floatcurvekey()
+	test_font()
+	test_numberrange()
+	test_numbersequence()
+	test_ray()
+	test_region3()
+	test_region3int16()
+	test_rotationcurvekey()
+	test_tweeninfo()
+	test_udim()
+	test_udim2()
+	test_vector2()
+	test_vector2int16()
+	test_vector3()
+	test_vector3int16()
+	test_pathwaypoint()
+	test_physicalproperties()
+	test_raycastparams()
+	test_raycastresult()
+	print("All tests passed!")
 end
 
 run_tests()
@@ -610,9 +610,9 @@ local mymap = Squash.map(vec2(u(2)), vec3(u(3)))
 
 local cursor = Squash.cursor()
 mymap.ser(cursor, {
-    [Vector2.new(1, 2)] = Vector3.new(1, 2, 3),
-    [Vector2.new(4, 29)] = Vector3.new(4, 29, 33),
-    [Vector2.new(72, 483)] = Vector3.new(72, 483, 555),
+	[Vector2.new(1, 2)] = Vector3.new(1, 2, 3),
+	[Vector2.new(4, 29)] = Vector3.new(4, 29, 33),
+	[Vector2.new(72, 483)] = Vector3.new(72, 483, 555),
 })
 Squash.print(cursor)
 -- Pos: 40 / 40
@@ -640,39 +640,43 @@ local opt = Squash.opt
 local record = Squash.record
 
 local playerserdes = record {
-    position = T(vec2(float)),
-    health = T(u(1)),
-    name = T(str),
-    poisoned = T(bool),
-    items = T(arr(record {
-        count = T(vlq),
-        name = T(str),
-    })),
-    inns = T(map(str, bool)),
-    equipped = T(opt(str)),
+	position = T(vec2(float)),
+	health = T(u(1)),
+	name = T(str),
+	poisoned = T(bool),
+	grappled = T(bool),
+	conscious = T(bool),
+	items = T(arr(record {
+		count = T(vlq),
+		name = T(str),
+	})),
+	inns = T(map(str, bool)),
+	equipped = T(opt(str)),
 }
 
 local cursor = Squash.cursor()
 playerserdes.ser(cursor, {
-    position = Vector2.new(287.3855, -13486.3),
-    health = 9,
-    name = "Cedrick",
-    poisoned = true,
-    items = {
-        { name = 'Lantern', count = 2 },
-        { name = 'Waterskin', count = 1 },
-        { name = 'Map', count = 4 },
-    },
-    inns = {
-        ['The Copper Cauldron'] = true,
-        Infirmary = true,
-        ['His Recess'] = true,
-    },
-    equipped = nil,
+	position = Vector2.new(287.3855, -13486.3),
+	health = 9,
+	name = "Cedrick",
+	poisoned = true,
+	grappled = true,
+	conscious = false,
+	items = {
+		{ name = 'Lantern', count = 2 },
+		{ name = 'Waterskin', count = 1 },
+		{ name = 'Map', count = 4 },
+	},
+	inns = {
+		['The Copper Cauldron'] = true,
+		Infirmary = true,
+		['His Recess'] = true,
+	},
+	equipped = nil,
 })
 Squash.print(cursor)
 -- Pos: 90 / 90
--- Buf: { 0 9 1 72 105 115 32 82 101 99 101 115 115 138 1 84 104 101 32 67 111 112 112 101 114 32 67 97 117 108 100 114 111 110 147 1 73 110 102 105 114 109 97 114 121 137 131 130 76 97 110 116 101 114 110 135 129 87 97 116 101 114 115 107 105 110 137 132 77 97 112 131 131 67 101 100 114 105 99 107 135 1 51 185 82 198 88 177 143 67   }
+-- Buf: { 6 0 9 1 72 105 115 32 82 101 99 101 115 115 138 1 84 104 101 32 67 111 112 112 101 114 32 67 97 117 108 100 114 111 110 147 1 73 110 102 105 114 109 97 114 121 137 131 130 76 97 110 116 101 114 110 135 129 87 97 116 101 114 115 107 105 110 137 132 77 97 112 131 131 67 101 100 114 105 99 107 135 51 185 82 198 88 177 143 67   }
 --                                                                                                                                                                                                                                                                                                                                            ^                                                                                                                                                                                                                                                                                                                                     ^
 print(playerserdes.des(cursor))
 -- {
@@ -720,10 +724,10 @@ local S = Squash
 local T = S.T
 
 local mytuple = S.tuple(
-    T(S.Vector3(S.number(8))),
-    T(S.CFrame(S.int(1))),
-    T(S.BrickColor()),
-    T(S.EnumItem(Enum.HumanoidStateType))
+	T(S.Vector3(S.number(8))),
+	T(S.CFrame(S.int(1))),
+	T(S.BrickColor()),
+	T(S.EnumItem(Enum.HumanoidStateType))
 )
 
 local cursor = S.cursor()
@@ -738,31 +742,31 @@ print(mytuple.des(cursor))
 --* Tables
 
 local serdes = Squash.table {
-    number = Squash.number(8),
-    string = Squash.string(),
-    boolean = Squash.boolean(),
-    table = Squash.table {
-        CFrame = Squash.CFrame(Squash.number(4)),
-        Vector3 = Squash.Vector3(Squash.int(2)),
-        number = Squash.vlq(),
-    },
+	number = Squash.number(8),
+	string = Squash.string(),
+	boolean = Squash.boolean(),
+	table = Squash.table {
+		CFrame = Squash.CFrame(Squash.number(4)),
+		Vector3 = Squash.Vector3(Squash.int(2)),
+		number = Squash.vlq(),
+	},
 }
 
 local cursor = Squash.cursor()
 serdes.ser(cursor, {
-    wow = -5.352345,
-    [23846.4522] = true,
-    [false] = 'Gaming!',
-    ThisWontSerialize = DateTime.now(),
-    [{
-        CFrame.new(-24.2435, 2, 3), CFrame.new(), Vector3.new(354, -245, -23),
-        [100] = Vector3.zAxis,
-        [Vector3.zero] = 255,
-    }] = {
-        [1] = CFrame.identity,
-        [2] = Vector3.zero,
-        [3] = 256,
-    },
+	wow = -5.352345,
+	[23846.4522] = true,
+	[false] = 'Gaming!',
+	ThisWontSerialize = DateTime.now(),
+	[{
+		CFrame.new(-24.2435, 2, 3), CFrame.new(), Vector3.new(354, -245, -23),
+		[100] = Vector3.zAxis,
+		[Vector3.zero] = 255,
+	}] = {
+		[1] = CFrame.identity,
+		[2] = Vector3.zero,
+		[3] = 256,
+	},
 })
 Squash.print(cursor)
 -- Pos: 131 / 135
