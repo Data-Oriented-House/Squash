@@ -957,15 +957,15 @@ local axesCache: SerDes<Axes> = {
 		local x, y, z = popbool(cursor)
 		local back, bottom, front, left, right, top = popbool(cursor)
 		return Axes.new(
-			x and Enum.Axis.X,
-			y and Enum.Axis.Y,
-			z and Enum.Axis.Z,
-			back and Enum.NormalId.Back,
-			bottom and Enum.NormalId.Bottom,
-			front and Enum.NormalId.Front,
-			left and Enum.NormalId.Left,
-			right and Enum.NormalId.Right,
-			top and Enum.NormalId.Top
+			x and Enum.Axis.X :: any,
+			y and Enum.Axis.Y :: any,
+			z and Enum.Axis.Z :: any,
+			back and Enum.NormalId.Back :: any,
+			bottom and Enum.NormalId.Bottom :: any,
+			front and Enum.NormalId.Front :: any,
+			left and Enum.NormalId.Left :: any,
+			right and Enum.NormalId.Right :: any,
+			top and Enum.NormalId.Top :: any
 		)
 	end,
 }
@@ -1062,6 +1062,9 @@ function Squash.CatalogueSearchParams(): SerDes<CatalogSearchParams>
 	return catalogueSearchParamsCache
 end
 
+local pi = math.pi
+local eta = pi / 2
+
 local idToCFrame
 local cframeCache = {}
 local function cframe(positionSerDes: SerDes<number>): SerDes<CFrame>
@@ -1071,30 +1074,30 @@ local function cframe(positionSerDes: SerDes<number>): SerDes<CFrame>
 
 	--? Not defined outside so pure Luau users don't suffer errors
 	idToCFrame = idToCFrame or {
-		CFrame.Angles(0, 0, 0),
-		CFrame.Angles(math.rad(90), 0, 0),
-		CFrame.Angles(0, math.rad(180), math.rad(180)),
-		CFrame.Angles(math.rad(-90), 0, 0),
-		CFrame.Angles(0, math.rad(180), math.rad(90)),
-		CFrame.Angles(0, math.rad(90), math.rad(90)),
-		CFrame.Angles(0, 0, math.rad(90)),
-		CFrame.Angles(0, math.rad(-90), math.rad(90)),
-		CFrame.Angles(math.rad(-90), math.rad(-90), 0),
-		CFrame.Angles(0, math.rad(-90), 0),
-		CFrame.Angles(math.rad(90), math.rad(-90), 0),
-		CFrame.Angles(0, math.rad(90), math.rad(180)),
-		CFrame.Angles(0, math.rad(-90), math.rad(180)),
-		CFrame.Angles(0, math.rad(180), math.rad(0)),
-		CFrame.Angles(math.rad(-90), math.rad(-180), math.rad(0)),
-		CFrame.Angles(0, math.rad(0), math.rad(180)),
-		CFrame.Angles(math.rad(90), math.rad(180), math.rad(0)),
-		CFrame.Angles(0, math.rad(0), math.rad(-90)),
-		CFrame.Angles(0, math.rad(-90), math.rad(-90)),
-		CFrame.Angles(0, math.rad(-180), math.rad(-90)),
-		CFrame.Angles(0, math.rad(90), math.rad(-90)),
-		CFrame.Angles(math.rad(90), math.rad(90), 0),
-		CFrame.Angles(0, math.rad(90), 0),
-		CFrame.Angles(math.rad(-90), math.rad(90), 0),
+		CFrame.fromEulerAnglesYXZ(0, 0, 0),
+		CFrame.fromEulerAnglesYXZ(eta, 0, 0),
+		CFrame.fromEulerAnglesYXZ(0, pi, pi),
+		CFrame.fromEulerAnglesYXZ(-pi, 0, 0),
+		CFrame.fromEulerAnglesYXZ(0, pi, eta),
+		CFrame.fromEulerAnglesYXZ(0, eta, eta),
+		CFrame.fromEulerAnglesYXZ(0, 0, eta),
+		CFrame.fromEulerAnglesYXZ(0, -pi, eta),
+		CFrame.fromEulerAnglesYXZ(-pi, -pi, 0),
+		CFrame.fromEulerAnglesYXZ(0, -pi, 0),
+		CFrame.fromEulerAnglesYXZ(eta, -pi, 0),
+		CFrame.fromEulerAnglesYXZ(0, eta, pi),
+		CFrame.fromEulerAnglesYXZ(0, -pi, pi),
+		CFrame.fromEulerAnglesYXZ(0, pi, 0),
+		CFrame.fromEulerAnglesYXZ(-pi, -pi, 0),
+		CFrame.fromEulerAnglesYXZ(0, 0, pi),
+		CFrame.fromEulerAnglesYXZ(eta, pi, 0),
+		CFrame.fromEulerAnglesYXZ(0, 0, -pi),
+		CFrame.fromEulerAnglesYXZ(0, -pi, -pi),
+		CFrame.fromEulerAnglesYXZ(0, -pi, -pi),
+		CFrame.fromEulerAnglesYXZ(0, eta, -pi),
+		CFrame.fromEulerAnglesYXZ(eta, eta, 0),
+		CFrame.fromEulerAnglesYXZ(0, eta, 0),
+		CFrame.fromEulerAnglesYXZ(-pi, eta, 0),
 	}
 
 	local push, pop = positionSerDes.ser, positionSerDes.des
@@ -1210,12 +1213,12 @@ local facesCache: SerDes<Faces> = {
 	des = function(cursor)
 		local back, bottom, front, left, right, top = popbool(cursor)
 		return Faces.new(
-			back and Enum.NormalId.Back,
-			bottom and Enum.NormalId.Bottom,
-			front and Enum.NormalId.Front,
-			left and Enum.NormalId.Left,
-			right and Enum.NormalId.Right,
-			top and Enum.NormalId.Top
+			back and Enum.NormalId.Back :: any,
+			bottom and Enum.NormalId.Bottom :: any,
+			front and Enum.NormalId.Front :: any,
+			left and Enum.NormalId.Left :: any,
+			right and Enum.NormalId.Right :: any,
+			top and Enum.NormalId.Top :: any
 		)
 	end,
 }
