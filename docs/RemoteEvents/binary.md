@@ -1,10 +1,10 @@
 ---
-sidebar_position: 4
+sidebar_position: 3
 ---
 
 # Packet Format And Insights
 
-Buffers are great for serializing data, but we need to know when to serialize. Certain kinds of data is cheaper to send over the network than others. This page is *very* technical, as it introduces the raw binary format remotes use internally and discusses the overhead of each type of data. If you are looking for a more high-level overview of the topic, check out the [Why SerDes?](/docs/intro) or [How To SerDes?](/docs/how) pages.
+Buffers are great for serializing data, but we need to know when to serialize. Certain kinds of data is cheaper to send over the network than others. This page is *very* technical, as it introduces the raw binary format remotes use internally and discusses the overhead of each type of data. If you are looking for how to use Squash go to [How To Serialize?](/docs/how).
 
 ## How Are Packets Sent And Recieved?
 
