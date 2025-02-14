@@ -896,17 +896,6 @@ local function array<T>(serdes: SerDes<T>, length: number?): SerDes<{T}>
 end
 Squash.array = array
 
-do
-	local serdes = array(Squash.opt(Squash.boolean()))
-	local c = Squash.cursor()
-	serdes.ser(c, {true, true, nil, nil, true, nil, true, true, true, true, true, true, true, nil, true, true, true})
-	Squash.print(c)
-	local c = Squash.frombuffer(Squash.tobuffer(c))
-	for i, v in serdes.des(c) do
-		print(i, v)
-	end
-end
-
 function Squash.tuple<T...>(...: T...): SerDes<T...>
 	local serdesargs: { any } = { ... }
 	local count = #serdesargs
