@@ -567,7 +567,7 @@ local function num(bytes: number): SerDes<number>
 		ser = push,
 		des = pop,
 	}
-	intCache[bytes] = num
+	numberCache[bytes] = num
 	return num
 end
 Squash.number = num
