@@ -28,7 +28,7 @@ local function tobuffer(cursor: Cursor): buffer
 	return buf
 end
 
-local function tryRealloc(cursor: Cursor, bytes: number)
+local function tryrealloc(cursor: Cursor, bytes: number)
 	local b = cursor.Buf
 	local p = cursor.Pos
 	local len = buffer.len(b)
@@ -41,7 +41,6 @@ local function tryRealloc(cursor: Cursor, bytes: number)
 end
 
 local function pushu1(cursor: Cursor, x: number)
-	tryRealloc(cursor, 1)
 	buffer.writeu8(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += 1
 end
@@ -52,7 +51,6 @@ local function popu1(cursor: Cursor)
 end
 
 local function pushu2(cursor: Cursor, x: number)
-	tryRealloc(cursor, 2)
 	buffer.writeu16(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += 2
 end
@@ -63,7 +61,6 @@ local function popu2(cursor: Cursor)
 end
 
 local function pushu3(cursor: Cursor, x: number)
-	tryRealloc(cursor, 3)
 	buffer.writeu8(cursor.Buf, cursor.Pos, x)
 	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
 	cursor.Pos += 3
@@ -77,7 +74,6 @@ local function popu3(cursor: Cursor)
 end
 
 local function pushu4(cursor: Cursor, x: number)
-	tryRealloc(cursor, 4)
 	buffer.writeu32(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += 4
 end
@@ -88,7 +84,6 @@ local function popu4(cursor: Cursor)
 end
 
 local function pushu5(cursor: Cursor, x: number)
-	tryRealloc(cursor, 5)
 	buffer.writeu8(cursor.Buf, cursor.Pos, x)
 	buffer.writeu32(cursor.Buf, cursor.Pos + 1, x // 256)
 	cursor.Pos += 5
@@ -102,7 +97,6 @@ local function popu5(cursor: Cursor)
 end
 
 local function pushu6(cursor: Cursor, x: number)
-	tryRealloc(cursor, 6)
 	buffer.writeu16(cursor.Buf, cursor.Pos, x)
 	buffer.writeu32(cursor.Buf, cursor.Pos + 2, x // 256 ^ 2)
 	cursor.Pos += 6
@@ -116,7 +110,6 @@ local function popu6(cursor: Cursor)
 end
 
 local function pushu7(cursor: Cursor, x: number)
-	tryRealloc(cursor, 7)
 	buffer.writeu8(cursor.Buf, cursor.Pos, x)
 	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
 	buffer.writeu32(cursor.Buf, cursor.Pos + 3, x // 256 ^ 3)
@@ -132,7 +125,6 @@ local function popu7(cursor: Cursor)
 end
 
 local function pushu8(cursor: Cursor, x: number)
-	tryRealloc(cursor, 8)
 	buffer.writeu32(cursor.Buf, cursor.Pos, x)
 	buffer.writeu32(cursor.Buf, cursor.Pos + 4, x // 256 ^ 4)
 	cursor.Pos += 8
@@ -146,7 +138,6 @@ local function popu8(cursor: Cursor)
 end
 
 local function pushi1(cursor: Cursor, x: number)
-	tryRealloc(cursor, 1)
 	buffer.writei8(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += 1
 end
@@ -157,7 +148,6 @@ local function popi1(cursor: Cursor)
 end
 
 local function pushi2(cursor: Cursor, x: number)
-	tryRealloc(cursor, 2)
 	buffer.writei16(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += 2
 end
@@ -170,7 +160,6 @@ end
 local function pushi3(cursor: Cursor, x: number)
 	x %= 256 ^ 3
 	x = if x < 0 then 256 ^ 3 + x else x
-	tryRealloc(cursor, 3)
 	buffer.writeu8(cursor.Buf, cursor.Pos, x)
 	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
 	cursor.Pos += 3
@@ -185,7 +174,6 @@ local function popi3(cursor: Cursor)
 end
 
 local function pushi4(cursor: Cursor, x: number)
-	tryRealloc(cursor, 4)
 	buffer.writei32(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += 4
 end
@@ -198,7 +186,6 @@ end
 local function pushi5(cursor: Cursor, x: number)
 	x %= 256 ^ 5
 	x = if x < 0 then 256 ^ 5 + x else x
-	tryRealloc(cursor, 5)
 	buffer.writei8(cursor.Buf, cursor.Pos, x)
 	buffer.writei32(cursor.Buf, cursor.Pos + 1, x // 256)
 	cursor.Pos += 5
@@ -215,7 +202,6 @@ end
 local function pushi6(cursor: Cursor, x: number)
 	x %= 256 ^ 6
 	x = if x < 0 then 256 ^ 6 + x else x
-	tryRealloc(cursor, 6)
 	buffer.writei16(cursor.Buf, cursor.Pos, x)
 	buffer.writei32(cursor.Buf, cursor.Pos + 2, x // 256 ^ 2)
 	cursor.Pos += 6
@@ -232,7 +218,6 @@ end
 local function pushi7(cursor: Cursor, x: number)
 	x %= 256 ^ 7
 	x = if x < 0 then 256 ^ 7 + x else x
-	tryRealloc(cursor, 7)
 	buffer.writei8(cursor.Buf, cursor.Pos, x)
 	buffer.writei16(cursor.Buf, cursor.Pos + 1, x // 256)
 	buffer.writei32(cursor.Buf, cursor.Pos + 3, x // 256 ^ 3)
@@ -251,7 +236,6 @@ end
 local function pushi8(cursor: Cursor, x: number)
 	x %= 256 ^ 8
 	x = if x < 0 then 256 ^ 8 - x else x
-	tryRealloc(cursor, 8)
 	buffer.writei32(cursor.Buf, cursor.Pos, x)
 	buffer.writei32(cursor.Buf, cursor.Pos + 4, x // 256 ^ 4)
 	cursor.Pos += 8
@@ -266,7 +250,6 @@ local function popi8(cursor: Cursor)
 end
 
 local function pushf4(cursor: Cursor, x: number)
-	tryRealloc(cursor, 4)
 	buffer.writef32(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += 4
 end
@@ -277,7 +260,6 @@ local function popf4(cursor: Cursor)
 end
 
 local function pushf8(cursor: Cursor, x: number)
-	tryRealloc(cursor, 8)
 	buffer.writef64(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += 8
 end
@@ -313,7 +295,7 @@ local function popbool(cursor: Cursor): (boolean, boolean, boolean, boolean, boo
 		x % 256 >= 128
 end
 
-local function pushvlq(cursor: Cursor, x: number)
+local function pushvlqrealloc(cursor: Cursor, x: number)
 	local x0 = x // 128 ^ 0 % 128
 	local x1 = x // 128 ^ 1 % 128
 	local x2 = x // 128 ^ 2 % 128
@@ -324,20 +306,28 @@ local function pushvlq(cursor: Cursor, x: number)
 	local x7 = x // 128 ^ 7 % 128
 
 	if x7 ~= 0 then
+		tryrealloc(cursor, 8)
 		pushu8(cursor, x0 * 256 ^ 7 + x1 * 256 ^ 6 + x2 * 256 ^ 5 + x3 * 256 ^ 4 + x4 * 256 ^ 3 + x5 * 256 ^ 2 + x6 * 256 + x7 + 128)
 	elseif x6 ~= 0 then
+		tryrealloc(cursor, 7)
 		pushu7(cursor, x0 * 256 ^ 6 + x1 * 256 ^ 5 + x2 * 256 ^ 4 + x3 * 256 ^ 3 + x4 * 256 ^ 2 + x5 * 256 + x6 + 128)
 	elseif x5 ~= 0 then
+		tryrealloc(cursor, 6)
 		pushu6(cursor, x0 * 256 ^ 5 + x1 * 256 ^ 4 + x2 * 256 ^ 3 + x3 * 256 ^ 2 + x4 * 256 + x5 + 128)
 	elseif x4 ~= 0 then
+		tryrealloc(cursor, 5)
 		pushu5(cursor, x0 * 256 ^ 4 + x1 * 256 ^ 3 + x2 * 256 ^ 2 + x3 * 256 + x4 + 128)
 	elseif x3 ~= 0 then
+		tryrealloc(cursor, 4)
 		pushu4(cursor, x0 * 256 ^ 3 + x1 * 256 ^ 2 + x2 * 256 + x3 + 128)
 	elseif x2 ~= 0 then
+		tryrealloc(cursor, 3)
 		pushu3(cursor, x0 * 256 ^ 2 + x1 * 256 + x2 + 128)
 	elseif x1 ~= 0 then
+		tryrealloc(cursor, 2)
 		pushu2(cursor, x0 * 256 + x1 + 128)
 	else
+		tryrealloc(cursor, 1)
 		pushu1(cursor, x0 + 128)
 	end
 end
@@ -396,12 +386,11 @@ end
 
 local function pushstr(cursor: Cursor, x: string, length: number?)
 	local len = length or #x
-	tryRealloc(cursor, len)
 	buffer.writestring(cursor.Buf, cursor.Pos, x)
 	cursor.Pos += len
 
 	if not length then
-		pushvlq(cursor, len)
+		pushvlqrealloc(cursor, len)
 	end
 end
 
@@ -413,12 +402,11 @@ end
 
 local function pushbuf(cursor: Cursor, x: buffer, length: number?)
 	local len = length or buffer.len(x)
-	tryRealloc(cursor, len)
 	buffer.copy(cursor.Buf, cursor.Pos, x, 0, len)
 	cursor.Pos += len
 
 	if not length then
-		pushvlq(cursor, len)
+		pushvlqrealloc(cursor, len)
 	end
 end
 
@@ -458,6 +446,7 @@ Squash.print = printcursor
 Squash.cursor = newcursor
 Squash.frombuffer = frombuffer
 Squash.tobuffer = tobuffer
+Squash.tryrealloc = tryrealloc
 
 export type SerDes<T...> = {
 	ser: (cursor: Cursor, T...) -> (),
@@ -468,8 +457,12 @@ function Squash.T<T>(x: SerDes<T>): T
 	return x :: any
 end
 
+local function pushboolrealloc(cursor: Cursor, a, b, c, d, e, f, g, h)
+	tryrealloc(cursor, 1)
+	pushbool(cursor, a, b, c, d, e, f, g, h)
+end
 local booleanCache = {
-	ser = pushbool,
+	ser = pushboolrealloc,
 	des = popbool,
 }
 function Squash.boolean()
@@ -504,7 +497,10 @@ local function uint(bytes: number): SerDes<number>
 	end
 
 	local num: SerDes<number> = {
-		ser = push,
+		ser = function(cursor, x)
+			tryrealloc(cursor, bytes)
+			push(cursor, x)
+		end,
 		des = pop,
 	}
 	uintCache[bytes] = num
@@ -540,7 +536,10 @@ local function int(bytes: number): SerDes<number>
 	end
 
 	local num: SerDes<number> = {
-		ser = push,
+		ser = function(cursor, x)
+			tryrealloc(cursor, bytes)
+			push(cursor, x)
+		end,
 		des = pop,
 	}
 	intCache[bytes] = num
@@ -564,16 +563,23 @@ local function num(bytes: number): SerDes<number>
 	end
 
 	local num: SerDes<number> = {
-		ser = push,
+		ser = function(cursor, x)
+			tryrealloc(cursor, bytes)
+			push(cursor, x)
+		end,
 		des = pop,
 	}
-	intCache[bytes] = num
+	numberCache[bytes] = num
 	return num
 end
 Squash.number = num
 
 local stringSerDes: SerDes<string> = {
-	ser = pushstr,
+	ser = function(cursor, x)
+		local len = #x
+		tryrealloc(cursor, len)
+		pushstr(cursor, x, len)
+	end,
 	des = popstr,
 }
 local stringCache = {}
@@ -589,6 +595,7 @@ local stringMeta = {
 
 		local serdes: SerDes<string> = {
 			ser = function(cursor, string)
+				tryrealloc(cursor, length)
 				pushstr(cursor, string, length)
 			end,
 
@@ -683,9 +690,11 @@ function Squash.opt<T>(serdes: SerDes<T>): SerDes<T?>
 	local optSerDes: SerDes<T?> = {
 		ser = function(cursor, x)
 			if x == nil then
+				tryrealloc(cursor, 1)
 				pushu1(cursor, 0)
 			else
 				serdes.ser(cursor, x)
+				tryrealloc(cursor, 1)
 				pushu1(cursor, 1)
 			end
 		end,
@@ -704,7 +713,10 @@ function Squash.opt<T>(serdes: SerDes<T>): SerDes<T?>
 end
 
 local bufSerDes: SerDes<buffer> = {
-	ser = pushbuf,
+	ser = function(cursor, x)
+		tryrealloc(cursor, buffer.len(x))
+		pushbuf(cursor, x)
+	end,
 	des = popbuf,
 }
 local bufCache = {}
@@ -719,6 +731,7 @@ function Squash.buffer(length: number?): SerDes<buffer>
 
 	local serdes: SerDes<buffer> = {
 		ser = function(cursor, buf)
+			tryrealloc(cursor, length)
 			pushbuf(cursor, buf, length)
 		end,
 
@@ -731,7 +744,7 @@ function Squash.buffer(length: number?): SerDes<buffer>
 end
 
 local vlqCache: SerDes<number> = {
-	ser = pushvlq,
+	ser = pushvlqrealloc,
 	des = popvlq,
 }
 function Squash.vlq(): SerDes<number>
@@ -1135,7 +1148,7 @@ local function map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{
 				;(keySerDes :: any).ser(cursor, k)
 				size += 1
 			end
-			pushvlq(cursor, size)
+			pushvlqrealloc(cursor, size)
 		end,
 
 		des = function(cursor)
@@ -1164,6 +1177,7 @@ local function literal(...: any): SerDes<any>
 
 	return {
 		ser = function(cursor, literal)
+			tryrealloc(cursor, 1)
 			pushu1(cursor, lookup[literal])
 		end,
 
@@ -1176,9 +1190,12 @@ Squash.literal = literal
 
 local function tableserdes(schema: { [string]: SerDes<any> }): SerDes<any>
 	local typemap = {}
+	local maptype = {}
 
-	for key, serdes in schema do
-		table.insert(typemap, key)
+	for key in schema do
+		local i = #typemap + 1
+		typemap[i] = key
+		maptype[key] = i
 	end
 
 	return {
@@ -1198,17 +1215,19 @@ local function tableserdes(schema: { [string]: SerDes<any> }): SerDes<any>
 				end
 
 				vserdes.ser(cursor, v)
-				local vid = table.find(typemap, vtype) or error(``)
+				local vid = maptype[vtype] or error(``)
+				tryrealloc(cursor, 1)
 				pushu1(cursor, vid - 1)
 
 				kserdes.ser(cursor, k)
-				local kid = table.find(typemap, ktype) or error(``)
+				local kid = maptype[ktype] or error(``)
+				tryrealloc(cursor, 1)
 				pushu1(cursor, kid - 1)
 
 				size += 1
 			end
 
-			pushvlq(cursor, size)
+			pushvlqrealloc(cursor, size)
 		end,
 
 		des = function(cursor)
@@ -1235,6 +1254,7 @@ Squash.table = tableserdes
 
 local axesCache: SerDes<Axes> = {
 	ser = function(cursor, axes)
+		tryrealloc(cursor, 2)
 		pushbool(cursor, axes.Back, axes.Bottom, axes.Front, axes.Left, axes.Right, axes.Top)
 		pushbool(cursor, axes.X, axes.Y, axes.Z)
 	end,
@@ -1261,6 +1281,7 @@ end
 
 local brickcolorCache: SerDes<BrickColor> = {
 	ser = function(cursor, brickcolor)
+		tryrealloc(cursor, 2)
 		pushu2(cursor, brickcolor.Number)
 	end,
 
@@ -1291,7 +1312,7 @@ local function enumitem(enum: Enum): SerDes<EnumItem>
 
 	local item: SerDes<EnumItem> = {
 		ser = function(cursor, item)
-			pushvlq(cursor, itemsToIds[item])
+			pushvlqrealloc(cursor, itemsToIds[item])
 		end,
 
 		des = function(cursor)
@@ -1307,6 +1328,7 @@ Squash.EnumItem = enumitem
 
 local catalogueSearchParamsCache: SerDes<CatalogSearchParams> = {
 	ser = function(cursor, params)
+		tryrealloc(cursor, 1 + 1 + 4 + 4 + #params.CreatorName + #params.SearchKeyword)
 		pushbool(cursor, params.IncludeOffSale)
 		pushu1(cursor, params.Limit)
 		pushu4(cursor, params.MinPrice)
@@ -1320,7 +1342,7 @@ local catalogueSearchParamsCache: SerDes<CatalogSearchParams> = {
 		for _, assetType in params.AssetTypes do
 			enumitem(Enum.AssetType).ser(cursor, assetType)
 		end
-		pushvlq(cursor, #params.AssetTypes)
+		pushvlqrealloc(cursor, #params.AssetTypes)
 	end,
 
 	des = function(cursor)
@@ -1396,10 +1418,12 @@ local function rotser(cursor, cframe)
 
 	local specialId = rotationToId[Vector3.new(cframe:ToOrientation())]
 	if specialId then
+		tryrealloc(cursor, 1)
 		pushu1(cursor, specialId)
 	else
 		local axis, theta = cframe:ToAxisAngle()
 		axis *= math.sin(theta / 2)
+		tryrealloc(cursor, 7)
 		pushu2(cursor, (axis.Z + 1) * (65535 / 2))
 		pushu2(cursor, (axis.Y + 1) * (65535 / 2))
 		pushu2(cursor, (axis.X + 1) * (65535 / 2))
@@ -1434,16 +1458,16 @@ local function cframe(positionSerDes: SerDes<number>): SerDes<CFrame>
 		return cframeCache[positionSerDes]
 	end
 
-	local push, pop = positionSerDes.ser, positionSerDes.des
+	local pushrealloc, pop = positionSerDes.ser, positionSerDes.des
 
 	local cframeserdes: SerDes<CFrame> = {
 		ser = function(cursor, cframe)
 			rotser(cursor, cframe)
 
 			local pos = cframe.Position
-			push(cursor, pos.Z)
-			push(cursor, pos.Y)
-			push(cursor, pos.X)
+			pushrealloc(cursor, pos.Z)
+			pushrealloc(cursor, pos.Y)
+			pushrealloc(cursor, pos.X)
 		end,
 
 		des = function(cursor)
@@ -1466,7 +1490,10 @@ local function popcolor3(cursor)
 	return Color3.fromRGB(popu1(cursor), popu1(cursor), popu1(cursor))
 end
 local color3Cache: SerDes<Color3> = {
-	ser = pushcolor3,
+	ser = function(cursor, x)
+		tryrealloc(cursor, 3)
+		pushcolor3(cursor, x)
+	end,
 	des = popcolor3,
 }
 function Squash.Color3(): SerDes<Color3>
@@ -1484,7 +1511,10 @@ local function popcolorsequencekeypoint(cursor)
 	)
 end
 local colorSequenceKeypointCache: SerDes<ColorSequenceKeypoint> = {
-	ser = pushcolorsequencekeypoint,
+	ser = function(cursor, x)
+		tryrealloc(cursor, 4)
+		pushcolorsequencekeypoint(cursor, x)
+	end,
 	des = popcolorsequencekeypoint,
 }
 function Squash.ColorSequenceKeypoint(): SerDes<ColorSequenceKeypoint>
@@ -1493,10 +1523,11 @@ end
 
 local colorSequenceCache: SerDes<ColorSequence> = {
 	ser = function(cursor, sequence)
+		tryrealloc(cursor, 4 * #sequence.Keypoints)
 		for _, keypoint in sequence.Keypoints do
 			pushcolorsequencekeypoint(cursor, keypoint)
 		end
-		pushvlq(cursor, #sequence.Keypoints)
+		pushvlqrealloc(cursor, #sequence.Keypoints)
 	end,
 
 	des = function(cursor)
@@ -1514,6 +1545,7 @@ end
 
 local dateTimeCache: SerDes<DateTime> = {
 	ser = function(cursor, date)
+		tryrealloc(cursor, 6)
 		pushu6(cursor, date.UnixTimestampMillis)
 	end,
 	des = function(cursor)
@@ -1526,6 +1558,7 @@ end
 
 local facesCache: SerDes<Faces> = {
 	ser = function(cursor, face)
+		tryrealloc(cursor, 1)
 		pushbool(cursor, face.Back, face.Bottom, face.Front, face.Left, face.Right, face.Top)
 	end,
 
@@ -1548,6 +1581,7 @@ end
 local floatCurveKeyCache: SerDes<FloatCurveKey> = {
 	ser = function(cursor, key)
 		enumitem(Enum.KeyInterpolationMode).ser(cursor, key.Interpolation)
+		tryrealloc(cursor, 8)
 		pushf4(cursor, key.Value)
 		pushf4(cursor, key.Time)
 	end,
@@ -1567,6 +1601,7 @@ end
 local fontCache: SerDes<Font> = {
 	ser = function(cursor, font)
 		local family = string.match(font.Family, "rbxasset://fonts/families/(.+).json") or error(`Invalid font family {font.Family}`)
+		tryrealloc(cursor, #family + 1)
 		pushstr(cursor, family)
 		pushbool(cursor, font.Bold)
 		enumitem(Enum.FontWeight).ser(cursor, font.Weight)
@@ -1593,12 +1628,12 @@ local function numberrange(serdes: SerDes<number>): SerDes<NumberRange>
 		return numberRangeCache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local numrange: SerDes<NumberRange> = {
 		ser = function(cursor, range)
-			push(cursor, range.Max)
-			push(cursor, range.Min)
+			pushrealloc(cursor, range.Max)
+			pushrealloc(cursor, range.Min)
 		end,
 
 		des = function(cursor)
@@ -1616,17 +1651,18 @@ local function numbersequencekeypoint(serdes: SerDes<number>): SerDes<NumberSequ
 		return numberSequenceKeypointCache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local sequencekeypoint: SerDes<NumberSequenceKeypoint> = {
 		ser = function(cursor, keypoint)
-			push(cursor, keypoint.Value)
-			push(cursor, keypoint.Envelope)
-			pushu8(cursor, keypoint.Time * 255)
+			pushrealloc(cursor, keypoint.Value)
+			pushrealloc(cursor, keypoint.Envelope)
+			tryrealloc(cursor, 4)
+			pushf4(cursor, keypoint.Time)
 		end,
 
 		des = function(cursor)
-			local keypointTime = popu8(cursor) / 255
+			local keypointTime = popf4(cursor)
 			local envelope = pop(cursor)
 			local value = pop(cursor)
 			return NumberSequenceKeypoint.new(keypointTime, value, envelope)
@@ -1643,14 +1679,15 @@ local function numbersequence(serdes: SerDes<number>): SerDes<NumberSequence>
 		return numberSequenceCache[serdes]
 	end
 
-	local push, pop = numbersequencekeypoint(serdes).ser, numbersequencekeypoint(serdes).des
+	local pushrealloc, pop = numbersequencekeypoint(serdes).ser, numbersequencekeypoint(serdes).des
 
 	local numsequence: SerDes<NumberSequence> = {
 		ser = function(cursor, sequence)
+			local pushrealloc = pushrealloc
 			for _, keypoint in sequence.Keypoints do
-				push(cursor, keypoint)
+				pushrealloc(cursor, keypoint)
 			end
-			pushvlq(cursor, #sequence.Keypoints)
+			pushvlqrealloc(cursor, #sequence.Keypoints)
 		end,
 
 		des = function(cursor)
@@ -1671,16 +1708,17 @@ Squash.NumberSequence = numbersequence
 --- Does not encode instance data at all.
 local overlapParamsCache: SerDes<OverlapParams> = {
 	ser = function(cursor, params)
+		tryrealloc(cursor, 1 + 2 + #params.CollisionGroup)
 		pushbool(cursor, params.BruteForceAllSlow, params.RespectCanCollide)
 		pushu2(cursor, params.MaxParts)
-		enumitem(Enum.RaycastFilterType).ser(cursor, params.FilterType)
 		pushstr(cursor, params.CollisionGroup)
+		enumitem(Enum.RaycastFilterType).ser(cursor, params.FilterType)
 	end,
 
 	des = function(cursor)
 		local params = OverlapParams.new()
-		params.CollisionGroup = popstr(cursor)
 		params.FilterType = enumitem(Enum.RaycastFilterType).des(cursor) :: Enum.RaycastFilterType
+		params.CollisionGroup = popstr(cursor)
 		params.MaxParts = popu2(cursor)
 		params.BruteForceAllSlow, params.RespectCanCollide = popbool(cursor)
 		return params
@@ -1692,15 +1730,16 @@ end
 
 local raycastParamsCache: SerDes<RaycastParams> = {
 	ser = function(cursor, params)
+		tryrealloc(cursor, 1 + #params.CollisionGroup)
 		pushbool(cursor, params.BruteForceAllSlow, params.RespectCanCollide, params.IgnoreWater)
-		enumitem(Enum.RaycastFilterType).ser(cursor, params.FilterType)
 		pushstr(cursor, params.CollisionGroup)
+		enumitem(Enum.RaycastFilterType).ser(cursor, params.FilterType)
 	end,
 
 	des = function(cursor)
 		local params = RaycastParams.new()
-		params.CollisionGroup = popstr(cursor)
 		params.FilterType = enumitem(Enum.RaycastFilterType).des(cursor) :: Enum.RaycastFilterType
+		params.CollisionGroup = popstr(cursor)
 		params.BruteForceAllSlow, params.RespectCanCollide, params.IgnoreWater = popbool(cursor)
 		return params
 	end,
@@ -1715,13 +1754,13 @@ local function vector3(serdes: SerDes<number>): SerDes<Vector3>
 		return vector3Cache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local vec: SerDes<Vector3> = {
 		ser = function(cursor, vector3)
-			push(cursor, vector3.Z)
-			push(cursor, vector3.Y)
-			push(cursor, vector3.X)
+			pushrealloc(cursor, vector3.Z)
+			pushrealloc(cursor, vector3.Y)
+			pushrealloc(cursor, vector3.X)
 		end,
 
 		des = function(cursor)
@@ -1740,15 +1779,16 @@ local function pathwaypoint(serdes: SerDes<number>): SerDes<PathWaypoint>
 		return pathWaypointCache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local path: SerDes<PathWaypoint> = {
 		ser = function(cursor, waypoint)
+			tryrealloc(cursor, #waypoint.Label)
 			pushstr(cursor, waypoint.Label)
 			enumitem(Enum.PathWaypointAction).ser(cursor, waypoint.Action)
-			push(cursor, waypoint.Position.Z)
-			push(cursor, waypoint.Position.Y)
-			push(cursor, waypoint.Position.X)
+			pushrealloc(cursor, waypoint.Position.Z)
+			pushrealloc(cursor, waypoint.Position.Y)
+			pushrealloc(cursor, waypoint.Position.X)
 		end,
 
 		des = function(cursor)
@@ -1766,6 +1806,7 @@ Squash.PathWaypoint = pathwaypoint
 
 local physicalPropertiesCache: SerDes<PhysicalProperties> = {
 	ser = function(cursor, props)
+		tryrealloc(cursor, 20)
 		pushf4(cursor, props.ElasticityWeight)
 		pushf4(cursor, props.FrictionWeight)
 		pushf4(cursor, props.Elasticity)
@@ -1793,16 +1834,16 @@ local function rayserdes(serdes: SerDes<number>): SerDes<Ray>
 		return rayCache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local raycached: SerDes<Ray> = {
 		ser = function(cursor, ray)
-			push(cursor, ray.Direction.Z)
-			push(cursor, ray.Direction.Y)
-			push(cursor, ray.Direction.X)
-			push(cursor, ray.Origin.Z)
-			push(cursor, ray.Origin.Y)
-			push(cursor, ray.Origin.X)
+			pushrealloc(cursor, ray.Direction.Z)
+			pushrealloc(cursor, ray.Direction.Y)
+			pushrealloc(cursor, ray.Direction.X)
+			pushrealloc(cursor, ray.Origin.Z)
+			pushrealloc(cursor, ray.Origin.Y)
+			pushrealloc(cursor, ray.Origin.X)
 		end,
 
 		des = function(cursor)
@@ -1830,17 +1871,18 @@ function Squash.RaycastResult(serdes: SerDes<number>): { ser: (Cursor, RaycastRe
 		return raycastParamsCache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local raycastresult = {
 		ser = function(cursor, result: RaycastResult)
+			tryrealloc(cursor, 4)
 			pushf4(cursor, result.Distance)
-			push(cursor, result.Position.Z)
-			push(cursor, result.Position.Y)
-			push(cursor, result.Position.X)
-			push(cursor, result.Normal.Z)
-			push(cursor, result.Normal.Y)
-			push(cursor, result.Normal.X)
+			pushrealloc(cursor, result.Position.Z)
+			pushrealloc(cursor, result.Position.Y)
+			pushrealloc(cursor, result.Position.X)
+			pushrealloc(cursor, result.Normal.Z)
+			pushrealloc(cursor, result.Normal.Y)
+			pushrealloc(cursor, result.Normal.X)
 			enumitem(Enum.Material).ser(cursor, result.Material)
 		end,
 
@@ -1865,12 +1907,12 @@ function Squash.Vector2(serdes: SerDes<number>): SerDes<Vector2>
 		return vector2Cache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local vec2: SerDes<Vector2> = {
 		ser = function(cursor, v)
-			push(cursor, v.Y)
-			push(cursor, v.X)
+			pushrealloc(cursor, v.Y)
+			pushrealloc(cursor, v.X)
 		end,
 
 		des = function(cursor)
@@ -1888,14 +1930,14 @@ function Squash.Rect(serdes: SerDes<number>): SerDes<Rect>
 		return rectCache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local rectserdes: SerDes<Rect> = {
 		ser = function(cursor, rect)
-			push(cursor, rect.Max.Y)
-			push(cursor, rect.Max.X)
-			push(cursor, rect.Min.Y)
-			push(cursor, rect.Min.X)
+			pushrealloc(cursor, rect.Max.Y)
+			pushrealloc(cursor, rect.Max.X)
+			pushrealloc(cursor, rect.Min.Y)
+			pushrealloc(cursor, rect.Min.X)
 		end,
 
 		des = function(cursor)
@@ -1912,18 +1954,18 @@ function Squash.Region3(serdes: SerDes<number>): SerDes<Region3>
 		return region3Cache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local reg: SerDes<Region3> = {
 		ser = function(cursor, region)
 			local size = region.Size
-			push(cursor, size.Z)
-			push(cursor, size.Y)
-			push(cursor, size.X)
+			pushrealloc(cursor, size.Z)
+			pushrealloc(cursor, size.Y)
+			pushrealloc(cursor, size.X)
 			local pos = region.CFrame.Position
-			push(cursor, pos.Z)
-			push(cursor, pos.Y)
-			push(cursor, pos.X)
+			pushrealloc(cursor, pos.Z)
+			pushrealloc(cursor, pos.Y)
+			pushrealloc(cursor, pos.X)
 		end,
 
 		des = function(cursor)
@@ -1938,6 +1980,7 @@ end
 
 local region3int16Cache: SerDes<Region3int16> = {
 	ser = function(cursor, region)
+		tryrealloc(cursor, 12)
 		local max = region.Max
 		pushi2(cursor, max.Z)
 		pushi2(cursor, max.Y)
@@ -1964,12 +2007,13 @@ function Squash.RotationCurveKey(positionSerDes: SerDes<number>): SerDes<Rotatio
 		return rotationCurveKeyCache[positionSerDes]
 	end
 
-	local push, pop = cframe(positionSerDes).ser, cframe(positionSerDes).des
+	local pushrealloc, pop = cframe(positionSerDes).ser, cframe(positionSerDes).des
 
 	local rot: SerDes<RotationCurveKey> = {
 		ser = function(cursor, key)
 			enumitem(Enum.KeyInterpolationMode).ser(cursor, key.Interpolation)
-			push(cursor, key.Value)
+			pushrealloc(cursor, key.Value)
+			tryrealloc(cursor, 4)
 			pushf4(cursor, key.Time)
 		end,
 
@@ -1987,22 +2031,29 @@ end
 
 local tweenInfoCache: SerDes<TweenInfo> = {
 	ser = function(cursor, info)
+		tryrealloc(cursor, 9)
 		pushf4(cursor, info.DelayTime)
+		pushf4(cursor, info.Time)
 		pushbool(cursor, info.Reverses)
-		pushvlq(cursor, info.RepeatCount)
+		pushvlqrealloc(cursor, info.RepeatCount)
 		enumitem(Enum.EasingDirection).ser(cursor, info.EasingDirection)
 		enumitem(Enum.EasingStyle).ser(cursor, info.EasingStyle)
-		pushf4(cursor, info.Time)
 	end,
 
 	des = function(cursor)
+		local easing = enumitem(Enum.EasingStyle).des(cursor) :: Enum.EasingStyle
+		local direction = enumitem(Enum.EasingDirection).des(cursor) :: Enum.EasingDirection
+		local repeats = popvlq(cursor)
+		local reverses = popbool(cursor)
+		local duration = popf4(cursor)
+		local delayTime = popf4(cursor)
 		return TweenInfo.new(
-			popf4(cursor),
-			enumitem(Enum.EasingStyle).des(cursor) :: Enum.EasingStyle,
-			enumitem(Enum.EasingDirection).des(cursor) :: Enum.EasingDirection,
-			popvlq(cursor),
-			popbool(cursor),
-			popf4(cursor)
+			duration,
+			easing,
+			direction,
+			repeats,
+			reverses,
+			delayTime
 		)
 	end
 }
@@ -2016,12 +2067,12 @@ function Squash.UDim(serdes: SerDes<number>): SerDes<UDim>
 		return udimCache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local udim: SerDes<UDim> = {
 		ser = function(cursor, u)
-			push(cursor, u.Offset)
-			push(cursor, u.Scale)
+			pushrealloc(cursor, u.Offset)
+			pushrealloc(cursor, u.Scale)
 		end,
 
 		des = function(cursor)
@@ -2039,14 +2090,14 @@ function Squash.UDim2(serdes: SerDes<number>): SerDes<UDim2>
 		return udim2Cache[serdes]
 	end
 
-	local push, pop = serdes.ser, serdes.des
+	local pushrealloc, pop = serdes.ser, serdes.des
 
 	local udim2: SerDes<UDim2> = {
 		ser = function(cursor, u)
-			push(cursor, u.Y.Offset)
-			push(cursor, u.Y.Scale)
-			push(cursor, u.X.Offset)
-			push(cursor, u.X.Scale)
+			pushrealloc(cursor, u.Y.Offset)
+			pushrealloc(cursor, u.Y.Scale)
+			pushrealloc(cursor, u.X.Offset)
+			pushrealloc(cursor, u.X.Scale)
 		end,
 
 		des = function(cursor)
@@ -2060,6 +2111,7 @@ end
 
 local vector2int16Cache: SerDes<Vector2int16> = {
 	ser = function(cursor, v)
+		tryrealloc(cursor, 4)
 		pushi2(cursor, v.Y)
 		pushi2(cursor, v.X)
 	end,
@@ -2074,6 +2126,7 @@ end
 
 local vector3int16Cache: SerDes<Vector3int16> = {
 	ser = function(cursor, v)
+		tryrealloc(cursor, 6)
 		pushi2(cursor, v.Z)
 		pushi2(cursor, v.Y)
 		pushi2(cursor, v.X)
