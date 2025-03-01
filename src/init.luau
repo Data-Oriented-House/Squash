@@ -1175,7 +1175,7 @@ local catalogueSearchParamsCache: SerDes<CatalogSearchParams> = {
 		end
 		params.AssetTypes = assetTypes
 
-		params.SalesTypesFilter = enumitem(Enum.SalesTypeFilter).des(cursor)
+		params.SalesTypeFilter = enumitem(Enum.SalesTypeFilter).des(cursor)
 		params.CategoryFilter = enumitem(Enum.CatalogCategoryFilter).des(cursor) :: Enum.CatalogCategoryFilter
 		params.SortAggregation = enumitem(Enum.CatalogSortAggregation).des(cursor)
 		params.SortType = enumitem(Enum.CatalogSortType).des(cursor) :: Enum.CatalogSortType
@@ -1185,6 +1185,7 @@ local catalogueSearchParamsCache: SerDes<CatalogSearchParams> = {
 		params.MinPrice = popu4(cursor)
 		params.Limit = popu1(cursor)
 		params.IncludeOffSale = popbool(cursor)
+		return params
 	end,
 }
 function Squash.CatalogueSearchParams(): SerDes<CatalogSearchParams>
