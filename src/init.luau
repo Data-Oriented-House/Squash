@@ -680,6 +680,7 @@ str.datastore = ' !#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_
 local str = setmetatable(str, stringMeta)
 Squash.string = str
 
+local optMap = {}
 local optCache = {}
 function Squash.opt<T>(serdes: SerDes<T>): SerDes<T?>
 	if optCache[serdes] then
@@ -707,6 +708,7 @@ function Squash.opt<T>(serdes: SerDes<T>): SerDes<T?>
 		end,
 	}
 	optCache[serdes] = optSerDes
+	optMap[optSerDes] = serdes
 	return optSerDes
 end
 
@@ -750,9 +752,10 @@ function Squash.vlq(): SerDes<number>
 end
 
 local arrayCache = {}
-local function array<T>(serdes: SerDes<T>, length: number?): SerDes<{T}>
+
+local function array<T>(serdes: SerDes<T>, length: number?, ignoreBitpacking: boolean?): SerDes<{T}>
 	local cached = arrayCache[serdes]
-	local key = length or 0
+	local key = 2 * (length or 0) + if ignoreBitpacking then 1 else 0
 	if cached then
 		if cached[key] then
 			return cached[key]
@@ -762,35 +765,147 @@ local function array<T>(serdes: SerDes<T>, length: number?): SerDes<{T}>
 		arrayCache[serdes] = cached
 	end
 
-	local pushrealloc, pop = serdes.ser, serdes.des
+	if not ignoreBitpacking and serdes == booleanCache then
+		local arr = {
+			ser = function(cursor, xs: {boolean})
+				local n = length or #xs
+				local groups = 1 + n // 8
+				for group = 0, groups - 1 do
+					local base = group * 8
+					pushbool(cursor,
+						xs[base + 1],
+						xs[base + 2],
+						xs[base + 3],
+						xs[base + 4],
+						xs[base + 5],
+						xs[base + 6],
+						xs[base + 7],
+						xs[base + 8]
+					)
+				end
 
-	local arr: SerDes<{T}> = {
-		ser = if length then function(cursor, xs)
-			local pushrealloc = pushrealloc --? Store repeatedly-accessed Upvalue in local variable
-			for i = 1, length do
-				pushrealloc(cursor, xs[i])
-			end
-		end else function(cursor, xs)
-			local pushrealloc = pushrealloc --? Store repeatedly-accessed Upvalue in local variable
-			for _, x in xs do
-				pushrealloc(cursor, x)
-			end
-			pushvlqrealloc(cursor, #xs)
-		end,
+				if not length then
+					pushvlq(cursor, n)
+				end
+			end,
+			des = function(cursor): {boolean}
+				local n = length or popvlq(cursor)
+				local groups = 1 + n // 8
+				local result = {}
 
-		des = function(cursor)
-			local pop = pop --? Store repeatedly-accessed Upvalue in local variable
-			local len = length or popvlq(cursor)
-			local xs = table.create(len)
-			for i = len, 1, -1 do
-				xs[i] = pop(cursor)
-			end
-			return xs
-		end,
-	}
+				for group = groups - 1, 0, -1 do
+					local a, b, c, d, e, f, g, h = popbool(cursor)
+					local base = group * 8
+					result[base + 1] = a
+					result[base + 2] = b
+					result[base + 3] = c
+					result[base + 4] = d
+					result[base + 5] = e
+					result[base + 6] = f
+					result[base + 7] = g
+					result[base + 8] = h
+				end
 
-	cached[key] = arr
-	return arr
+				for i = n, #result do
+					result[i] = nil
+				end
+
+				return result
+			end,
+		} :: any
+		cached[key] = arr
+		return arr
+	elseif not ignoreBitpacking and optMap[serdes :: any] then
+		local underlyingSerDes = optMap[serdes :: any]
+		local arr = {
+			ser = function(cursor, xs: {T?})
+				local n = length or #xs
+				for i = 1, n do
+					if xs[i] ~= nil then
+						underlyingSerDes.ser(cursor, xs[i] :: any)
+					end
+				end
+
+				local groups = 1 + n // 8
+				for group = 0, groups - 1 do
+					local base = group * 8
+					pushbool(cursor,
+						xs[base + 1] ~= nil,
+						xs[base + 2] ~= nil,
+						xs[base + 3] ~= nil,
+						xs[base + 4] ~= nil,
+						xs[base + 5] ~= nil,
+						xs[base + 6] ~= nil,
+						xs[base + 7] ~= nil,
+						xs[base + 8] ~= nil
+					)
+				end
+
+				if not length then
+					pushvlq(cursor, n)
+				end
+			end,
+			des = function(cursor): {T?}
+				local n = length or popvlq(cursor)
+				local groups = 1 + n // 8
+				local flags = {}
+
+				for group = groups - 1, 0, -1 do
+					local a, b, c, d, e, f, g, h = popbool(cursor)
+					local base = group * 8
+					flags[base + 1] = a
+					flags[base + 2] = b
+					flags[base + 3] = c
+					flags[base + 4] = d
+					flags[base + 5] = e
+					flags[base + 6] = f
+					flags[base + 7] = g
+					flags[base + 8] = h
+				end
+
+				local result = {} :: any
+				for i = n, 1, -1 do
+					if flags[i] then
+						result[i] = underlyingSerDes.des(cursor)
+					end
+				end
+				return result
+			end,
+		} :: any
+		cached[key] = arr
+		return arr
+	else
+		local push, pop = serdes.ser, serdes.des
+		local arr: SerDes<{T}> = {
+			ser = if length then
+				function(cursor, xs)
+					local push = push
+					for i = 1, length do
+						push(cursor, xs[i])
+					end
+				end
+			else
+				function(cursor, xs)
+					local push = push
+					for _, x in xs do
+						push(cursor, x)
+					end
+					pushvlq(cursor, #xs)
+				end,
+
+			des = function(cursor)
+				local pop = pop
+				local len = length or popvlq(cursor)
+				local xs = table.create(len)
+				for i = len, 1, -1 do
+					xs[i] = pop(cursor)
+				end
+				return xs
+			end,
+		}
+		cached[key] = arr
+		return arr
+	end
 end
 Squash.array = array
 
@@ -821,11 +936,18 @@ function Squash.tuple<T...>(...: T...): SerDes<T...>
 end
 
 local function record<T>(schema: T & {}): SerDes<T>
-	local boolProperties = {}
 	local properties = {}
+	local optProperties = {}
+	local boolProperties = {}
+	local optboolProperties = {}
 	for prop, val in schema :: any do
 		if type(prop) == 'string' then
-			if val == booleanCache then
+			local optVal = optMap[val]
+			if optVal == booleanCache then
+				table.insert(optboolProperties, prop)
+			elseif optVal then
+				table.insert(optProperties, prop)
+			elseif val == booleanCache then
 				table.insert(boolProperties, prop)
 			else
 				table.insert(properties, prop)
@@ -842,123 +964,299 @@ local function record<T>(schema: T & {}): SerDes<T>
 		table.sort(boolProperties)
 	end
 
+	local optCount = #optProperties
+	local optSerDes = {}
+	if optCount > 0 then
+		table.sort(optProperties)
+		for i, prop in optProperties do
+			optSerDes[i] = optMap[(schema :: any)[prop]]
+		end
+	end
+
+	local optboolCount = #optboolProperties
+	if optboolCount > 0 then
+		table.sort(optboolProperties)
+		table.move(optboolProperties, 1, #optboolProperties, #boolProperties + 1, boolProperties)
+	end
+
+	local flagCount = optCount + optboolCount
+	local maxBoolCount = boolCount + optboolCount
+
+	--[[
+		Booleans+OptionalBooleans Optionals BooleanFlags+Flags Properties
+
+		OptBoolCount = 16
+		TFTNFTNF NTFNTNTF
+		TTTFTTFT FTTFTFTT
+
+		TFTFTFTF TTF
+		TTFTFTTF TTFTFTTT
+	]]
+
 	return {
-		ser = if boolCount == 0 then function(cursor, rec)
-			for _, prop in properties do
-				local ser = (schema :: any)[prop].ser
-				local x = (rec :: any)[prop]
-				ser(cursor, x)
-			end
-		end else function(cursor, rec)
-			local count = boolCount // 8
-			tryrealloc(cursor, count + 1)
-			for i = 0, count do
-				local j = 1 + i * 8
-				pushbool(cursor,
-					(rec :: any)[boolProperties[j + 0]], -- tab[nil] = nil
-					(rec :: any)[boolProperties[j + 1]],
-					(rec :: any)[boolProperties[j + 2]],
-					(rec :: any)[boolProperties[j + 3]],
-					(rec :: any)[boolProperties[j + 4]],
-					(rec :: any)[boolProperties[j + 5]],
-					(rec :: any)[boolProperties[j + 6]],
-					(rec :: any)[boolProperties[j + 7]]
-				)
+		ser = function(cursor, tab)
+			local rec = tab :: any
+
+			-- Bools .. OptBools
+
+			-- OptBoolFlags .. OptFlags
+			local optFlags = table.create(flagCount)
+			do
+				local bools = table.create(maxBoolCount)
+				for i, prop in boolProperties do
+					bools[i] = rec[prop]
+				end
+				for i, optProp in optboolProperties do
+					local val = rec[optProp]
+					if val ~= nil then
+						table.insert(bools, val)
+						optFlags[i] = true
+					else
+						optFlags[i] = false
+					end
+				end
+
+				local boolBytes = #bools // 8
+				tryRealloc(cursor, 1 + boolBytes)
+				for i = 0, boolBytes do
+					local j = i * 8
+					pushbool(cursor,
+						bools[j + 1], -- tab[nil] == nil
+						bools[j + 2],
+						bools[j + 3],
+						bools[j + 4],
+						bools[j + 5],
+						bools[j + 6],
+						bools[j + 7],
+						bools[j + 8]
+					)
+				end
 			end
 
+			-- Opts & Flags
+			do
+				for i, prop in optProperties do
+					local j = i + optboolCount
+					local val = rec[prop]
+					if val ~= nil then
+						optSerDes[i].ser(cursor, val)
+						optFlags[j] = true
+					else
+						optFlags[j] = false
+					end
+				end
+
+				local flagBytes = flagCount // 8
+				tryRealloc(cursor, 1 + flagBytes)
+				for i = 0, flagBytes do
+					local j = i * 8
+					pushbool(cursor,
+						optFlags[j + 1],
+						optFlags[j + 2],
+						optFlags[j + 3],
+						optFlags[j + 4],
+						optFlags[j + 5],
+						optFlags[j + 6],
+						optFlags[j + 7],
+						optFlags[j + 8]
+					)
+				end
+			end
+
+			-- Props
 			for _, prop in properties do
 				local ser = (schema :: any)[prop].ser
-				local x = (rec :: any)[prop]
+				local x = rec[prop]
 				ser(cursor, x)
 			end
 		end,
 
-		des = if boolCount == 0 then function(cursor)
-			local tab = {}
-			for i = #properties, 1, -1 do
-				local prop = properties[i]
-				local des = (schema :: any)[prop].des
-				tab[prop] = des(cursor)
-			end
-			return tab :: any
-		end else function(cursor)
-			local tab = {}
+		des = function(cursor)
+			local tab = {} :: any
+
+			-- Props
 			for i = #properties, 1, -1 do
 				local prop = properties[i]
 				local des = (schema :: any)[prop].des
 				tab[prop] = des(cursor)
 			end
 
+			-- Flags & Opts
+			local optFlags = table.create(flagCount)
 			do
-				local i = boolCount // 8
-				local j = 1 + i * 8
-				local k = boolCount % 8
-				local b0, b1, b2, b3, b4, b5, b6, b7 = popbool(cursor)
-				if k == 1 then
-					tab[boolProperties[j + 0]] = b0
-				elseif k == 2 then
-					tab[boolProperties[j + 0]] = b0
-					tab[boolProperties[j + 1]] = b1
-				elseif k == 3 then
-					tab[boolProperties[j + 0]] = b0
-					tab[boolProperties[j + 1]] = b1
-					tab[boolProperties[j + 2]] = b2
-				elseif k == 4 then
-					tab[boolProperties[j + 0]] = b0
-					tab[boolProperties[j + 1]] = b1
-					tab[boolProperties[j + 2]] = b2
-					tab[boolProperties[j + 3]] = b3
-				elseif k == 5 then
-					tab[boolProperties[j + 0]] = b0
-					tab[boolProperties[j + 1]] = b1
-					tab[boolProperties[j + 2]] = b2
-					tab[boolProperties[j + 3]] = b3
-					tab[boolProperties[j + 4]] = b4
-				elseif k == 6 then
-					tab[boolProperties[j + 0]] = b0
-					tab[boolProperties[j + 1]] = b1
-					tab[boolProperties[j + 2]] = b2
-					tab[boolProperties[j + 3]] = b3
-					tab[boolProperties[j + 4]] = b4
-					tab[boolProperties[j + 5]] = b5
-				elseif k == 7 then
-					tab[boolProperties[j + 0]] = b0
-					tab[boolProperties[j + 1]] = b1
-					tab[boolProperties[j + 2]] = b2
-					tab[boolProperties[j + 3]] = b3
-					tab[boolProperties[j + 4]] = b4
-					tab[boolProperties[j + 5]] = b5
-					tab[boolProperties[j + 6]] = b6
-				else
-					tab[boolProperties[j + 0]] = b0
-					tab[boolProperties[j + 1]] = b1
-					tab[boolProperties[j + 2]] = b2
-					tab[boolProperties[j + 3]] = b3
-					tab[boolProperties[j + 4]] = b4
-					tab[boolProperties[j + 5]] = b5
-					tab[boolProperties[j + 6]] = b6
-					tab[boolProperties[j + 7]] = b7
+				local flagBytes = flagCount // 8
+				do
+					local j = flagBytes * 8
+					local flagsOver = flagCount % 8
+					if flagsOver > 0 then
+						local b0, b1, b2, b3, b4, b5, b6 = popbool(cursor)
+						optFlags[j + 1] = b0
+						optFlags[j + 2] = (if flagsOver > 1 then b1 else nil) :: boolean
+						optFlags[j + 3] = (if flagsOver > 2 then b2 else nil) :: boolean
+						optFlags[j + 4] = (if flagsOver > 3 then b3 else nil) :: boolean
+						optFlags[j + 5] = (if flagsOver > 4 then b4 else nil) :: boolean
+						optFlags[j + 6] = (if flagsOver > 5 then b5 else nil) :: boolean
+						optFlags[j + 7] = (if flagsOver > 6 then b6 else nil) :: boolean
+					end
+				end
+
+				for i = flagBytes - 1, 0, -1 do
+					local j = i * 8
+					optFlags[j + 1], optFlags[j + 2], optFlags[j + 3], optFlags[j + 4], optFlags[j + 5], optFlags[j + 6], optFlags[j + 7], optFlags[j + 8] = popbool(cursor)
+				end
+
+				for i = optCount, 1, -1 do
+					local j = i + optboolCount
+					if optFlags[j] then
+						local underlyingSerDes = optSerDes[i]
+						tab[optProperties[i]] = underlyingSerDes.des(cursor)
+					end
 				end
 			end
 
-			for i = boolCount // 8 - 1, 0, -1 do
-				local j = 1 + i * 8
-				local prop0 = boolProperties[j + 0]
-				local prop1 = boolProperties[j + 1]
-				local prop2 = boolProperties[j + 2]
-				local prop3 = boolProperties[j + 3]
-				local prop4 = boolProperties[j + 4]
-				local prop5 = boolProperties[j + 5]
-				local prop6 = boolProperties[j + 6]
-				local prop7 = boolProperties[j + 7]
-				tab[prop0], tab[prop1], tab[prop2], tab[prop3], tab[prop4], tab[prop5], tab[prop6], tab[prop7] = popbool(cursor)
+			-- Bools .. OptBools
+			do
+
+				local bools = table.create(maxBoolCount)
+
+				local actualBoolCount = boolCount
+				for i = 1, optboolCount do
+					if optFlags[i] then
+						actualBoolCount += 1
+					end
+				end
+
+				local actualBoolBytes = actualBoolCount // 8
+				do
+					local j = actualBoolBytes * 8
+					local boolsOver = actualBoolCount % 8
+					if boolsOver > 0 then
+						local b0, b1, b2, b3, b4, b5, b6 = popbool(cursor)
+						bools[j + 1] = b0
+						bools[j + 2] = (if boolsOver > 1 then b1 else nil) :: boolean
+						bools[j + 3] = (if boolsOver > 2 then b2 else nil) :: boolean
+						bools[j + 4] = (if boolsOver > 3 then b3 else nil) :: boolean
+						bools[j + 5] = (if boolsOver > 4 then b4 else nil) :: boolean
+						bools[j + 6] = (if boolsOver > 5 then b5 else nil) :: boolean
+						bools[j + 7] = (if boolsOver > 6 then b6 else nil) :: boolean
+					end
+				end
+
+				for i = actualBoolBytes - 1, 0, -1 do
+					local j = i * 8
+					bools[j + 1], bools[j + 2], bools[j + 3], bools[j + 4], bools[j + 5], bools[j + 6], bools[j + 7], bools[j + 8] = popbool(cursor)
+				end
+
+				for i = 1, boolCount do
+					tab[boolProperties[i]] = bools[i]
+				end
+
+				local j = boolCount + 1
+				for i = 1, optboolCount do
+					if optFlags[i] then
+						tab[optboolProperties[i]] = bools[j]
+						j += 1
+						if j > actualBoolCount then
+							break
+						end
+					end
+				end
 			end
 
-			return tab :: any
+			return tab
 		end,
 	}
 end
 Squash.record = record
+
+-- do
+-- 	local T = Squash.T
+-- 	local B = Squash.boolean()
+-- 	local O = Squash.opt
+-- 	local U = Squash.uint(1)
+
+-- 	local s = {
+-- 		a = T(B),
+-- 		b = T(B),
+-- 		c = T(B),
+-- 		d = T(B),
+-- 		e = T(B),
+-- 		f = T(B),
+-- 		g = T(B),
+-- 		h = T(B),
+-- 		i = T(B),
+
+-- 		j = T(O(U)),
+-- 		k = T(O(U)),
+-- 		l = T(O(U)),
+-- 		m = T(O(U)),
+-- 		n = T(O(U)),
+-- 		o = T(O(U)),
+-- 		p = T(O(U)),
+-- 		q = T(O(U)),
+-- 		r = T(O(U)),
+
+-- 		s = T(O(B)),
+-- 		t = T(O(B)),
+-- 		u = T(O(B)),
+-- 		v = T(O(B)),
+-- 		w = T(O(B)),
+-- 		x = T(O(B)),
+-- 		y = T(O(B)),
+-- 		z = T(O(B)),
+-- 		aa = T(O(B)),
+-- 	}
+
+-- 	local n, serdes, data = 1e4, Squash.record(s), {
+-- 		a = true,
+-- 		b = false,
+-- 		c = true,
+-- 		d = false,
+-- 		e = true,
+-- 		f = false,
+-- 		g = true,
+-- 		h = false,
+-- 		i = true,
+
+-- 		j = 1,
+-- 		k = 2,
+-- 		l = 3,
+-- 		m = 4,
+-- 		n = nil,
+-- 		o = 6,
+-- 		p = 7,
+-- 		q = 8,
+-- 		r = 9,
+
+-- 		s = true,
+-- 		t = false,
+-- 		-- u = nil,
+-- 		-- v = true,
+-- 		-- w = false,
+-- 		-- x = nil,
+-- 		-- y = true,
+-- 		-- z = false,
+-- 		-- aa = nil,
+-- 	}
+
+-- 	do
+-- 		local c = Squash.cursor()
+-- 		serdes.ser(c, data)
+-- 		Squash.print(c)
+-- 		local b = Squash.tobuffer(c)
+-- 		local c = Squash.frombuffer(b)
+-- 		local t = serdes.des(c)
+
+-- 		local ks = {}
+-- 		for k in t do
+-- 			table.insert(ks, k)
+-- 		end
+-- 		table.sort(ks)
+-- 		for _, k in ks do
+-- 			print(k, t[k])
+-- 		end
+-- 	end
+-- end
 
 local function map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{[K]: V}>
 	return {
