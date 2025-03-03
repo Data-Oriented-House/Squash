@@ -935,185 +935,6 @@ function Squash.tuple<T...>(...: T...): SerDes<T...>
 	return tuple
 end
 
-local function unpackBits(cursor: Cursor, count: number)
-	local bits = table.create(count)
-
-	local byteCount = 1 + count // 8
-	local k = byteCount % 8
-	if k > 0 then
-		local j = byteCount * 8
-		local b0, b1, b2, b3, b4, b5, b6, b7 = popbool(cursor)
-		bits[j + 1] = (if k >= 1 then b0 else nil) :: boolean
-		bits[j + 2] = (if k >= 2 then b1 else nil) :: boolean
-		bits[j + 3] = (if k >= 3 then b2 else nil) :: boolean
-		bits[j + 4] = (if k >= 4 then b3 else nil) :: boolean
-		bits[j + 5] = (if k >= 5 then b4 else nil) :: boolean
-		bits[j + 6] = (if k >= 6 then b5 else nil) :: boolean
-		bits[j + 7] = (if k >= 7 then b6 else nil) :: boolean
-		bits[j + 8] = (if k >= 8 then b7 else nil) :: boolean
-	end
-
-	for i = byteCount - 1, 1, -1 do
-		local j = i * 8
-		bits[j + 1], bits[j + 2], bits[j + 3], bits[j + 4], bits[j + 5], bits[j + 6], bits[j + 7], bits[j + 8] = popbool(cursor)
-	end
-
-	return bits
-end
-
-local function recordSerProps(schema, properties, rec, cursor)
-	for _, prop in properties do
-		local ser = (schema :: any)[prop].ser
-		local x = (rec :: any)[prop]
-		ser(cursor, x)
-	end
-end
-
-local function recordSerBools(rec: any, boolCount: number, boolProperties: {string}, cursor: Cursor)
-	for i = 0, boolCount // 8 do
-		local j = i * 8
-		pushbool(cursor,
-			rec[boolProperties[j + 1]], -- tab[nil] = nil
-			rec[boolProperties[j + 2]],
-			rec[boolProperties[j + 3]],
-			rec[boolProperties[j + 4]],
-			rec[boolProperties[j + 5]],
-			rec[boolProperties[j + 6]],
-			rec[boolProperties[j + 7]],
-			rec[boolProperties[j + 8]]
-		)
-	end
-end
-
-local function recordSerOpts(rec: any, optCount: number, optProperties: {string}, optSerDes: {SerDes<any>}, cursor: Cursor)
-	for i, prop in optProperties do
-		if rec[prop] ~= nil then
-			local underlyingSerDes = optSerDes[i]
-			underlyingSerDes.ser(cursor, rec[prop])
-		end
-	end
-
-	local groupCount = 1 + optCount // 8
-	for i = 0, groupCount - 1 do
-		local j = i * 8
-		pushbool(cursor,
-			rec[optProperties[j + 1]] ~= nil,
-			rec[optProperties[j + 2]] ~= nil,
-			rec[optProperties[j + 3]] ~= nil,
-			rec[optProperties[j + 4]] ~= nil,
-			rec[optProperties[j + 5]] ~= nil,
-			rec[optProperties[j + 6]] ~= nil,
-			rec[optProperties[j + 7]] ~= nil,
-			rec[optProperties[j + 8]] ~= nil
-		)
-	end
-end
-
-local function recordDesProps(tab: any, properties: {string}, schema: any, cursor: Cursor)
-	for i = #properties, 1, -1 do
-		local prop = properties[i]
-		local des = (schema :: any)[prop].des
-		tab[prop] = des(cursor)
-	end
-end
-
-local function recordDesBools(tab: any, boolProperties: {string}, boolCount: number, cursor: Cursor)
-	do
-		local i = boolCount // 8
-		local j = 1 + i * 8
-		local k = boolCount % 8
-		local b0, b1, b2, b3, b4, b5, b6, b7 = popbool(cursor)
-		if k == 1 then
-			tab[boolProperties[j + 0]] = b0
-		elseif k == 2 then
-			tab[boolProperties[j + 0]] = b0
-			tab[boolProperties[j + 1]] = b1
-		elseif k == 3 then
-			tab[boolProperties[j + 0]] = b0
-			tab[boolProperties[j + 1]] = b1
-			tab[boolProperties[j + 2]] = b2
-		elseif k == 4 then
-			tab[boolProperties[j + 0]] = b0
-			tab[boolProperties[j + 1]] = b1
-			tab[boolProperties[j + 2]] = b2
-			tab[boolProperties[j + 3]] = b3
-		elseif k == 5 then
-			tab[boolProperties[j + 0]] = b0
-			tab[boolProperties[j + 1]] = b1
-			tab[boolProperties[j + 2]] = b2
-			tab[boolProperties[j + 3]] = b3
-			tab[boolProperties[j + 4]] = b4
-		elseif k == 6 then
-			tab[boolProperties[j + 0]] = b0
-			tab[boolProperties[j + 1]] = b1
-			tab[boolProperties[j + 2]] = b2
-			tab[boolProperties[j + 3]] = b3
-			tab[boolProperties[j + 4]] = b4
-			tab[boolProperties[j + 5]] = b5
-		elseif k == 7 then
-			tab[boolProperties[j + 0]] = b0
-			tab[boolProperties[j + 1]] = b1
-			tab[boolProperties[j + 2]] = b2
-			tab[boolProperties[j + 3]] = b3
-			tab[boolProperties[j + 4]] = b4
-			tab[boolProperties[j + 5]] = b5
-			tab[boolProperties[j + 6]] = b6
-		else
-			tab[boolProperties[j + 0]] = b0
-			tab[boolProperties[j + 1]] = b1
-			tab[boolProperties[j + 2]] = b2
-			tab[boolProperties[j + 3]] = b3
-			tab[boolProperties[j + 4]] = b4
-			tab[boolProperties[j + 5]] = b5
-			tab[boolProperties[j + 6]] = b6
-			tab[boolProperties[j + 7]] = b7
-		end
-	end
-
-	for i = boolCount // 8 - 1, 0, -1 do
-		local j = 1 + i * 8
-		local prop0 = boolProperties[j + 0]
-		local prop1 = boolProperties[j + 1]
-		local prop2 = boolProperties[j + 2]
-		local prop3 = boolProperties[j + 3]
-		local prop4 = boolProperties[j + 4]
-		local prop5 = boolProperties[j + 5]
-		local prop6 = boolProperties[j + 6]
-		local prop7 = boolProperties[j + 7]
-		tab[prop0], tab[prop1], tab[prop2], tab[prop3], tab[prop4], tab[prop5], tab[prop6], tab[prop7] = popbool(cursor)
-	end
-end
-
-local function recordDesOpts(tab: any, optCount: number, optProperties: {string}, optSerDes: {SerDes<any>}, cursor: Cursor)
-	local flags = {} :: {boolean}
-	local i = optCount // 8
-	local j = i * 8
-	local k = optCount % 8
-	if k > 0 then
-		local b0, b1, b2, b3, b4, b5, b6, b7 = popbool(cursor)
-		flags[j + 1] = (if k >= 1 then b0 else nil) :: boolean
-		flags[j + 2] = (if k >= 2 then b1 else nil) :: boolean
-		flags[j + 3] = (if k >= 3 then b2 else nil) :: boolean
-		flags[j + 4] = (if k >= 4 then b3 else nil) :: boolean
-		flags[j + 5] = (if k >= 5 then b4 else nil) :: boolean
-		flags[j + 6] = (if k >= 6 then b5 else nil) :: boolean
-		flags[j + 7] = (if k >= 7 then b6 else nil) :: boolean
-		flags[j + 8] = (if k >= 8 then b7 else nil) :: boolean
-	end
-
-	for i = i - 1, 0, -1 do
-		local j = i * 8
-		flags[j + 1], flags[j + 2], flags[j + 3], flags[j + 4], flags[j + 5], flags[j + 6], flags[j + 7], flags[j + 8] = popbool(cursor)
-	end
-
-	for i = optCount, 1, -1 do
-		if flags[i] then
-			local underlyingSerDes = optSerDes[i]
-			tab[optProperties[i]] = underlyingSerDes.des(cursor)
-		end
-	end
-end
-
 local function record<T>(schema: T & {}): SerDes<T>
 	local properties = {}
 	local optProperties = {}
@@ -1348,94 +1169,94 @@ local function record<T>(schema: T & {}): SerDes<T>
 end
 Squash.record = record
 
-do
-	local T = Squash.T
-	local B = Squash.boolean()
-	local O = Squash.opt
-	local U = Squash.uint(1)
+-- do
+-- 	local T = Squash.T
+-- 	local B = Squash.boolean()
+-- 	local O = Squash.opt
+-- 	local U = Squash.uint(1)
 
-	local s = {
-		a = T(B),
-		b = T(B),
-		c = T(B),
-		d = T(B),
-		e = T(B),
-		f = T(B),
-		g = T(B),
-		h = T(B),
-		i = T(B),
+-- 	local s = {
+-- 		a = T(B),
+-- 		b = T(B),
+-- 		c = T(B),
+-- 		d = T(B),
+-- 		e = T(B),
+-- 		f = T(B),
+-- 		g = T(B),
+-- 		h = T(B),
+-- 		i = T(B),
 
-		j = T(O(U)),
-		k = T(O(U)),
-		l = T(O(U)),
-		m = T(O(U)),
-		n = T(O(U)),
-		o = T(O(U)),
-		p = T(O(U)),
-		q = T(O(U)),
-		r = T(O(U)),
+-- 		j = T(O(U)),
+-- 		k = T(O(U)),
+-- 		l = T(O(U)),
+-- 		m = T(O(U)),
+-- 		n = T(O(U)),
+-- 		o = T(O(U)),
+-- 		p = T(O(U)),
+-- 		q = T(O(U)),
+-- 		r = T(O(U)),
 
-		s = T(O(B)),
-		t = T(O(B)),
-		u = T(O(B)),
-		v = T(O(B)),
-		w = T(O(B)),
-		x = T(O(B)),
-		y = T(O(B)),
-		z = T(O(B)),
-		aa = T(O(B)),
-	}
+-- 		s = T(O(B)),
+-- 		t = T(O(B)),
+-- 		u = T(O(B)),
+-- 		v = T(O(B)),
+-- 		w = T(O(B)),
+-- 		x = T(O(B)),
+-- 		y = T(O(B)),
+-- 		z = T(O(B)),
+-- 		aa = T(O(B)),
+-- 	}
 
-	local n, serdes, data = 1e4, Squash.record(s), {
-		a = true,
-		b = false,
-		c = true,
-		d = false,
-		e = true,
-		f = false,
-		g = true,
-		h = false,
-		i = true,
+-- 	local n, serdes, data = 1e4, Squash.record(s), {
+-- 		a = true,
+-- 		b = false,
+-- 		c = true,
+-- 		d = false,
+-- 		e = true,
+-- 		f = false,
+-- 		g = true,
+-- 		h = false,
+-- 		i = true,
 
-		j = 1,
-		k = 2,
-		l = 3,
-		m = 4,
-		n = nil,
-		o = 6,
-		p = 7,
-		q = 8,
-		r = 9,
+-- 		j = 1,
+-- 		k = 2,
+-- 		l = 3,
+-- 		m = 4,
+-- 		n = nil,
+-- 		o = 6,
+-- 		p = 7,
+-- 		q = 8,
+-- 		r = 9,
 
-		s = true,
-		t = false,
-		-- u = nil,
-		-- v = true,
-		-- w = false,
-		-- x = nil,
-		-- y = true,
-		-- z = false,
-		-- aa = nil,
-	}
+-- 		s = true,
+-- 		t = false,
+-- 		-- u = nil,
+-- 		-- v = true,
+-- 		-- w = false,
+-- 		-- x = nil,
+-- 		-- y = true,
+-- 		-- z = false,
+-- 		-- aa = nil,
+-- 	}
 
-	do
-		local c = Squash.cursor()
-		serdes.ser(c, data)
-		Squash.print(c)
-		local b = Squash.tobuffer(c)
-		local c = Squash.frombuffer(b)
-		local t = serdes.des(c)
+-- 	do
+-- 		local c = Squash.cursor()
+-- 		serdes.ser(c, data)
+-- 		Squash.print(c)
+-- 		local b = Squash.tobuffer(c)
+-- 		local c = Squash.frombuffer(b)
+-- 		local t = serdes.des(c)
 
-		local ks = {}
-		for k in t do
-			table.insert(ks, k)
-		end
-		table.sort(ks)
-		for _, k in ks do
-			print(k, t[k])
-		end
-	end
-end
+-- 		local ks = {}
+-- 		for k in t do
+-- 			table.insert(ks, k)
+-- 		end
+-- 		table.sort(ks)
+-- 		for _, k in ks do
+-- 			print(k, t[k])
+-- 		end
+-- 	end
+-- end
 
 local function map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{[K]: V}>
 	return {
