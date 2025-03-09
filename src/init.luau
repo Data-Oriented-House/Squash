@@ -751,190 +751,6 @@ function Squash.vlq(): SerDes<number>
 	return vlqCache
 end
 
-local arrayCache = {}
-
-local function array<T>(serdes: SerDes<T>, length: number?, ignoreBitpacking: boolean?): SerDes<{T}>
-	local cached = arrayCache[serdes]
-	local key = 2 * (length or 0) + if ignoreBitpacking then 1 else 0
-	if cached then
-		if cached[key] then
-			return cached[key]
-		end
-	else
-		cached = {}
-		arrayCache[serdes] = cached
-	end
-
-	if not ignoreBitpacking and serdes == booleanCache then
-		local arr = {
-			ser = function(cursor, xs: {boolean})
-				local n = length or #xs
-				local groups = 1 + n // 8
-				for group = 0, groups - 1 do
-					local base = group * 8
-					pushbool(cursor,
-						xs[base + 1],
-						xs[base + 2],
-						xs[base + 3],
-						xs[base + 4],
-						xs[base + 5],
-						xs[base + 6],
-						xs[base + 7],
-						xs[base + 8]
-					)
-				end
-
-				if not length then
-					pushvlq(cursor, n)
-				end
-			end,
-			des = function(cursor): {boolean}
-				local n = length or popvlq(cursor)
-				local groups = 1 + n // 8
-				local result = {}
-
-				for group = groups - 1, 0, -1 do
-					local a, b, c, d, e, f, g, h = popbool(cursor)
-					local base = group * 8
-					result[base + 1] = a
-					result[base + 2] = b
-					result[base + 3] = c
-					result[base + 4] = d
-					result[base + 5] = e
-					result[base + 6] = f
-					result[base + 7] = g
-					result[base + 8] = h
-				end
-
-				for i = n, #result do
-					result[i] = nil
-				end
-
-				return result
-			end,
-		} :: any
-		cached[key] = arr
-		return arr
-	elseif not ignoreBitpacking and optMap[serdes :: any] then
-		local underlyingSerDes = optMap[serdes :: any]
-		local arr = {
-			ser = function(cursor, xs: {T?})
-				local n = length or #xs
-				for i = 1, n do
-					if xs[i] ~= nil then
-						underlyingSerDes.ser(cursor, xs[i] :: any)
-					end
-				end
-
-				local groups = 1 + n // 8
-				for group = 0, groups - 1 do
-					local base = group * 8
-					pushbool(cursor,
-						xs[base + 1] ~= nil,
-						xs[base + 2] ~= nil,
-						xs[base + 3] ~= nil,
-						xs[base + 4] ~= nil,
-						xs[base + 5] ~= nil,
-						xs[base + 6] ~= nil,
-						xs[base + 7] ~= nil,
-						xs[base + 8] ~= nil
-					)
-				end
-
-				if not length then
-					pushvlq(cursor, n)
-				end
-			end,
-			des = function(cursor): {T?}
-				local n = length or popvlq(cursor)
-				local groups = 1 + n // 8
-				local flags = {}
-
-				for group = groups - 1, 0, -1 do
-					local a, b, c, d, e, f, g, h = popbool(cursor)
-					local base = group * 8
-					flags[base + 1] = a
-					flags[base + 2] = b
-					flags[base + 3] = c
-					flags[base + 4] = d
-					flags[base + 5] = e
-					flags[base + 6] = f
-					flags[base + 7] = g
-					flags[base + 8] = h
-				end
-
-				local result = {} :: any
-				for i = n, 1, -1 do
-					if flags[i] then
-						result[i] = underlyingSerDes.des(cursor)
-					end
-				end
-				return result
-			end,
-		} :: any
-		cached[key] = arr
-		return arr
-	else
-		local push, pop = serdes.ser, serdes.des
-		local arr: SerDes<{T}> = {
-			ser = if length then
-				function(cursor, xs)
-					local push = push
-					for i = 1, length do
-						push(cursor, xs[i])
-					end
-				end
-			else
-				function(cursor, xs)
-					local push = push
-					for _, x in xs do
-						push(cursor, x)
-					end
-					pushvlq(cursor, #xs)
-				end,
-
-			des = function(cursor)
-				local pop = pop
-				local len = length or popvlq(cursor)
-				local xs = table.create(len)
-				for i = len, 1, -1 do
-					xs[i] = pop(cursor)
-				end
-				return xs
-			end,
-		}
-		cached[key] = arr
-		return arr
-	end
-end
-Squash.array = array
-
-function Squash.tuple<T...>(...: T...): SerDes<T...>
-	local serdesargs: { any } = { ... }
-	local count = #serdesargs
-	if count == 1 then
-		return serdesargs[1]
-	end
-
-	local tuple: SerDes<T...> = {
-		ser = function(cursor, ...)
-			for i, x in { ... } :: { any } do
-				serdesargs[i].ser(cursor, x)
-			end
-		end,
-
-		des = function(cursor)
-			local xs = table.create(count)
-			for i = count, 1, -1 do
-				xs[i] = serdesargs[i].des(cursor)
-			end
-			return table.unpack(xs)
-		end,
-	}
-
-	return tuple
-end
-
 local function serbitarr(cursor: Cursor, bits: { boolean })
 	for i = 0, #bits - 1, 8 do
 		print(bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5], bits[i + 6], bits[i + 7], bits[i + 8])
@@ -967,6 +783,231 @@ local function desbitarr(cursor: Cursor, bitcount: number): { boolean }
 	end
 
 	return arr
+end
+
+local arrayCache = {}
+
+local function array<T>(serdes: SerDes<T>, length: number?): SerDes<{T}>
+	local cached = arrayCache[serdes]
+	local key = length or 0
+	if cached then
+		if cached[key] then
+			return cached[key]
+		end
+	else
+		cached = {}
+		arrayCache[serdes] = cached
+	end
+
+	if serdes == booleanCache then
+		local arr: SerDes<{boolean}> = {
+			ser = function(cursor, xs)
+				local n = length or #xs
+				serbitarr(cursor, xs)
+				if not length then
+					pushvlqrealloc(cursor, n)
+				end
+			end,
+			des = function(cursor)
+				local n = length or popvlq(cursor)
+				return desbitarr(cursor, n)
+			end,
+		}
+		cached[key] = arr
+		return arr :: any
+	elseif optMap[serdes :: any] then
+		local underlyingSerDes = optMap[serdes :: any]
+		if underlyingSerDes == booleanCache then
+			local arr: SerDes<{boolean?}> = {
+				ser = function(cursor, xs)
+					local n = length or table.maxn(xs)
+					local bools = table.create(n)
+					local flags = table.create(n)
+					for i = 1, n do
+						local x = xs[i]
+						if x ~= nil then
+							table.insert(bools, x)
+							flags[i] = true
+						else
+							flags[i] = false
+						end
+					end
+					local actualBoolCount = #bools
+					local boolBytes = 1 + actualBoolCount // 8
+					local flagBytes = 1 + n // 8
+					tryrealloc(cursor, boolBytes + flagBytes)
+					serbitarr(cursor, bools)
+					serbitarr(cursor, flags)
+					if not length then
+						pushvlqrealloc(cursor, n)
+					end
+				end,
+				des = function(cursor)
+					local n = length or popvlq(cursor)
+					local flags = desbitarr(cursor, n)
+
+					local actualBoolCount = 0
+					for _, flag in flags do
+						actualBoolCount += if flag then 1 else 0
+					end
+					local bools = desbitarr(cursor, actualBoolCount)
+
+					local xs = table.create(n)
+					local j = 1
+					for i, flag in flags do
+						if flag then
+							xs[i] = bools[j]
+							j += 1
+						end
+					end
+					return xs
+				end
+			}
+			cached[key] = arr
+			return arr :: any
+		else
+			local arr: SerDes<{T?}> = {
+				ser = function(cursor, xs: {T?}): ()
+					local push = underlyingSerDes.ser
+
+					local n = length or table.maxn(xs)
+					local flags = table.create(n)
+					for i = 1, n do
+						local x = xs[i]
+						if x ~= nil then
+							push(cursor, x :: any)
+							flags[i] = true
+						else
+							flags[i] = false
+						end
+					end
+					local flagBytes = 1 + n // 8
+					tryrealloc(cursor, flagBytes)
+					serbitarr(cursor, flags)
+					if not length then
+						pushvlqrealloc(cursor, n)
+					end
+				end,
+				des = function(cursor)
+					local pop = underlyingSerDes.des
+
+					local n = length or popvlq(cursor)
+					local flags = desbitarr(cursor, n)
+					
+					local xs = table.create(n)
+					for i = n, 1, -1 do
+						if flags[i] then
+							xs[i] = pop(cursor)
+						end
+					end
+					return xs :: any
+				end
+			}
+			cached[key] = arr
+			return arr :: any
+		end
+	else
+		local arr: SerDes<{T}> = {
+			ser = function(cursor, xs)
+				local push = serdes.ser
+
+				local n = length or #xs
+				for i = 1, n do
+					push(cursor, xs[i])
+				end
+				if not length then
+					pushvlqrealloc(cursor, n)
+				end
+			end,
+			des = function(cursor)
+				local pop = serdes.des
+
+				local n = length or popvlq(cursor)
+				local xs = table.create(n)
+				for i = n, 1, -1 do
+					xs[i] = pop(cursor)
+				end
+				return xs
+			end,
+		}
+		cached[key] = arr
+		return arr
+	end
+end
+Squash.array = array
+
+do
+	local serdes, data, n = Squash.array(Squash.uint(1)), { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 } :: { number }, 17
+	local c = Squash.cursor()
+	serdes.ser(c, data)
+	Squash.print(c)
+	local b = Squash.frombuffer(Squash.tobuffer(c))
+	local result = serdes.des(b)
+	for i = 1, n do
+		print(i, result[i])
+	end
+end
+
+do
+	local serdes, data, n = Squash.array(Squash.opt(Squash.uint(1))), { 1, 2, nil, nil, 5, 6, 7, 8, nil, 10, 11, 12, 13, nil, 15, 16, 17 } :: { number? }, 17
+	local c = Squash.cursor()
+	serdes.ser(c, data)
+	Squash.print(c)
+	local b = Squash.frombuffer(Squash.tobuffer(c))
+	local result = serdes.des(b)
+	for i = 1, n do
+		print(i, result[i])
+	end
+end
+
+do
+	local serdes, data, n = Squash.array(Squash.boolean(), 17), { true, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false } :: { boolean }, 17
+	local c = Squash.cursor()
+	serdes.ser(c, data)
+	Squash.print(c)
+	local b = Squash.frombuffer(Squash.tobuffer(c))
+	local result = serdes.des(b)
+	for i = 1, n do
+		print(i, result[i])
+	end
+end
+
+do
+	local serdes, data, n = Squash.array(Squash.opt(Squash.boolean())), { true, nil, false, nil, false, nil, false, nil, false, nil, false, nil, false, nil, false, true, false } :: { boolean? }, 17
+	local c = Squash.cursor()
+	serdes.ser(c, data)
+	Squash.print(c)
+	local b = Squash.frombuffer(Squash.tobuffer(c))
+	local result = serdes.des(b)
+	for i = 1, n do
+		print(i, result[i])
+	end
+end
+
+function Squash.tuple<T...>(...: T...): SerDes<T...>
+	local serdesargs: { any } = { ... }
+	local count = #serdesargs
+	if count == 1 then
+		return serdesargs[1]
+	end
+
+	local tuple: SerDes<T...> = {
+		ser = function(cursor, ...)
+			for i, x in { ... } :: { any } do
+				serdesargs[i].ser(cursor, x)
+			end
+		end,
+
+		des = function(cursor)
+			local xs = table.create(count)
+			for i = count, 1, -1 do
+				xs[i] = serdesargs[i].des(cursor)
+			end
+			return table.unpack(xs)
+		end,
+	}
+
+	return tuple
 end
 
 local function serRecordProps(cursor: Cursor, schema: any, tab: any, properties: { string })
