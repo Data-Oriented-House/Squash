@@ -893,7 +893,7 @@ local function array<T>(serdes: SerDes<T>, length: number?): SerDes<{T}>
 
 					local n = length or popvlq(cursor)
 					local flags = desbitarr(cursor, n)
-					
+
 					local xs = table.create(n)
 					for i = n, 1, -1 do
 						if flags[i] then
@@ -1125,8 +1125,8 @@ local function record<T>(schema: T & {}): SerDes<T>
 		end
 	end
 
-	table.sort(properties)
 	local propCount = #properties
+	table.sort(properties)
 
 	local boolCount = #boolProperties
 	if boolCount > 0 then
