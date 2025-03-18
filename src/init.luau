@@ -1599,7 +1599,7 @@ do
 		local qw = math.sqrt(1 - qx * qx - qy * qy - qz * qz)
 		return CFrame.new(0, 0, 0, qx, qy, qz, qw)
 	end
-
+                                                                
 	local rotationCache: SerDes<CFrame> = {
 		ser = rotser,
 		des = rotdes,
