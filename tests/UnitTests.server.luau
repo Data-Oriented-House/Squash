@@ -792,3 +792,140 @@ print(serdes.des(cursor))
 --     },
 --     [false] = "Gaming!"
 -- }
+
+do
+	local serdes, data, n = Squash.array(Squash.uint(1)), { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 } :: { number }, 17
+	local c = Squash.cursor()
+	serdes.ser(c, data)
+	Squash.print(c)
+	local b = Squash.frombuffer(Squash.tobuffer(c))
+	local result = serdes.des(b)
+	for i = 1, n do
+		print(i, result[i])
+	end
+end
+
+do
+	local serdes, data, n = Squash.array(Squash.opt(Squash.uint(1))), { 1, 2, nil, nil, 5, 6, 7, 8, nil, 10, 11, 12, 13, nil, 15, 16, 17 } :: { number? }, 17
+	local c = Squash.cursor()
+	serdes.ser(c, data)
+	Squash.print(c)
+	local b = Squash.frombuffer(Squash.tobuffer(c))
+	local result = serdes.des(b)
+	for i = 1, n do
+		print(i, result[i])
+	end
+end
+
+do
+	local serdes, data, n = Squash.array(Squash.boolean(), 17), { true, true, false, true, false, false, false, true, false, true, false, true, false, true, false, true, false } :: { boolean }, 17
+	local c = Squash.cursor()
+	serdes.ser(c, data)
+	Squash.print(c)
+	local b = Squash.frombuffer(Squash.tobuffer(c))
+	local result = serdes.des(b)
+	for i = 1, n do
+		print(i, result[i])
+	end
+end
+
+do
+	local serdes, data, n = Squash.array(Squash.opt(Squash.boolean())), { true, nil, false, nil, false, nil, false, nil, false, nil, false, nil, false, nil, false, true, false } :: { boolean? }, 17
+	local c = Squash.cursor()
+	serdes.ser(c, data)
+	Squash.print(c)
+	local b = Squash.frombuffer(Squash.tobuffer(c))
+	local result = serdes.des(b)
+	for i = 1, n do
+		print(i, result[i])
+	end
+end
+
+do
+	local T = Squash.T
+	local B = Squash.boolean()
+	local O = Squash.opt
+	local U = Squash.uint(1)
+
+	local s = {
+		a = T(B),
+		b = T(B),
+		c = T(B),
+		d = T(B),
+		e = T(B),
+		f = T(B),
+		g = T(B),
+		h = T(B),
+		i = T(B),
+
+		j = T(O(U)),
+		k = T(O(U)),
+		l = T(O(U)),
+		m = T(O(U)),
+		n = T(O(U)),
+		o = T(O(U)),
+		p = T(O(U)),
+		q = T(O(U)),
+		r = T(O(U)),
+
+		s = T(O(B)),
+		t = T(O(B)),
+		u = T(O(B)),
+		v = T(O(B)),
+		w = T(O(B)),
+		x = T(O(B)),
+		y = T(O(B)),
+		z = T(O(B)),
+		aa = T(O(B)),
+	}
+
+	local n, serdes, data = 1e4, Squash.record(s), {
+		a = true,
+		b = false,
+		c = true,
+		d = false,
+		e = true,
+		f = false,
+		g = true,
+		h = false,
+		i = true,
+
+		j = 1,
+		k = 2,
+		l = 3,
+		m = 4,
+		n = nil,
+		o = 6,
+		p = 7,
+		q = 8,
+		r = 9,
+
+		s = true,
+		t = false,
+		u = nil,
+		v = true,
+		w = false,
+		x = nil,
+		y = true,
+		z = false,
+		aa = true,
+	}
+
+	do
+		local c = Squash.cursor()
+		serdes.ser(c, data)
+		Squash.print(c)
+		local b = Squash.tobuffer(c)
+		local c = Squash.frombuffer(b)
+		local t = serdes.des(c)
+
+		local ks = {}
+		for k in t do
+			table.insert(ks, k :: string)
+		end
+		table.sort(ks, function(a, b) return if a:len() < b:len() then true elseif a:len() > b:len() then false else a < b end)
+		for _, k in ks do
+			print(k, t[k])
+		end
+	end
+end
