@@ -1442,9 +1442,9 @@ do
 			local axis, theta = cframe:ToAxisAngle()
 			axis *= math.sin(theta / 2)
 			tryrealloc(cursor, 7)
-			pushu2(cursor, (axis.Z + 1) * (65535 / 2))
-			pushu2(cursor, (axis.Y + 1) * (65535 / 2))
-			pushu2(cursor, (axis.X + 1) * (65535 / 2))
+			pushi2(cursor, (axis.Z + 1) * (65535 / 2))
+			pushi2(cursor, (axis.Y + 1) * (65535 / 2))
+			pushi2(cursor, (axis.X + 1) * (65535 / 2))
 			pushu1(cursor, 0)
 		end
 	end
@@ -1455,9 +1455,9 @@ do
 			return idToRotation[specialId]
 		end
 
-		local qx = popu2(cursor) * (2 / 65535) - 1
-		local qy = popu2(cursor) * (2 / 65535) - 1
-		local qz = popu2(cursor) * (2 / 65535) - 1
+		local qx = popi2(cursor) * (2 / 65535) - 1
+		local qy = popi2(cursor) * (2 / 65535) - 1
+		local qz = popi2(cursor) * (2 / 65535) - 1
 		local qw = math.sqrt(1 - qx * qx - qy * qy - qz * qz)
 		return CFrame.new(0, 0, 0, qx, qy, qz, qw)
 	end
