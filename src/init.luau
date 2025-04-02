@@ -186,15 +186,15 @@ end
 local function pushi5(cursor: Cursor, x: number)
 	x %= 256 ^ 5
 	x = if x < 0 then 256 ^ 5 + x else x
-	buffer.writei8(cursor.Buf, cursor.Pos, x)
-	buffer.writei32(cursor.Buf, cursor.Pos + 1, x // 256)
+	buffer.writeu8(cursor.Buf, cursor.Pos, x)
+	buffer.writeu32(cursor.Buf, cursor.Pos + 1, x // 256)
 	cursor.Pos += 5
 end
 
 local function popi5(cursor: Cursor)
 	cursor.Pos -= 5
-	local x1 = buffer.readi8(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readi32(cursor.Buf, cursor.Pos + 1)
+	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
+	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 1)
 	local x = x1 + x2 * 256
 	return if x > 256 ^ 4 - 1 then x - 256 ^ 5 else x
 end
@@ -202,15 +202,15 @@ end
 local function pushi6(cursor: Cursor, x: number)
 	x %= 256 ^ 6
 	x = if x < 0 then 256 ^ 6 + x else x
-	buffer.writei16(cursor.Buf, cursor.Pos, x)
-	buffer.writei32(cursor.Buf, cursor.Pos + 2, x // 256 ^ 2)
+	buffer.writeu16(cursor.Buf, cursor.Pos, x)
+	buffer.writeu32(cursor.Buf, cursor.Pos + 2, x // 256 ^ 2)
 	cursor.Pos += 6
 end
 
 local function popi6(cursor: Cursor)
 	cursor.Pos -= 6
-	local x1 = buffer.readi16(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readi32(cursor.Buf, cursor.Pos + 2)
+	local x1 = buffer.readu16(cursor.Buf, cursor.Pos)
+	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 2)
 	local x = x1 + x2 * 256 ^ 2
 	return if x > 256 ^ 5 - 1 then x - 256 ^ 6 else x
 end
@@ -218,17 +218,17 @@ end
 local function pushi7(cursor: Cursor, x: number)
 	x %= 256 ^ 7
 	x = if x < 0 then 256 ^ 7 + x else x
-	buffer.writei8(cursor.Buf, cursor.Pos, x)
-	buffer.writei16(cursor.Buf, cursor.Pos + 1, x // 256)
-	buffer.writei32(cursor.Buf, cursor.Pos + 3, x // 256 ^ 3)
+	buffer.writeu8(cursor.Buf, cursor.Pos, x)
+	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
+	buffer.writeu32(cursor.Buf, cursor.Pos + 3, x // 256 ^ 3)
 	cursor.Pos += 7
 end
 
 local function popi7(cursor: Cursor)
 	cursor.Pos -= 7
-	local x1 = buffer.readi8(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readi16(cursor.Buf, cursor.Pos + 1)
-	local x3 = buffer.readi32(cursor.Buf, cursor.Pos + 3)
+	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
+	local x2 = buffer.readu16(cursor.Buf, cursor.Pos + 1)
+	local x3 = buffer.readu32(cursor.Buf, cursor.Pos + 3)
 	local x = x1 + x2 * 256 + x3 * 256 ^ 3
 	return if x > 256 ^ 6 - 1 then x - 256 ^ 7 else x
 end
@@ -236,15 +236,15 @@ end
 local function pushi8(cursor: Cursor, x: number)
 	x %= 256 ^ 8
 	x = if x < 0 then 256 ^ 8 - x else x
-	buffer.writei32(cursor.Buf, cursor.Pos, x)
-	buffer.writei32(cursor.Buf, cursor.Pos + 4, x // 256 ^ 4)
+	buffer.writeu32(cursor.Buf, cursor.Pos, x)
+	buffer.writeu32(cursor.Buf, cursor.Pos + 4, x // 256 ^ 4)
 	cursor.Pos += 8
 end
 
 local function popi8(cursor: Cursor)
 	cursor.Pos -= 8
-	local x1 = buffer.readi32(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readi32(cursor.Buf, cursor.Pos + 4)
+	local x1 = buffer.readu32(cursor.Buf, cursor.Pos)
+	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 4)
 	local x = x1 + x2 * 256 ^ 4
 	return if x > 256 ^ 7 - 1 then x - 256 ^ 8 else x
 end
@@ -1461,7 +1461,7 @@ do
 		local qw = math.sqrt(1 - qx * qx - qy * qy - qz * qz)
 		return CFrame.new(0, 0, 0, qx, qy, qz, qw)
 	end
-                                                                
+
 	local rotationCache: SerDes<CFrame> = {
 		ser = rotser,
 		des = rotdes,
