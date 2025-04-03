@@ -271,6 +271,37 @@ print(Squash.vlq().des(cursor))
 -- 547359474
 ```
 
+### Ranges
+
+A range is a custom datatype that encodes an integer inverval `[a, b]` using uints with as few bytes as possible. This is great if you know your lower and upper bounds for array sizes or other lists. It is not strict and will technically encode outside of bounds.
+
+```lua
+local cursor = Squash.cursor()
+Squash.range(100, 150).ser(cursor, 130)
+Squash.print(cursor)
+-- Pos: 1 / 8
+-- Buf: { 30 0 0 0 0 0 0 0 }
+--           ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
+print(Squash.range(100, 150).des(cursor))
+-- 130
+```
+```lua
+local cursor = Squash.cursor()
+Squash.range(1, 15).ser(cursor, 16)
+Squash.print(cursor)
+-- Pos: 1 / 8
+-- Buf: { 16 0 0 0 0 0 0 0 }
+--           ^
+local buf = Squash.tobuffer(cursor)
+
+local cursor = Squash.frombuffer(buf)
+print(Squash.range(1, 15).des(cursor))
+-- 16
+```
+
 ## Strings
 
 Strings are a bit trickier conceptually since they have a variable size. However to serialize with Squash is actually easier than numbers! Every character is a byte, so it is useful to think of strings are arrays of bytes. After writing each character in sequence, we need a mechanism to count how many characters we've serialized else we'll never know when to stop reading when deserializing. Right after the string, the length is serialized as a [Variable Length Quantity](https://en.wikipedia.org/wiki/Variable-length_quantity) to use only necessary bytes.

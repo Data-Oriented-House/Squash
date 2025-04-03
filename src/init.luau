@@ -580,6 +580,52 @@ do
 end
 
 do
+	local rangeCache = {}
+	-- Encodes an integer interval [min, max] using uints with as few bytes as possible
+	function Squash.range(min: number, max: number): SerDes<number>
+		local hash = `{min}_{max}`
+		local cached = rangeCache[hash]
+		if cached then
+			return cached
+		end
+		assert(min == min // 1 and max == max // 1 and min < max, "min and max must be integers, and min < max")
+
+		local push, pop, bytes
+		local delta = max - min
+		if delta < 256 ^ 1 then
+			push, pop, bytes = pushu1, popu1, 1
+		elseif delta < 256 ^ 2 then
+			push, pop, bytes = pushu2, popu2, 2
+		elseif delta < 256 ^ 3 then
+			push, pop, bytes = pushu3, popu3, 3
+		elseif delta < 256 ^ 4 then
+			push, pop, bytes = pushu4, popu4, 4
+		elseif delta < 256 ^ 5 then
+			push, pop, bytes = pushu5, popu5, 5
+		elseif delta < 256 ^ 6 then
+			push, pop, bytes = pushu6, popu6, 6
+		elseif delta < 256 ^ 7 then
+			push, pop, bytes = pushu7, popu7, 7
+		else
+			push, pop, bytes = pushu8, popu8, 8
+		end
+
+		local range: SerDes<number> = {
+			ser = function(cursor, x)
+				tryrealloc(cursor, bytes)
+				push(cursor, math.clamp(x, min, max) - min)
+			end,
+			des = function(cursor)
+				return pop(cursor) + min
+			end,
+		}
+		rangeCache[hash] = range
+
+		return range
+	end
+end
+
+do
 	local stringSerDes: SerDes<string> = {
 		ser = function(cursor, x)
 			local len = #x
@@ -765,9 +811,33 @@ do
 	end
 end
 
-local function serbitarr(cursor: Cursor, bits: { boolean })
-	for i = 0, #bits - 1, 8 do
+export type Length = number | SerDes<number>
+
+local function serbitarr(cursor: Cursor, bits: { boolean }, length: number?)
+	local bitCount = length or #bits
+	local bitsOver = bitCount % 8
+
+	for i = 0, bitCount - bitsOver - 1, 8 do
 		pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5], bits[i + 6], bits[i + 7], bits[i + 8])
+	end
+
+	do
+		local i = bitCount - bitsOver
+		if bitsOver == 1 then
+			pushbool(cursor, bits[i + 1])
+		elseif bitsOver == 2 then
+			pushbool(cursor, bits[i + 1], bits[i + 2])
+		elseif bitsOver == 3 then
+			pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3])
+		elseif bitsOver == 4 then
+			pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4])
+		elseif bitsOver == 5 then
+			pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5])
+		elseif bitsOver == 6 then
+			pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5], bits[i + 6])
+		else
+			pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5], bits[i + 6], bits[i + 7])
+		end
 	end
 end
 local function desbitarr(cursor: Cursor, bitcount: number): { boolean }
@@ -798,7 +868,7 @@ local function desbitarr(cursor: Cursor, bitcount: number): { boolean }
 end
 do
 	local arrayCache = {}
-	function Squash.array<T>(serdes: SerDes<T>, length: number?): SerDes<{T}>
+	function Squash.array<T>(serdes: SerDes<T>, length: Length?): SerDes<{T}>
 		local cached = arrayCache[serdes]
 		local key = length or 0
 		if cached then
@@ -813,14 +883,19 @@ do
 		if serdes == booleanCache then
 			local arr: SerDes<{boolean}> = {
 				ser = function(cursor, xs)
-					local n = length or #xs
-					serbitarr(cursor, xs)
+					local n = if type(length) == "number" then length else #xs
+					print(n)
+					serbitarr(cursor, xs, n)
 					if not length then
 						pushvlqrealloc(cursor, n)
+					elseif type(length) ~= "number" then
+						length.ser(cursor, n)
 					end
 				end,
 				des = function(cursor)
-					local n = length or popvlq(cursor)
+					local n = if not length then popvlq(cursor)
+						elseif type(length) == "number" then length
+						else length.des(cursor)
 					return desbitarr(cursor, n)
 				end,
 			}
@@ -831,7 +906,7 @@ do
 			if underlyingSerDes == booleanCache then
 				local arr: SerDes<{boolean?}> = {
 					ser = function(cursor, xs)
-						local n = length or table.maxn(xs)
+						local n = if type(length) == "number" then length else table.maxn(xs)
 						local bools = table.create(n)
 						local flags = table.create(n)
 						for i = 1, n do
@@ -851,10 +926,14 @@ do
 						serbitarr(cursor, flags)
 						if not length then
 							pushvlqrealloc(cursor, n)
+						elseif type(length) ~= "number" then
+							length.ser(cursor, n)
 						end
 					end,
 					des = function(cursor)
-						local n = length or popvlq(cursor)
+						local n = if not length then popvlq(cursor)
+							elseif type(length) == "number" then length
+							else length.des(cursor)
 						local flags = desbitarr(cursor, n)
 
 						local actualBoolCount = 0
@@ -881,7 +960,7 @@ do
 					ser = function(cursor, xs: {T?}): ()
 						local push = underlyingSerDes.ser
 
-						local n = length or table.maxn(xs)
+						local n = if type(length) == "number" then length else table.maxn(xs)
 						local flags = table.create(n)
 						for i = 1, n do
 							local x = xs[i]
@@ -897,12 +976,16 @@ do
 						serbitarr(cursor, flags)
 						if not length then
 							pushvlqrealloc(cursor, n)
+						elseif type(length) ~= "number" then
+							length.ser(cursor, n)
 						end
 					end,
 					des = function(cursor)
 						local pop = underlyingSerDes.des
 
-						local n = length or popvlq(cursor)
+						local n = if not length then popvlq(cursor)
+							elseif type(length) == "number" then length
+							else length.des(cursor)
 						local flags = desbitarr(cursor, n)
 
 						local xs = table.create(n)
@@ -922,18 +1005,22 @@ do
 				ser = function(cursor, xs)
 					local push = serdes.ser
 
-					local n = length or #xs
+					local n = if type(length) == "number" then length else #xs
 					for i = 1, n do
 						push(cursor, xs[i])
 					end
 					if not length then
 						pushvlqrealloc(cursor, n)
+					elseif type(length) ~= "number" then
+						length.ser(cursor, n)
 					end
 				end,
 				des = function(cursor)
 					local pop = serdes.des
 
-					local n = length or popvlq(cursor)
+					local n = if not length then popvlq(cursor)
+						elseif type(length) == "number" then length
+						else length.des(cursor)
 					local xs = table.create(n)
 					for i = n, 1, -1 do
 						xs[i] = pop(cursor)
@@ -1022,15 +1109,9 @@ do
 		local actualBoolCount = #bools
 		local boolBytes = 1 + actualBoolCount // 8
 		local flagBytes = 1 + flagCount // 8
-		Squash.print(cursor)
 		tryrealloc(cursor, boolBytes + flagBytes)
-		Squash.print(cursor)
-		print(0b01010101, 0b1)
 		serbitarr(cursor, bools)
-		Squash.print(cursor)
 		serbitarr(cursor, flags)
-		Squash.print(cursor)
-
 	end
 
 	local function desRecordBoolsAndOpts(cursor: Cursor, tab: any, boolProperties: { string }, optboolProperties: { string }, optProperties: { string }, optSerDes: { SerDes<any> }, boolCount: number, optboolCount: number, optCount: number)
@@ -1142,22 +1223,29 @@ do
 end
 
 do
-	function Squash.map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>): SerDes<{[K]: V}>
+	function Squash.map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>, length: Length?): SerDes<{[K]: V}>
 		return {
 			ser = function(cursor, map)
 				local size = 0
 				for k, v in map :: any do
-					(valueSerDes :: any).ser(cursor, v)
-					;(keySerDes :: any).ser(cursor, k)
+					(valueSerDes :: any).ser(cursor, v);
+					(keySerDes :: any).ser(cursor, k);
 					size += 1
 				end
-				pushvlqrealloc(cursor, size)
+				if not length then
+					pushvlqrealloc(cursor, size)
+				elseif type(length) ~= "number" then
+					length.ser(cursor, size)
+				end
 			end,
 
 			des = function(cursor)
 				local map = {}
 
-				local size = popvlq(cursor)
+				local size = if not length then popvlq(cursor)
+					elseif type(length) == "number" then length
+					else length.des(cursor)
+
 				for _ = 1, size do
 					local key = (keySerDes :: any).des(cursor)
 					local value = (valueSerDes :: any).des(cursor)
@@ -1193,7 +1281,7 @@ do
 end
 
 do
-	function Squash.table(schema: { [string]: SerDes<any> }): SerDes<any>
+	function Squash.table(schema: { [string]: SerDes<any> }, length: Length?): SerDes<any>
 		local typemap = {}
 		local maptype = {}
 
@@ -1232,12 +1320,18 @@ do
 					size += 1
 				end
 
-				pushvlqrealloc(cursor, size)
+				if not length then
+					pushvlqrealloc(cursor, size)
+				elseif type(length) ~= "number" then
+					length.ser(cursor, size)
+				end
 			end,
 
 			des = function(cursor)
 				local tab = {}
-				local size = popvlq(cursor)
+				local size = if not length then popvlq(cursor)
+					elseif type(length) == "number" then length
+					else length.des(cursor)
 				for _ = 1, size do
 					local kid = popu1(cursor) + 1
 					local ktype = typemap[kid]
