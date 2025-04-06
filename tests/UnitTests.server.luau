@@ -801,6 +801,7 @@ do
 	local b = Squash.frombuffer(Squash.tobuffer(c))
 	local result = serdes.des(b)
 	for i = 1, n do
+		assert(data[i] == result[i])
 		print(i, result[i])
 	end
 end
@@ -813,6 +814,7 @@ do
 	local b = Squash.frombuffer(Squash.tobuffer(c))
 	local result = serdes.des(b)
 	for i = 1, n do
+		assert(data[i] == result[i])
 		print(i, result[i])
 	end
 end
@@ -825,6 +827,7 @@ do
 	local b = Squash.frombuffer(Squash.tobuffer(c))
 	local result = serdes.des(b)
 	for i = 1, n do
+		assert(data[i] == result[i])
 		print(i, result[i])
 	end
 end
@@ -837,6 +840,7 @@ do
 	local b = Squash.frombuffer(Squash.tobuffer(c))
 	local result = serdes.des(b)
 	for i = 1, n do
+		assert(data[i] == result[i])
 		print(i, result[i])
 	end
 end
@@ -925,7 +929,59 @@ do
 		end
 		table.sort(ks, function(a, b) return if a:len() < b:len() then true elseif a:len() > b:len() then false else a < b end)
 		for _, k in ks do
+			assert(data[k] == t[k])
 			print(k, t[k])
+		end
+	end
+
+	do
+		local sqTest = S.record {
+			x = S.T(S.uint(2)),
+			y = S.T(S.uint(2)),
+			z = S.T(S.uint(2)),
+			w = S.T(S.record {
+				x = S.uint(2),
+				y = S.uint(2),
+				z = S.uint(2),
+				s1 = S.string(),
+				s2 = S.string(),
+				s3 = S.string(),
+			}),
+			u = S.T(S.boolean()),
+			v = S.T(S.boolean()),
+		}
+
+		local tbl = {
+			x = 1,
+			y = 2,
+			z = 3,
+			w = {
+				x = 4,
+				y = 6,
+				z = 8,
+				s1 = 'hello',
+				s2 = 'world',
+				s3 = 'help',
+			},
+			u = false,
+			v = true,
+		}
+
+		local c = S.cursor()
+		sqTest.ser(c, tbl)
+		local b = S.tobuffer(c)
+		local c = S.frombuffer(b)
+
+		for k, v in sqTest.des(c) do
+			if type(v) == "table" then
+				for l, u in v do
+					assert(tbl[l] == u)
+					print(`\t`, l, u)
+				end
+			else
+				assert(tbl[k] == v)
+				print(k, v)
+			end
 		end
 	end
 end
