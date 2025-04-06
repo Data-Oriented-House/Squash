@@ -269,30 +269,33 @@ local function popf8(cursor: Cursor)
 	return buffer.readf64(cursor.Buf, cursor.Pos)
 end
 
-local function pushbool(cursor: Cursor, a: boolean, b: boolean?, c: boolean?, d: boolean?, e: boolean?, f: boolean?, g: boolean?, h: boolean?)
-	pushu1(cursor,
-		(if a then 1 else 0) +
-			(if b then 2 else 0) +
-			(if c then 4 else 0) +
-			(if d then 8 else 0) +
-			(if e then 16 else 0) +
-			(if f then 32 else 0) +
-			(if g then 64 else 0) +
-			(if h then 128 else 0)
+local function pushbool(
+	cursor: Cursor,
+	a: boolean,
+	b: boolean?,
+	c: boolean?,
+	d: boolean?,
+	e: boolean?,
+	f: boolean?,
+	g: boolean?,
+	h: boolean?
+)
+	pushu1(
+		cursor,
+		(if a then 1 else 0)
+			+ (if b then 2 else 0)
+			+ (if c then 4 else 0)
+			+ (if d then 8 else 0)
+			+ (if e then 16 else 0)
+			+ (if f then 32 else 0)
+			+ (if g then 64 else 0)
+			+ (if h then 128 else 0)
 	)
 end
 
 local function popbool(cursor: Cursor): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
 	local x = popu1(cursor)
-	return
-		x % 2 >= 1,
-		x % 4 >= 2,
-		x % 8 >= 4,
-		x % 16 >= 8,
-		x % 32 >= 16,
-		x % 64 >= 32,
-		x % 128 >= 64,
-		x % 256 >= 128
+	return x % 2 >= 1, x % 4 >= 2, x % 8 >= 4, x % 16 >= 8, x % 32 >= 16, x % 64 >= 32, x % 128 >= 64, x % 256 >= 128
 end
 
 local function pushvlqrealloc(cursor: Cursor, x: number)
@@ -419,7 +422,7 @@ local function popbuf(cursor: Cursor, length: number?)
 end
 
 local function printcursor(cursor: Cursor): ()
-	local bytes = {string.byte(buffer.tostring(cursor.Buf), 1, -1)}
+	local bytes = { string.byte(buffer.tostring(cursor.Buf), 1, -1) }
 	local offset = 7
 	for i = 1, cursor.Pos do
 		local byte = bytes[i]
@@ -581,30 +584,30 @@ end
 
 do
 	local rangeCache = {}
-	-- Encodes an integer interval [min, max] using uints with as few bytes as possible
+	-- Encodes an integer in the interval [min, max] using uints with as few bytes as possible
 	function Squash.range(min: number, max: number): SerDes<number>
 		local hash = `{min}_{max}`
 		local cached = rangeCache[hash]
 		if cached then
 			return cached
 		end
-		assert(min == min // 1 and max == max // 1 and min < max, "min and max must be integers, and min < max")
+		assert(min == min // 1 and max == max // 1 and min < max, 'min and max must be integers, and min < max')
 
 		local push, pop, bytes
-		local delta = max - min
-		if delta < 256 ^ 1 then
+		local difference = max - min
+		if difference < 256 ^ 1 then
 			push, pop, bytes = pushu1, popu1, 1
-		elseif delta < 256 ^ 2 then
+		elseif difference < 256 ^ 2 then
 			push, pop, bytes = pushu2, popu2, 2
-		elseif delta < 256 ^ 3 then
+		elseif difference < 256 ^ 3 then
 			push, pop, bytes = pushu3, popu3, 3
-		elseif delta < 256 ^ 4 then
+		elseif difference < 256 ^ 4 then
 			push, pop, bytes = pushu4, popu4, 4
-		elseif delta < 256 ^ 5 then
+		elseif difference < 256 ^ 5 then
 			push, pop, bytes = pushu5, popu5, 5
-		elseif delta < 256 ^ 6 then
+		elseif difference < 256 ^ 6 then
 			push, pop, bytes = pushu6, popu6, 6
-		elseif delta < 256 ^ 7 then
+		elseif difference < 256 ^ 7 then
 			push, pop, bytes = pushu7, popu7, 7
 		else
 			push, pop, bytes = pushu8, popu8, 8
@@ -613,7 +616,7 @@ do
 		local range: SerDes<number> = {
 			ser = function(cursor, x)
 				tryrealloc(cursor, bytes)
-				push(cursor, math.clamp(x, min, max) - min)
+				push(cursor, x - min)
 			end,
 			des = function(cursor)
 				return pop(cursor) + min
@@ -868,7 +871,7 @@ local function desbitarr(cursor: Cursor, bitcount: number): { boolean }
 end
 do
 	local arrayCache = {}
-	function Squash.array<T>(serdes: SerDes<T>, length: Length?): SerDes<{T}>
+	function Squash.array<T>(serdes: SerDes<T>, length: Length?): SerDes<{ T }>
 		local cached = arrayCache[serdes]
 		local key = length or 0
 		if cached then
@@ -881,21 +884,18 @@ do
 		end
 
 		if serdes == booleanCache then
-			local arr: SerDes<{boolean}> = {
+			local arr: SerDes<{ boolean }> = {
 				ser = function(cursor, xs)
-					local n = if type(length) == "number" then length else #xs
-					print(n)
+					local n = if type(length) == 'number' then length else #xs
 					serbitarr(cursor, xs, n)
 					if not length then
 						pushvlqrealloc(cursor, n)
-					elseif type(length) ~= "number" then
+					elseif type(length) ~= 'number' then
 						length.ser(cursor, n)
 					end
 				end,
 				des = function(cursor)
-					local n = if not length then popvlq(cursor)
-						elseif type(length) == "number" then length
-						else length.des(cursor)
+					local n = if not length then popvlq(cursor) elseif type(length) == 'number' then length else length.des(cursor)
 					return desbitarr(cursor, n)
 				end,
 			}
@@ -904,9 +904,9 @@ do
 		elseif optMap[serdes :: any] then
 			local underlyingSerDes = optMap[serdes :: any]
 			if underlyingSerDes == booleanCache then
-				local arr: SerDes<{boolean?}> = {
+				local arr: SerDes<{ boolean? }> = {
 					ser = function(cursor, xs)
-						local n = if type(length) == "number" then length else table.maxn(xs)
+						local n = if type(length) == 'number' then length else table.maxn(xs)
 						local bools = table.create(n)
 						local flags = table.create(n)
 						for i = 1, n do
@@ -926,14 +926,12 @@ do
 						serbitarr(cursor, flags)
 						if not length then
 							pushvlqrealloc(cursor, n)
-						elseif type(length) ~= "number" then
+						elseif type(length) ~= 'number' then
 							length.ser(cursor, n)
 						end
 					end,
 					des = function(cursor)
-						local n = if not length then popvlq(cursor)
-							elseif type(length) == "number" then length
-							else length.des(cursor)
+						local n = if not length then popvlq(cursor) elseif type(length) == 'number' then length else length.des(cursor)
 						local flags = desbitarr(cursor, n)
 
 						local actualBoolCount = 0
@@ -951,16 +949,16 @@ do
 							end
 						end
 						return xs
-					end
+					end,
 				}
 				cached[key] = arr
 				return arr :: any
 			else
-				local arr: SerDes<{T?}> = {
-					ser = function(cursor, xs: {T?}): ()
+				local arr: SerDes<{ T? }> = {
+					ser = function(cursor, xs: { T? }): ()
 						local push = underlyingSerDes.ser
 
-						local n = if type(length) == "number" then length else table.maxn(xs)
+						local n = if type(length) == 'number' then length else table.maxn(xs)
 						local flags = table.create(n)
 						for i = 1, n do
 							local x = xs[i]
@@ -976,16 +974,14 @@ do
 						serbitarr(cursor, flags)
 						if not length then
 							pushvlqrealloc(cursor, n)
-						elseif type(length) ~= "number" then
+						elseif type(length) ~= 'number' then
 							length.ser(cursor, n)
 						end
 					end,
 					des = function(cursor)
 						local pop = underlyingSerDes.des
 
-						local n = if not length then popvlq(cursor)
-							elseif type(length) == "number" then length
-							else length.des(cursor)
+						local n = if not length then popvlq(cursor) elseif type(length) == 'number' then length else length.des(cursor)
 						local flags = desbitarr(cursor, n)
 
 						local xs = table.create(n)
@@ -995,32 +991,30 @@ do
 							end
 						end
 						return xs :: any
-					end
+					end,
 				}
 				cached[key] = arr
 				return arr :: any
 			end
 		else
-			local arr: SerDes<{T}> = {
+			local arr: SerDes<{ T }> = {
 				ser = function(cursor, xs)
 					local push = serdes.ser
 
-					local n = if type(length) == "number" then length else #xs
+					local n = if type(length) == 'number' then length else #xs
 					for i = 1, n do
 						push(cursor, xs[i])
 					end
 					if not length then
 						pushvlqrealloc(cursor, n)
-					elseif type(length) ~= "number" then
+					elseif type(length) ~= 'number' then
 						length.ser(cursor, n)
 					end
 				end,
 				des = function(cursor)
 					local pop = serdes.des
 
-					local n = if not length then popvlq(cursor)
-						elseif type(length) == "number" then length
-						else length.des(cursor)
+					local n = if not length then popvlq(cursor) elseif type(length) == 'number' then length else length.des(cursor)
 					local xs = table.create(n)
 					for i = n, 1, -1 do
 						xs[i] = pop(cursor)
@@ -1079,7 +1073,17 @@ do
 		end
 	end
 
-	local function serRecordBoolsAndOpts(cursor: Cursor, tab: any, boolProperties: { string }, optboolProperties: { string }, optProperties: { string }, optSerDes: { SerDes<any> }, boolCount: number, optboolCount: number, optCount: number)
+	local function getBoolsAndSerOpts(
+		cursor: Cursor,
+		tab: any,
+		boolProperties: { string },
+		optboolProperties: { string },
+		optProperties: { string },
+		optSerDes: { SerDes<any> },
+		boolCount: number,
+		optboolCount: number,
+		optCount: number
+	)
 		local bools = table.create(boolCount + optboolCount)
 		for i, prop in boolProperties do
 			bools[i] = tab[prop]
@@ -1096,6 +1100,7 @@ do
 				flags[i] = false
 			end
 		end
+
 		for i, prop in optProperties do
 			local j = i + optboolCount
 			local val = tab[prop]
@@ -1106,6 +1111,24 @@ do
 				flags[j] = false
 			end
 		end
+
+		return bools, flags, flagCount
+	end
+
+	local function serRecordBools(cursor: Cursor, bools: { boolean })
+		local actualBoolCount = #bools
+		local boolBytes = 1 + actualBoolCount // 8
+		tryrealloc(cursor, boolBytes + boolBytes)
+		serbitarr(cursor, bools)
+	end
+
+	local function serRecordFlags(cursor: Cursor, flags: { boolean }, flagCount: number)
+		local flagBytes = 1 + flagCount // 8
+		tryrealloc(cursor, flagBytes)
+		serbitarr(cursor, flags)
+	end
+
+	local function serRecordBoolFlags(cursor: Cursor, bools: { boolean }, flags: { boolean }, flagCount: number)
 		local actualBoolCount = #bools
 		local boolBytes = 1 + actualBoolCount // 8
 		local flagBytes = 1 + flagCount // 8
@@ -1114,7 +1137,35 @@ do
 		serbitarr(cursor, flags)
 	end
 
-	local function desRecordBoolsAndOpts(cursor: Cursor, tab: any, boolProperties: { string }, optboolProperties: { string }, optProperties: { string }, optSerDes: { SerDes<any> }, boolCount: number, optboolCount: number, optCount: number)
+	local function desRecordBools(cursor: Cursor, tab: any, boolProperties: { string }, boolCount: number)
+		local bools = desbitarr(cursor, boolCount)
+		for i, prop in boolProperties do
+			tab[prop] = bools[i]
+		end
+	end
+
+	local function desRecordFlags(cursor: Cursor, tab: any, optProperties: { string }, optSerDes: { SerDes<any> }, optCount: number)
+		local flags = desbitarr(cursor, optCount)
+		for i = optCount, 1, -1 do
+			if flags[i] then
+				local prop = optProperties[i]
+				local des = optSerDes[i].des
+				tab[prop] = des(cursor)
+			end
+		end
+	end
+
+	local function desRecordBoolsAndOpts(
+		cursor: Cursor,
+		tab: any,
+		boolProperties: { string },
+		optboolProperties: { string },
+		optProperties: { string },
+		optSerDes: { SerDes<any> },
+		boolCount: number,
+		optboolCount: number,
+		optCount: number
+	)
 		local flagCount = optboolCount + optCount
 		local flags = desbitarr(cursor, flagCount)
 		local actualBoolCount = boolCount
@@ -1130,15 +1181,6 @@ do
 			local j = i + boolCount
 			if flags[i] then
 				tab[prop] = bools[j]
-			end
-		end
-		do
-			local j = boolCount + 1
-			for i, prop in optboolProperties do
-				if flags[i] then
-					tab[prop] = bools[j]
-					j += 1
-				end
 			end
 		end
 
@@ -1158,7 +1200,7 @@ do
 		local boolProperties = {}
 		local optboolProperties = {}
 		for prop, val in schema :: any do
-			if type(prop) == 'string'  then
+			if type(prop) == 'string' then
 				local optVal = optMap[val]
 				if optVal == booleanCache then
 					table.insert(optboolProperties, prop)
@@ -1195,26 +1237,86 @@ do
 		end
 
 		return {
-			ser = if boolCount == 0 and optboolCount == 0 and optCount == 0 then
-				function(cursor, tab)
+			ser = if boolCount == 0 and (optboolCount == 0 and optCount == 0)
+				then function(cursor, tab)
 					serRecordProps(cursor, schema, tab, properties)
 				end
-				else
-				function(cursor, tab)
+				elseif boolCount > 0 and (optboolCount == 0 and optCount == 0) then function(cursor, tab)
 					serRecordProps(cursor, schema, tab, properties)
-					serRecordBoolsAndOpts(cursor, tab, boolProperties, optboolProperties, optProperties, optSerDes, boolCount, optboolCount, optCount)
+					local bools, flags, flagCount = getBoolsAndSerOpts(
+						cursor,
+						tab,
+						boolProperties,
+						optboolProperties,
+						optProperties,
+						optSerDes,
+						boolCount,
+						optboolCount,
+						optCount
+					)
+					serRecordBools(cursor, bools)
+				end
+				elseif boolCount == 0 and (optboolCount > 0 or optCount > 0) then function(cursor, tab)
+					serRecordProps(cursor, schema, tab, properties)
+					local bools, flags, flagCount = getBoolsAndSerOpts(
+						cursor,
+						tab,
+						boolProperties,
+						optboolProperties,
+						optProperties,
+						optSerDes,
+						boolCount,
+						optboolCount,
+						optCount
+					)
+					serRecordFlags(cursor, flags, flagCount)
+				end
+				else function(cursor, tab)
+					serRecordProps(cursor, schema, tab, properties)
+					local bools, flags, flagCount = getBoolsAndSerOpts(
+						cursor,
+						tab,
+						boolProperties,
+						optboolProperties,
+						optProperties,
+						optSerDes,
+						boolCount,
+						optboolCount,
+						optCount
+					)
+					serRecordBoolFlags(cursor, bools, flags, flagCount)
 				end,
-
-			des = if boolCount == 0 and optboolCount == 0 and optCount == 0 then
-				function(cursor)
+			des = if boolCount == 0 and (optboolCount == 0 and optCount == 0)
+				then function(cursor)
 					local tab = {} :: any
 					desRecordProps(cursor, schema, tab, properties, propCount)
 					return tab
 				end
-				else
-				function(cursor)
+				elseif boolCount > 0 and (optboolCount == 0 and optCount == 0) then function(cursor)
 					local tab = {} :: any
-					desRecordBoolsAndOpts(cursor, tab, boolProperties, optboolProperties, optProperties, optSerDes, boolCount, optboolCount, optCount)
+					desRecordBools(cursor, tab, boolProperties, boolCount)
+					desRecordProps(cursor, schema, tab, properties, propCount)
+					return tab
+				end
+				elseif boolCount == 0 and (optboolCount > 0 or optCount > 0) then function(cursor)
+					local tab = {} :: any
+					desRecordFlags(cursor, tab, optProperties, optSerDes, optCount)
+					desRecordProps(cursor, schema, tab, properties, propCount)
+					return tab
+				end
+				else function(cursor)
+					local tab = {} :: any
+					desRecordBoolsAndOpts(
+						cursor,
+						tab,
+						boolProperties,
+						optboolProperties,
+						optProperties,
+						optSerDes,
+						boolCount,
+						optboolCount,
+						optCount
+					)
 					desRecordProps(cursor, schema, tab, properties, propCount)
 					return tab
 				end,
@@ -1223,18 +1325,18 @@ do
 end
 
 do
-	function Squash.map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>, length: Length?): SerDes<{[K]: V}>
+	function Squash.map<K, V>(keySerDes: SerDes<K>, valueSerDes: SerDes<V>, length: Length?): SerDes<{ [K]: V }>
 		return {
 			ser = function(cursor, map)
 				local size = 0
 				for k, v in map :: any do
 					(valueSerDes :: any).ser(cursor, v);
-					(keySerDes :: any).ser(cursor, k);
+					(keySerDes :: any).ser(cursor, k)
 					size += 1
 				end
 				if not length then
 					pushvlqrealloc(cursor, size)
-				elseif type(length) ~= "number" then
+				elseif type(length) ~= 'number' then
 					length.ser(cursor, size)
 				end
 			end,
@@ -1242,9 +1344,7 @@ do
 			des = function(cursor)
 				local map = {}
 
-				local size = if not length then popvlq(cursor)
-					elseif type(length) == "number" then length
-					else length.des(cursor)
+				local size = if not length then popvlq(cursor) elseif type(length) == 'number' then length else length.des(cursor)
 
 				for _ = 1, size do
 					local key = (keySerDes :: any).des(cursor)
@@ -1322,16 +1422,14 @@ do
 
 				if not length then
 					pushvlqrealloc(cursor, size)
-				elseif type(length) ~= "number" then
+				elseif type(length) ~= 'number' then
 					length.ser(cursor, size)
 				end
 			end,
 
 			des = function(cursor)
 				local tab = {}
-				local size = if not length then popvlq(cursor)
-					elseif type(length) == "number" then length
-					else length.des(cursor)
+				local size = if not length then popvlq(cursor) elseif type(length) == 'number' then length else length.des(cursor)
 				for _ = 1, size do
 					local kid = popu1(cursor) + 1
 					local ktype = typemap[kid]
@@ -1406,7 +1504,9 @@ do
 		end
 
 		local sortedItems = enum:GetEnumItems()
-		table.sort(sortedItems, function(a, b) return a.Value < b.Value end)
+		table.sort(sortedItems, function(a, b)
+			return a.Value < b.Value
+		end)
 
 		local itemsToIds = {}
 		local idsToItems = table.create(#sortedItems)
@@ -1536,9 +1636,12 @@ do
 			local axis, theta = cframe:ToAxisAngle()
 			axis *= math.sin(theta / 2)
 			tryrealloc(cursor, 7)
-			pushi2(cursor, (axis.Z + 1) * (65535 / 2))
-			pushi2(cursor, (axis.Y + 1) * (65535 / 2))
-			pushi2(cursor, (axis.X + 1) * (65535 / 2))
+			local z = math.round((axis.Z + 1) * 2 ^ 15 - 1)
+			local y = math.round((axis.Y + 1) * 2 ^ 15 - 1)
+			local x = math.round((axis.X + 1) * 2 ^ 15 - 1)
+			pushu2(cursor, z)
+			pushu2(cursor, y)
+			pushu2(cursor, x)
 			pushu1(cursor, 0)
 		end
 	end
@@ -1549,10 +1652,10 @@ do
 			return idToRotation[specialId]
 		end
 
-		local qx = popi2(cursor) * (2 / 65535) - 1
-		local qy = popi2(cursor) * (2 / 65535) - 1
-		local qz = popi2(cursor) * (2 / 65535) - 1
-		local qw = math.sqrt(1 - qx * qx - qy * qy - qz * qz)
+		local qx = (popu2(cursor) + 1) * 2 ^ -15 - 1
+		local qy = (popu2(cursor) + 1) * 2 ^ -15 - 1
+		local qz = (popu2(cursor) + 1) * 2 ^ -15 - 1
+		local qw = math.sqrt(1 - math.clamp(qx * qx + qy * qy + qz * qz, 0, 1))
 		return CFrame.new(0, 0, 0, qx, qy, qz, qw)
 	end
 
@@ -1623,10 +1726,7 @@ local function pushcolorsequencekeypoint(cursor, keypoint)
 	pushu1(cursor, keypoint.Time * 255)
 end
 local function popcolorsequencekeypoint(cursor)
-	return ColorSequenceKeypoint.new(
-		popu1(cursor) / 255,
-		popcolor3(cursor)
-	)
+	return ColorSequenceKeypoint.new(popu1(cursor) / 255, popcolor3(cursor))
 end
 do
 	local colorSequenceKeypointCache: SerDes<ColorSequenceKeypoint> = {
@@ -1714,11 +1814,7 @@ do
 		end,
 
 		des = function(cursor)
-			return FloatCurveKey.new(
-				popf4(cursor),
-				popf4(cursor),
-				enumitem(Enum.KeyInterpolationMode).des(cursor) :: any
-			)
+			return FloatCurveKey.new(popf4(cursor), popf4(cursor), enumitem(Enum.KeyInterpolationMode).des(cursor) :: any)
 		end,
 	}
 	function Squash.FloatCurveKey(): SerDes<FloatCurveKey>
@@ -1729,7 +1825,7 @@ end
 do
 	local fontCache: SerDes<Font> = {
 		ser = function(cursor, font)
-			local family = string.match(font.Family, "rbxasset://fonts/families/(.+).json") or error(`Invalid font family {font.Family}`)
+			local family = string.match(font.Family, 'rbxasset://fonts/families/(.+).json') or error(`Invalid font family {font.Family}`)
 			tryrealloc(cursor, #family + 1)
 			pushstr(cursor, family)
 			pushbool(cursor, font.Bold)
@@ -1828,7 +1924,7 @@ do
 			des = function(cursor)
 				local count = popvlq(cursor)
 				local keypoints = table.create(count)
-				for i = count,  1, -1 do
+				for i = count, 1, -1 do
 					keypoints[i] = pop(cursor)
 				end
 				return NumberSequence.new(keypoints)
@@ -1957,13 +2053,7 @@ do
 		end,
 
 		des = function(cursor)
-			return PhysicalProperties.new(
-				popf4(cursor),
-				popf4(cursor),
-				popf4(cursor),
-				popf4(cursor),
-				popf4(cursor)
-			)
+			return PhysicalProperties.new(popf4(cursor), popf4(cursor), popf4(cursor), popf4(cursor), popf4(cursor))
 		end,
 	}
 	function Squash.PhysicalProperties(): SerDes<PhysicalProperties>
@@ -1991,10 +2081,7 @@ do
 			end,
 
 			des = function(cursor)
-				return Ray.new(
-					Vector3.new(pop(cursor), pop(cursor), pop(cursor)),
-					Vector3.new(pop(cursor), pop(cursor), pop(cursor))
-				)
+				return Ray.new(Vector3.new(pop(cursor), pop(cursor), pop(cursor)), Vector3.new(pop(cursor), pop(cursor), pop(cursor)))
 			end,
 		}
 		rayCache[serdes] = raycached
@@ -2204,15 +2291,8 @@ do
 			local reverses = popbool(cursor)
 			local duration = popf4(cursor)
 			local delayTime = popf4(cursor)
-			return TweenInfo.new(
-				duration,
-				easing,
-				direction,
-				repeats,
-				reverses,
-				delayTime
-			)
-		end
+			return TweenInfo.new(duration, easing, direction, repeats, reverses, delayTime)
+		end,
 	}
 	function Squash.TweenInfo()
 		return tweenInfoCache
