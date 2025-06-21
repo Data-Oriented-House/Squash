@@ -1181,7 +1181,7 @@ do
 					end
 				end
 
-				for i = optboolCount + 1, optboolCount + optCount do
+				for i = optboolCount + optCount, optboolCount + 1 do
 					local flag = flags[i]
 					if flag then
 						local prop = optProperties[i - optboolCount]
