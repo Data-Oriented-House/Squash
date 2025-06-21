@@ -157,20 +157,19 @@ local function popi2(cursor: Cursor)
 	return buffer.readi16(cursor.Buf, cursor.Pos)
 end
 
-local function pushi3(cursor: Cursor, x: number)
-	x %= 256 ^ 3
-	x = if x < 0 then 256 ^ 3 + x else x
-	buffer.writeu8(cursor.Buf, cursor.Pos, x)
+local function pushi3(cursor, x)
+	local x = if x >= 0 then x * 2 else -x * 2 - 1
+	buffer.writeu8(cursor.Buf, cursor.Pos, x % 256)
 	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
 	cursor.Pos += 3
 end
 
-local function popi3(cursor: Cursor)
+local function popi3(cursor)
 	cursor.Pos -= 3
-	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
+	local x1 = buffer.readu8 (cursor.Buf, cursor.Pos    )
 	local x2 = buffer.readu16(cursor.Buf, cursor.Pos + 1)
 	local x = x1 + x2 * 256
-	return if x > 256 ^ 2 - 1 then x - 256 ^ 3 else x
+	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
 end
 
 local function pushi4(cursor: Cursor, x: number)
@@ -184,8 +183,7 @@ local function popi4(cursor: Cursor)
 end
 
 local function pushi5(cursor: Cursor, x: number)
-	x %= 256 ^ 5
-	x = if x < 0 then 256 ^ 5 + x else x
+	local x = if x >= 0 then x * 2 else -x * 2 - 1
 	buffer.writeu8(cursor.Buf, cursor.Pos, x)
 	buffer.writeu32(cursor.Buf, cursor.Pos + 1, x // 256)
 	cursor.Pos += 5
@@ -196,12 +194,11 @@ local function popi5(cursor: Cursor)
 	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
 	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 1)
 	local x = x1 + x2 * 256
-	return if x > 256 ^ 4 - 1 then x - 256 ^ 5 else x
+	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
 end
 
 local function pushi6(cursor: Cursor, x: number)
-	x %= 256 ^ 6
-	x = if x < 0 then 256 ^ 6 + x else x
+	local x = if x >= 0 then x * 2 else -x * 2 - 1
 	buffer.writeu16(cursor.Buf, cursor.Pos, x)
 	buffer.writeu32(cursor.Buf, cursor.Pos + 2, x // 256 ^ 2)
 	cursor.Pos += 6
@@ -212,12 +209,11 @@ local function popi6(cursor: Cursor)
 	local x1 = buffer.readu16(cursor.Buf, cursor.Pos)
 	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 2)
 	local x = x1 + x2 * 256 ^ 2
-	return if x > 256 ^ 5 - 1 then x - 256 ^ 6 else x
+	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
 end
 
 local function pushi7(cursor: Cursor, x: number)
-	x %= 256 ^ 7
-	x = if x < 0 then 256 ^ 7 + x else x
+	local x = if x >= 0 then x * 2 else -x * 2 - 1
 	buffer.writeu8(cursor.Buf, cursor.Pos, x)
 	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
 	buffer.writeu32(cursor.Buf, cursor.Pos + 3, x // 256 ^ 3)
@@ -230,12 +226,11 @@ local function popi7(cursor: Cursor)
 	local x2 = buffer.readu16(cursor.Buf, cursor.Pos + 1)
 	local x3 = buffer.readu32(cursor.Buf, cursor.Pos + 3)
 	local x = x1 + x2 * 256 + x3 * 256 ^ 3
-	return if x > 256 ^ 6 - 1 then x - 256 ^ 7 else x
+	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
 end
 
 local function pushi8(cursor: Cursor, x: number)
-	x %= 256 ^ 8
-	x = if x < 0 then 256 ^ 8 - x else x
+	local x = if x >= 0 then x * 2 else -x * 2 - 1
 	buffer.writeu32(cursor.Buf, cursor.Pos, x)
 	buffer.writeu32(cursor.Buf, cursor.Pos + 4, x // 256 ^ 4)
 	cursor.Pos += 8
@@ -246,7 +241,7 @@ local function popi8(cursor: Cursor)
 	local x1 = buffer.readu32(cursor.Buf, cursor.Pos)
 	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 4)
 	local x = x1 + x2 * 256 ^ 4
-	return if x > 256 ^ 7 - 1 then x - 256 ^ 8 else x
+	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
 end
 
 local function pushf4(cursor: Cursor, x: number)
@@ -298,93 +293,139 @@ local function popbool(cursor: Cursor): (boolean, boolean, boolean, boolean, boo
 	return x % 2 >= 1, x % 4 >= 2, x % 8 >= 4, x % 16 >= 8, x % 32 >= 16, x % 64 >= 32, x % 128 >= 64, x % 256 >= 128
 end
 
-local function pushvlqrealloc(cursor: Cursor, x: number)
-	local x0 = x // 128 ^ 0 % 128
-	local x1 = x // 128 ^ 1 % 128
-	local x2 = x // 128 ^ 2 % 128
-	local x3 = x // 128 ^ 3 % 128
-	local x4 = x // 128 ^ 4 % 128
-	local x5 = x // 128 ^ 5 % 128
-	local x6 = x // 128 ^ 6 % 128
-	local x7 = x // 128 ^ 7 % 128
+local pushvlqrealloc, popvlq
+do
+	local SHIFT32 = 2 ^ 32
+	local SHIFT25 = 2 ^ 25
+	local BASE    = 2 ^ 7
 
-	if x7 ~= 0 then
-		tryrealloc(cursor, 8)
-		pushu8(cursor, x0 * 256 ^ 7 + x1 * 256 ^ 6 + x2 * 256 ^ 5 + x3 * 256 ^ 4 + x4 * 256 ^ 3 + x5 * 256 ^ 2 + x6 * 256 + x7 + 128)
-	elseif x6 ~= 0 then
-		tryrealloc(cursor, 7)
-		pushu7(cursor, x0 * 256 ^ 6 + x1 * 256 ^ 5 + x2 * 256 ^ 4 + x3 * 256 ^ 3 + x4 * 256 ^ 2 + x5 * 256 + x6 + 128)
-	elseif x5 ~= 0 then
-		tryrealloc(cursor, 6)
-		pushu6(cursor, x0 * 256 ^ 5 + x1 * 256 ^ 4 + x2 * 256 ^ 3 + x3 * 256 ^ 2 + x4 * 256 + x5 + 128)
-	elseif x4 ~= 0 then
-		tryrealloc(cursor, 5)
-		pushu5(cursor, x0 * 256 ^ 4 + x1 * 256 ^ 3 + x2 * 256 ^ 2 + x3 * 256 + x4 + 128)
-	elseif x3 ~= 0 then
-		tryrealloc(cursor, 4)
-		pushu4(cursor, x0 * 256 ^ 3 + x1 * 256 ^ 2 + x2 * 256 + x3 + 128)
-	elseif x2 ~= 0 then
-		tryrealloc(cursor, 3)
-		pushu3(cursor, x0 * 256 ^ 2 + x1 * 256 + x2 + 128)
-	elseif x1 ~= 0 then
-		tryrealloc(cursor, 2)
-		pushu2(cursor, x0 * 256 + x1 + 128)
-	else
-		tryrealloc(cursor, 1)
-		pushu1(cursor, x0 + 128)
+	function pushvlqrealloc(cursor: Cursor, x: number)
+		local count = 1
+		if     x >= 2 ^ 49 then count = 8
+		elseif x >= 2 ^ 42 then count = 7
+		elseif x >= 2 ^ 35 then count = 6
+		elseif x >= 2 ^ 28 then count = 5
+		elseif x >= 2 ^ 21 then count = 4
+		elseif x >= 2 ^ 14 then count = 3
+		elseif x >= 2 ^ 7 then count = 2
+		end
+
+		tryrealloc(cursor, count)
+
+		local hi = x // SHIFT32
+		local lo = x - hi * SHIFT32
+
+		pushu1(cursor, lo % BASE)
+
+		if count >= 2 then
+			local prevHi = hi
+			local rem    = prevHi % BASE
+			local newLo  = rem * SHIFT25 + (lo // BASE)
+			local newHi  = prevHi // BASE
+			pushu1(cursor, (newLo % BASE) + BASE)
+			lo, hi = newLo, newHi
+		end
+
+		if count >= 3 then
+			local prevHi = hi
+			local rem    = prevHi % BASE
+			local newLo  = rem * SHIFT25 + (lo // BASE)
+			local newHi  = prevHi // BASE
+			pushu1(cursor, (newLo % BASE) + BASE)
+			lo, hi = newLo, newHi
+		end
+
+		if count >= 4 then
+			local prevHi = hi
+			local rem    = prevHi % BASE
+			local newLo  = rem * SHIFT25 + (lo // BASE)
+			local newHi  = prevHi // BASE
+			pushu1(cursor, (newLo % BASE) + BASE)
+			lo, hi = newLo, newHi
+		end
+
+		if count >= 5 then
+			local prevHi = hi
+			local rem    = prevHi % BASE
+			local newLo  = rem * SHIFT25 + (lo // BASE)
+			local newHi  = prevHi // BASE
+			pushu1(cursor, (newLo % BASE) + BASE)
+			lo, hi = newLo, newHi
+		end
+
+		if count >= 6 then
+			local prevHi = hi
+			local rem    = prevHi % BASE
+			local newLo  = rem * SHIFT25 + (lo // BASE)
+			local newHi  = prevHi // BASE
+			pushu1(cursor, (newLo % BASE) + BASE)
+			lo, hi = newLo, newHi
+		end
+
+		if count >= 7 then
+			local prevHi = hi
+			local rem    = prevHi % BASE
+			local newLo  = rem * SHIFT25 + (lo // BASE)
+			local newHi  = prevHi // BASE
+			pushu1(cursor, (newLo % BASE) + BASE)
+			lo, hi = newLo, newHi
+		end
+
+		if count == 8 then
+			local prevHi = hi
+			local rem    = prevHi % BASE
+			local newLo  = rem * SHIFT25 + (lo // BASE)
+			pushu1(cursor, (newLo % BASE) + BASE)
+		end
 	end
-end
 
-local function popvlq(cursor: Cursor)
-	local b = popu1(cursor)
-	if b >= 128 then
-		return b - 128
+	function popvlq(cursor: Cursor)
+		local b1: number = popu1(cursor)
+		local v1 = b1 % BASE
+		if b1 < BASE then
+			return v1
+		end
+
+		local b2 = popu1(cursor)
+		local v2 = v1 * BASE + (b2 % BASE)
+		if b2 < BASE then
+			return v2
+		end
+
+		local b3 = popu1(cursor)
+		local v3 = v2 * BASE + (b3 % BASE)
+		if b3 < BASE then
+			return v3
+		end
+
+		local b4 = popu1(cursor)
+		local v4 = v3 * BASE + (b4 % BASE)
+		if b4 < BASE then
+			return v4
+		end
+
+		local b5 = popu1(cursor)
+		local v5 = v4 * BASE + (b5 % BASE)
+		if b5 < BASE then
+			return v5
+		end
+
+		local b6 = popu1(cursor)
+		local v6 = v5 * BASE + (b6 % BASE)
+		if b6 < BASE then
+			return v6
+		end
+
+		local b7 = popu1(cursor)
+		local v7 = v6 * BASE + (b7 % BASE)
+		if b7 < BASE then
+			return v7
+		end
+
+		local b8 = popu1(cursor)
+		local v8 = v7 * BASE + (b8 % BASE)
+		return v8
 	end
-	local x = b
-
-	local b = popu1(cursor)
-	if b >= 128 then
-		return x + (b - 128) * 128
-	end
-	x += b * 128
-
-	local b = popu1(cursor)
-	if b >= 128 then
-		return x + (b - 128) * 128 ^ 2
-	end
-	x += b * 128 ^ 2
-
-	local b = popu1(cursor)
-	if b >= 128 then
-		return x + (b - 128) * 128 ^ 3
-	end
-	x += b * 128 ^ 3
-
-	local b = popu1(cursor)
-	if b >= 128 then
-		return x + (b - 128) * 128 ^ 4
-	end
-	x += b * 128 ^ 4
-
-	local b = popu1(cursor)
-	if b >= 128 then
-		return x + (b - 128) * 128 ^ 5
-	end
-	x += b * 128 ^ 5
-
-	local b = popu1(cursor)
-	if b >= 128 then
-		return x + (b - 128) * 128 ^ 6
-	end
-	x += b * 128 ^ 6
-
-	local b = popu1(cursor)
-	if b >= 128 then
-		return x + (b - 128) * 128 ^ 7
-	end
-	x += b * 128 ^ 7
-
-	error(`Not a valid vlq: {x} = {buffer.tostring(cursor.Buf)}`)
 end
 
 local function pushstr(cursor: Cursor, x: string, length: number?)
@@ -1497,7 +1538,7 @@ do
 	local idToRotation
 	local rotationToId
 
-	rotser = function(cursor, cframe: CFrame)
+	function rotser(cursor, cframe: CFrame)
 		--? Not defined outside so pure Luau users don't suffer errors
 		idToRotation = idToRotation or cframeLookupEntries()
 		rotationToId = rotationToId or cframeSpecialCaseLookup(idToRotation)
@@ -1520,7 +1561,7 @@ do
 		end
 	end
 
-	rotdes = function(cursor)
+	function rotdes(cursor)
 		local specialId = popu1(cursor)
 		if specialId ~= 0 then
 			return idToRotation[specialId]
