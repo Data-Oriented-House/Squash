@@ -824,12 +824,13 @@ local function serbitarr(cursor: Cursor, bits: { boolean }, length: number?)
 
 	local bitsOver = bitCount % 8
 
-	for i = 0, bitCount - bitsOver - 1, 8 do
+	local bytesInBits = bitCount - bitsOver
+	for i = 0, bytesInBits - 1, 8 do
 		pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5], bits[i + 6], bits[i + 7], bits[i + 8])
 	end
 
 	do
-		local i = bitCount - bitsOver
+		local i = bytesInBits
 		if bitsOver == 1 then
 			pushbool(cursor, bits[i + 1])
 		elseif bitsOver == 2 then
@@ -842,7 +843,7 @@ local function serbitarr(cursor: Cursor, bits: { boolean }, length: number?)
 			pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5])
 		elseif bitsOver == 6 then
 			pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5], bits[i + 6])
-		else
+		elseif bitsOver == 7 then
 			pushbool(cursor, bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5], bits[i + 6], bits[i + 7])
 		end
 	end
@@ -1117,41 +1118,36 @@ do
 
 				local bools = table.create(boolCount + optboolCount) -- oversizing
 				for i, prop in boolProperties do
-					local b = i
 					local val = (record :: any)[prop]
-					bools[b] = val
+					bools[i] = val
 				end
 
-				local b = boolCount + 1
+				local actualBoolCount = boolCount
 				local flags = table.create(optboolCount + optCount)
 				for i, prop in optboolProperties do
-					local f = i
-
 					local val = (record :: any)[prop]
 					if val == nil then
-						flags[f] = false
+						flags[i] = false
 					else
-						flags[f] = true
-						bools[b] = val
-						b += 1
+						actualBoolCount += 1
+						bools[actualBoolCount] = val
+						flags[i] = true
 					end
 				end
 
 				for i, prop in optProperties do
 					local f = i + optboolCount
-
 					local val = (record :: any)[prop]
 					if val == nil then
 						flags[f] = false
 					else
-						local serdes = (schema :: any)[prop]
-						serdes.ser(cursor, val)
+						optSerDes[i].ser(cursor, val)
 						flags[f] = true
 					end
 				end
 
-				tryrealloc(cursor, b + optboolCount + optCount)
-				serbitarr(cursor, bools, b)
+				tryrealloc(cursor, actualBoolCount + optboolCount + optCount)
+				serbitarr(cursor, bools, actualBoolCount)
 				serbitarr(cursor, flags, optboolCount + optCount)
 			end,
 
@@ -1172,7 +1168,7 @@ do
 				end
 
 				local b = actualBoolCount
-				for i = 1, optboolCount do
+				for i = optboolCount, 1, -1 do
 					local flag = flags[i]
 					if flag then
 						local prop = optboolProperties[i]
@@ -1181,12 +1177,12 @@ do
 					end
 				end
 
-				for i = optboolCount + optCount, optboolCount + 1 do
-					local flag = flags[i]
+				for i = optCount, 1, -1 do
+					local flag = flags[i + optboolCount]
 					if flag then
-						local prop = optProperties[i - optboolCount]
+						local prop = optProperties[i]
 						local serdes = (schema :: any)[prop]
-						new[prop] = serdes.des(cursor)
+						new[prop] = optSerDes[i].des(cursor)
 					end
 				end
 
