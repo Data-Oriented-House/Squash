@@ -1150,6 +1150,7 @@ do
 					end
 				end
 
+				tryrealloc(cursor, b + optboolCount + optCount)
 				serbitarr(cursor, bools, b)
 				serbitarr(cursor, flags, optboolCount + optCount)
 			end,
