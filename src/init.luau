@@ -818,6 +818,10 @@ export type Length = number | SerDes<number>
 
 local function serbitarr(cursor: Cursor, bits: { boolean }, length: number?)
 	local bitCount = length or #bits
+	if bitCount == 0 then
+		return
+	end
+
 	local bitsOver = bitCount % 8
 
 	for i = 0, bitCount - bitsOver - 1, 8 do
@@ -844,6 +848,10 @@ local function serbitarr(cursor: Cursor, bits: { boolean }, length: number?)
 	end
 end
 local function desbitarr(cursor: Cursor, bitcount: number): { boolean }
+	if bitcount == 0 then
+		return {}
+	end
+
 	local arr = table.create(bitcount)
 
 	local bytes = bitcount // 8
@@ -1057,143 +1065,6 @@ do
 end
 
 do
-	local function serRecordProps(cursor: Cursor, schema: any, tab: any, properties: { string })
-		for _, prop in properties do
-			local ser = schema[prop].ser
-			local x = tab[prop]
-			ser(cursor, x)
-		end
-	end
-
-	local function desRecordProps(cursor: Cursor, schema: any, tab: any, properties: { string }, propCount: number)
-		for i = propCount, 1, -1 do
-			local prop = properties[i]
-			local des = (schema :: any)[prop].des
-			tab[prop] = des(cursor)
-		end
-	end
-
-	local function getBoolsAndSerOpts(
-		cursor: Cursor,
-		tab: any,
-		boolProperties: { string },
-		optboolProperties: { string },
-		optProperties: { string },
-		optSerDes: { SerDes<any> },
-		boolCount: number,
-		optboolCount: number,
-		optCount: number
-	)
-		local bools = table.create(boolCount + optboolCount)
-		for i, prop in boolProperties do
-			bools[i] = tab[prop]
-		end
-
-		local flagCount = optboolCount + optCount
-		local flags = table.create(flagCount)
-		for i, prop in optboolProperties do
-			local val = tab[prop]
-			if val ~= nil then
-				table.insert(bools, val)
-				flags[i] = true
-			else
-				flags[i] = false
-			end
-		end
-
-		for i, prop in optProperties do
-			local j = i + optboolCount
-			local val = tab[prop]
-			if val ~= nil then
-				optSerDes[i].ser(cursor, val)
-				flags[j] = true
-			else
-				flags[j] = false
-			end
-		end
-
-		return bools, flags, flagCount
-	end
-
-	local function serRecordBools(cursor: Cursor, bools: { boolean })
-		local actualBoolCount = #bools
-		local boolBytes = 1 + actualBoolCount // 8
-		tryrealloc(cursor, boolBytes + boolBytes)
-		serbitarr(cursor, bools)
-	end
-
-	local function serRecordFlags(cursor: Cursor, flags: { boolean }, flagCount: number)
-		local flagBytes = 1 + flagCount // 8
-		tryrealloc(cursor, flagBytes)
-		serbitarr(cursor, flags)
-	end
-
-	local function serRecordBoolFlags(cursor: Cursor, bools: { boolean }, flags: { boolean }, flagCount: number)
-		local actualBoolCount = #bools
-		local boolBytes = 1 + actualBoolCount // 8
-		local flagBytes = 1 + flagCount // 8
-		tryrealloc(cursor, boolBytes + flagBytes)
-		serbitarr(cursor, bools)
-		serbitarr(cursor, flags)
-	end
-
-	local function desRecordBools(cursor: Cursor, tab: any, boolProperties: { string }, boolCount: number)
-		local bools = desbitarr(cursor, boolCount)
-		for i, prop in boolProperties do
-			tab[prop] = bools[i]
-		end
-	end
-
-	local function desRecordFlags(cursor: Cursor, tab: any, optProperties: { string }, optSerDes: { SerDes<any> }, optCount: number)
-		local flags = desbitarr(cursor, optCount)
-		for i = optCount, 1, -1 do
-			if flags[i] then
-				local prop = optProperties[i]
-				local des = optSerDes[i].des
-				tab[prop] = des(cursor)
-			end
-		end
-	end
-
-	local function desRecordBoolsAndOpts(
-		cursor: Cursor,
-		tab: any,
-		boolProperties: { string },
-		optboolProperties: { string },
-		optProperties: { string },
-		optSerDes: { SerDes<any> },
-		boolCount: number,
-		optboolCount: number,
-		optCount: number
-	)
-		local flagCount = optboolCount + optCount
-		local flags = desbitarr(cursor, flagCount)
-		local actualBoolCount = boolCount
-		for i = 1, optboolCount do
-			actualBoolCount += if flags[i] then 1 else 0
-		end
-
-		local bools = desbitarr(cursor, actualBoolCount)
-		for i, prop in boolProperties do
-			tab[prop] = bools[i]
-		end
-		for i, prop in optboolProperties do
-			local j = i + boolCount
-			if flags[i] then
-				tab[prop] = bools[j]
-			end
-		end
-
-		for i = optCount, 1, -1 do
-			local j = i + optboolCount
-			if flags[j] then
-				local prop = optProperties[i]
-				local des = optSerDes[i].des
-				tab[prop] = des(cursor)
-			end
-		end
-	end
-
 	function Squash.record<T>(schema: T & {}): SerDes<T>
 		local properties = {}
 		local optProperties = {}
@@ -1237,89 +1108,95 @@ do
 		end
 
 		return {
-			ser = if boolCount == 0 and (optboolCount == 0 and optCount == 0)
-				then function(cursor, tab)
-					serRecordProps(cursor, schema, tab, properties)
+			ser = function(cursor, record)
+				for _, prop in properties do
+					local val = (record :: any)[prop]
+					local serdes = (schema :: any)[prop]
+					serdes.ser(cursor, val)
 				end
-				elseif boolCount > 0 and (optboolCount == 0 and optCount == 0) then function(cursor, tab)
-					serRecordProps(cursor, schema, tab, properties)
-					local bools, flags, flagCount = getBoolsAndSerOpts(
-						cursor,
-						tab,
-						boolProperties,
-						optboolProperties,
-						optProperties,
-						optSerDes,
-						boolCount,
-						optboolCount,
-						optCount
-					)
-					serRecordBools(cursor, bools)
+
+				local bools = table.create(boolCount + optboolCount) -- oversizing
+				for i, prop in boolProperties do
+					local b = i
+					local val = (record :: any)[prop]
+					bools[b] = val
 				end
-				elseif boolCount == 0 and (optboolCount > 0 or optCount > 0) then function(cursor, tab)
-					serRecordProps(cursor, schema, tab, properties)
-					local bools, flags, flagCount = getBoolsAndSerOpts(
-						cursor,
-						tab,
-						boolProperties,
-						optboolProperties,
-						optProperties,
-						optSerDes,
-						boolCount,
-						optboolCount,
-						optCount
-					)
-					serRecordFlags(cursor, flags, flagCount)
+				
+				local b = boolCount + 1
+				local flags = table.create(optboolCount + optCount)
+				for i, prop in optboolProperties do
+					local f = i
+
+					local val = (record :: any)[prop]
+					if val == nil then
+						flags[f] = false
+					else
+						flags[f] = true
+						bools[b] = val
+						b += 1
+					end
 				end
-				else function(cursor, tab)
-					serRecordProps(cursor, schema, tab, properties)
-					local bools, flags, flagCount = getBoolsAndSerOpts(
-						cursor,
-						tab,
-						boolProperties,
-						optboolProperties,
-						optProperties,
-						optSerDes,
-						boolCount,
-						optboolCount,
-						optCount
-					)
-					serRecordBoolFlags(cursor, bools, flags, flagCount)
-				end,
-			des = if boolCount == 0 and (optboolCount == 0 and optCount == 0)
-				then function(cursor)
-					local tab = {} :: any
-					desRecordProps(cursor, schema, tab, properties, propCount)
-					return tab
+
+				for i, prop in optProperties do
+					local f = i + optboolCount
+
+					local val = (record :: any)[prop]
+					if val == nil then
+						flags[f] = false
+					else
+						local serdes = (schema :: any)[prop]
+						serdes.ser(cursor, val)
+						flags[f] = true
+					end
 				end
-				elseif boolCount > 0 and (optboolCount == 0 and optCount == 0) then function(cursor)
-					local tab = {} :: any
-					desRecordBools(cursor, tab, boolProperties, boolCount)
-					desRecordProps(cursor, schema, tab, properties, propCount)
-					return tab
+
+				serbitarr(cursor, bools, b)
+				serbitarr(cursor, flags, optboolCount + optCount)
+			end,
+
+			des = function(cursor)
+				local new: any = {}
+
+				local flags = desbitarr(cursor, optboolCount + optCount)
+
+				local actualBoolCount = boolCount
+				for i = 1, optboolCount do
+					actualBoolCount += if flags[i] then 1 else 0
 				end
-				elseif boolCount == 0 and (optboolCount > 0 or optCount > 0) then function(cursor)
-					local tab = {} :: any
-					desRecordFlags(cursor, tab, optProperties, optSerDes, optCount)
-					desRecordProps(cursor, schema, tab, properties, propCount)
-					return tab
+
+				local bools = desbitarr(cursor, actualBoolCount)
+
+				for i, prop in boolProperties do
+					new[prop] = bools[i]
 				end
-				else function(cursor)
-					local tab = {} :: any
-					desRecordBoolsAndOpts(
-						cursor,
-						tab,
-						boolProperties,
-						optboolProperties,
-						optProperties,
-						optSerDes,
-						boolCount,
-						optboolCount,
-						optCount
-					)
-					desRecordProps(cursor, schema, tab, properties, propCount)
-					return tab
-				end,
+
+				local b = actualBoolCount
+				for i = 1, optboolCount do
+					local flag = flags[i]
+					if flag then
+						local prop = optboolProperties[i]
+						new[prop] = bools[b]
+						b -= 1
+					end
+				end
+
+				for i = optboolCount + 1, optboolCount + optCount do
+					local flag = flags[i]
+					if flag then
+						local prop = optProperties[i - optboolCount]
+						local serdes = (schema :: any)[prop]
+						new[prop] = serdes.des(cursor)
+					end
+				end
+
+				for i = propCount, 1, -1 do
+					local prop = properties[i]
+					local serdes = (schema :: any)[prop]
+					new[prop] = serdes.des(cursor)
+				end
+
+				return new
+			end,
 		}
 	end
 end
