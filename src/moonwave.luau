@@ -65,6 +65,15 @@
 --- @return SerDes<number>
 --- Only supports 4 or 8 bytes.
 
+-- --- @class range
+
+--- @function range
+--- @within Squash
+--- @param min number
+--- @param max number
+--- @return SerDes<number>
+--- The given min and max must be integers, and min < max. Uses the smallest uint representation for a given range.
+
 --[=[
     @class string
     This namespace may be called like a function to return a string serdes, or it may be accessed like a table to use the string content.
@@ -170,8 +179,9 @@
 --- @function array
 --- @within Squash
 --- @param serdes SerDes<T>
---- @param length number?
+--- @param length (number | SerDes<number>)?
 --- @return SerDes<{T}>
+--- When passing a number as the length, it will optimize out the length entirely. If a number serializer is provided, it will serialize the length using that, else it will use a vlq. Will bitpack booleans and optional values.
 
 -- --- @class tuple
 
@@ -186,6 +196,7 @@
 --- @within Squash
 --- @param schema T
 --- @return SerDes<T>
+--- Will bitpack booleans and optional values.
 
 -- --- @class map
 
@@ -193,7 +204,9 @@
 --- @within Squash
 --- @param keySerDes SerDes<K>
 --- @param valueSerDes SerDes<V>
+--- @param length (number | SerDes<number>)?
 --- @return SerDes<{[K]: V}>
+--- When passing a number as the length, it will optimize out the length entirely. If a number serializer is provided, it will serialize the length using that, else it will use a vlq.
 
 -- --- @class literal
 
@@ -208,11 +221,14 @@
     @function table
     @within Squash
     @param schema { [string]: SerDes<any> }
+    @param length (number | SerDes<number>)?
     @return SerDes<any>
     Serializes tables given a schema mapping types to serializers.
     If a type is not defined in the schema, it will be ignored when serializing tables.
     **This is an expensive and heavy serializer compared to Record, Map, and Array.**
     **It is highly recommended that you do not use this for tables you know the type of already.**
+
+    When passing a number as the length, it will optimize out the length entirely. If a number serializer is provided, it will serialize the length using that, else it will use a vlq.
 ]=]
 
 -- --- @class Axes
