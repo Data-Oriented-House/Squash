@@ -181,7 +181,7 @@
 --- @param serdes SerDes<T>
 --- @param length (number | SerDes<number>)?
 --- @return SerDes<{T}>
---- When passing a number as the length, it will optimize out the length entirely. If a number serializer is provided, it will serialize the length using that, else it will use a vlq.
+--- When passing a number as the length, it will optimize out the length entirely. If a number serializer is provided, it will serialize the length using that, else it will use a vlq. Will bitpack booleans and optional values.
 
 -- --- @class tuple
 
@@ -196,6 +196,7 @@
 --- @within Squash
 --- @param schema T
 --- @return SerDes<T>
+--- Will bitpack booleans and optional values.
 
 -- --- @class map
 
