@@ -1121,7 +1121,7 @@ do
 					local val = (record :: any)[prop]
 					bools[b] = val
 				end
-				
+
 				local b = boolCount + 1
 				local flags = table.create(optboolCount + optCount)
 				for i, prop in optboolProperties do
@@ -1458,6 +1458,9 @@ end
 
 local rotser, rotdes
 do
+	local MAX_V   = 0.41421356
+	local SCALE   = 127 / MAX_V    -- ≈ 306.82 -> maps v∈[-MAX_V,MAX_V] → qv∈[-127..127]
+
 	local function cframeLookupEntries()
 		return {
 			CFrame.Angles(0, 0, 0),
@@ -1500,40 +1503,156 @@ do
 	local idToRotation
 	local rotationToId
 
-	rotser = function(cursor, cframe: CFrame)
-		--? Not defined outside so pure Luau users don't suffer errors
-		idToRotation = idToRotation or cframeLookupEntries()
-		rotationToId = rotationToId or cframeSpecialCaseLookup(idToRotation)
+	local SHIFT10 = 2 ^ 10               -- 1024
+	local SHIFT20 = SHIFT10 * SHIFT10    -- 1048576
+	local SHIFT30 = SHIFT20 * SHIFT10    -- 1073741824
+	local OFFSET = SHIFT10 // 2          -- 512, to turn [-511..511]→[1..1023]
+	local SCALE = (SHIFT10 // 2 - 1) / math.sqrt(0.5)  -- 511 / R, maps [-R..R]→[-511..511]
 
+	rotser = function(cursor, cframe: CFrame)
+		-- try a special 1-byte lookup first
+		idToRotation   = idToRotation   or cframeLookupEntries()
+		rotationToId   = rotationToId   or cframeSpecialCaseLookup(idToRotation)
 		local specialId = rotationToId[Vector3.new(cframe:ToOrientation())]
 		if specialId then
 			tryrealloc(cursor, 1)
 			pushu1(cursor, specialId)
-		else
-			local axis, theta = cframe:ToAxisAngle()
-			axis *= math.sin(theta / 2)
-			tryrealloc(cursor, 7)
-			local z = math.round((axis.Z + 1) * 2 ^ 15 - 1)
-			local y = math.round((axis.Y + 1) * 2 ^ 15 - 1)
-			local x = math.round((axis.X + 1) * 2 ^ 15 - 1)
-			pushu2(cursor, z)
-			pushu2(cursor, y)
-			pushu2(cursor, x)
-			pushu1(cursor, 0)
+			return
 		end
+
+		-- otherwise fall back to 4-byte pack
+		local v, w
+		do
+			local axis, angle = cframe:ToAxisAngle()
+			axis = axis / axis.Magnitude
+			local half = angle * 0.5
+			v = axis * math.sin(half)
+			w = math.cos(half)
+		end
+
+		-- figure out which of (v.x, v.y, v.z, w) has the largest abs
+		local absX, absY, absZ, absW = math.abs(v.X), math.abs(v.Y), math.abs(v.Z), math.abs(w)
+		local maxV = math.max(absX, absY, absZ, absW)
+
+		local dropId
+		if     maxV == absX then dropId = 0
+		elseif maxV == absY then dropId = 1
+		elseif maxV == absZ then dropId = 2
+		else                     dropId = 3
+		end
+
+		-- enforce that the dropped component is non-negative
+		if (dropId == 0 and v.X < 0)
+		or (dropId == 1 and v.Y < 0)
+		or (dropId == 2 and v.Z < 0)
+		or (dropId == 3 and w   < 0)
+		then
+			v = v * -1
+			w = -w
+		end
+
+		local a1,a2,a3
+		if     dropId == 0 then a1,a2,a3 = v.Y, v.Z, w
+		elseif dropId == 1 then a1,a2,a3 = v.X, v.Z, w
+		elseif dropId == 2 then a1,a2,a3 = v.X, v.Y, w
+		else                    a1,a2,a3 = v.X, v.Y, v.Z
+		end
+
+		local q1
+		do
+			local q = math.floor(a1 * SCALE + (a1 >= 0 and 0.5 or -0.5))
+			if q < -511 then q = -511 elseif q > 511 then q = 511 end
+			q1 = q + OFFSET
+		end
+
+		local q2
+		do
+			local q = math.floor(a2 * SCALE + (a2 >= 0 and 0.5 or -0.5))
+			if q < -511 then q = -511 elseif q > 511 then q = 511 end
+			q2 = q + OFFSET
+		end
+
+		local q3
+		do
+			local q = math.floor(a3 * SCALE + (a3 >= 0 and 0.5 or -0.5))
+			if q < -511 then q = -511 elseif q > 511 then q = 511 end
+			q3 = q + OFFSET
+		end
+
+		-- assemble into a 32-bit code: [dropIdx:2][q3:10][q2:10][q1:10]
+		local code = q1
+			+ q2 * SHIFT10
+			+ q3 * SHIFT20
+			+ dropId * SHIFT30
+
+		-- make sure we have room and write the 4 bytes (little-endian)
+		tryrealloc(cursor, 4)
+		pushu4(cursor, code)
 	end
 
 	rotdes = function(cursor)
-		local specialId = popu1(cursor)
-		if specialId ~= 0 then
-			return idToRotation[specialId]
+		-- ensure our special‐case lookup exists
+		idToRotation = idToRotation or cframeLookupEntries()
+
+		-- peek the first byte
+		local b0 = popu1(cursor)
+		local specialId = idToRotation[b0]
+		if specialId then
+			-- special 1-byte case: reconstruct CFrame from stored Euler
+			return CFrame.fromOrientation(
+				specialId.X,
+				specialId.Y,
+				specialId.Z
+			)
 		end
 
-		local qx = (popu2(cursor) + 1) * 2 ^ -15 - 1
-		local qy = (popu2(cursor) + 1) * 2 ^ -15 - 1
-		local qz = (popu2(cursor) + 1) * 2 ^ -15 - 1
-		local qw = math.sqrt(1 - math.clamp(qx * qx + qy * qy + qz * qz, 0, 1))
-		return CFrame.new(0, 0, 0, qx, qy, qz, qw)
+		-- otherwise it's a 4-byte encoded quaternion
+		-- we've already consumed b0 as the first byte of the little-endian code
+		local b1 = popu1(cursor)
+		local b2 = popu1(cursor)
+		local b3 = popu1(cursor)
+
+		-- reassemble 32-bit code
+		local code = b0
+			+ b1 * 256 ^ 1
+			+ b2 * 256 ^ 2
+			+ b3 * 256 ^ 3
+
+		-- unpack our 10-bit quant slots + 2-bit index
+		local q1 = code % SHIFT10
+		code //= SHIFT10
+		local q2 = code % SHIFT10
+		code //= SHIFT10
+		local q3 = code % SHIFT10
+		code //= SHIFT10
+		local dropId = code        -- 0..3
+
+		-- dequantize back into [-R..R]
+		local a1 = (q1 - OFFSET) / SCALE
+		local a2 = (q2 - OFFSET) / SCALE
+		local a3 = (q3 - OFFSET) / SCALE
+
+		-- now reconstruct (v.x, v.y, v.z, w):
+		local vX,vY,vZ,w
+		if dropId == 0 then
+			-- dropped vX, so a1→vY, a2→vZ, a3→w
+			vY, vZ, w = a1, a2, a3
+			vX = math.sqrt(1 - vY ^ 2 - vZ ^ 2 - w ^ 2)
+		elseif dropId == 1 then
+			-- dropped vY, so a1→vX, a2→vZ, a3→w
+			vX, vZ, w = a1, a2, a3
+			vY = math.sqrt(1 - vX ^ 2 - vZ ^ 2 - w ^ 2)
+		elseif dropId == 2 then
+			-- dropped vZ
+			vX, vY, w = a1, a2, a3
+			vZ = math.sqrt(1 - vX ^ 2 - vY ^ 2 - w ^ 2)
+		else
+			-- dropped w
+			vX, vY, vZ = a1, a2, a3
+			w = math.sqrt(1 - vX ^ 2 - vY ^ 2 - vZ ^ 2)
+		end
+
+		return CFrame.new(0, 0, 0, vX, vY, vZ, w)
 	end
 
 	local rotationCache: SerDes<CFrame> = {
