@@ -720,6 +720,89 @@ do
 end
 
 do
+	local vector2Cache = {}
+	function Squash.vector2(serdes: SerDes<number>): SerDes<vector>
+		if vector2Cache[serdes] then
+			return vector2Cache[serdes]
+		end
+
+		local pushrealloc, pop = serdes.ser, serdes.des
+
+		local vec: SerDes<vector> = {
+			ser = function(cursor, vector2)
+				pushrealloc(cursor, vector2.y)
+				pushrealloc(cursor, vector2.x)
+			end,
+
+			des = function(cursor)
+				return vector.create(pop(cursor), pop(cursor))
+			end,
+		}
+
+		vector2Cache[serdes] = vec
+		return vec
+	end
+end
+
+do
+	local vector3Cache = {}
+	function Squash.vector3(serdes: SerDes<number>): SerDes<vector>
+		if vector3Cache[serdes] then
+			return vector3Cache[serdes]
+		end
+
+		local pushrealloc, pop = serdes.ser, serdes.des
+
+		local vec: SerDes<vector> = {
+			ser = function(cursor, vector3)
+				pushrealloc(cursor, vector3.z)
+				pushrealloc(cursor, vector3.y)
+				pushrealloc(cursor, vector3.x)
+			end,
+
+			des = function(cursor)
+				return vector.create(pop(cursor), pop(cursor), pop(cursor))
+			end,
+		}
+
+		vector3Cache[serdes] = vec
+		return vec
+	end
+end
+
+do
+	local vector4Cache = {}
+	function Squash.vector4(serdes: SerDes<number>): SerDes<vector>
+		if vector4Cache[serdes] then
+			return vector4Cache[serdes]
+		end
+
+		local pushrealloc, pop = serdes.ser, serdes.des
+
+		local vec: SerDes<vector> = {
+			ser = function(cursor, vector4)
+				pushrealloc(cursor, vector4.w)
+				pushrealloc(cursor, vector4.z)
+				pushrealloc(cursor, vector4.y)
+				pushrealloc(cursor, vector4.x)
+			end,
+
+			des = function(cursor)
+				return vector.create(pop(cursor), pop(cursor), pop(cursor), pop(cursor))
+			end,
+		}
+
+		vector4Cache[serdes] = vec
+		return vec
+	end
+end
+
+do
+	local is4wide = pcall(function() return vector.zero.w end)
+	Squash.vector = ((if is4wide then Squash.vector4 else Squash.vector3) :: any) :: typeof(Squash.vector3)
+end
+
+do
 	local rangeCache = {}
 	-- Encodes an integer in the interval [min, max] using uints with as few bytes as possible
 	function Squash.range(min: number, max: number): SerDes<number>
@@ -1625,7 +1708,7 @@ do
 		local lookup = {}
 
 		for i, v in entries do
-			lookup[Vector3.new(v:ToOrientation())] = i
+			lookup[vector.create(v:ToOrientation())] = i
 		end
 
 		return lookup
@@ -1639,7 +1722,7 @@ do
 		idToRotation = idToRotation or cframeLookupEntries()
 		rotationToId = rotationToId or cframeSpecialCaseLookup(idToRotation)
 
-		local specialId = rotationToId[Vector3.new(cframe:ToOrientation())]
+		local specialId = rotationToId[vector.create(cframe:ToOrientation())]
 		if specialId then
 			tryrealloc(cursor, 1)
 			pushu1(cursor, specialId)
