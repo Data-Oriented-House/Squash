@@ -278,13 +278,13 @@ local function pushbool(
 	pushu1(
 		cursor,
 		(if a then 1 else 0)
-			+ (if b then 2 else 0)
-			+ (if c then 4 else 0)
-			+ (if d then 8 else 0)
-			+ (if e then 16 else 0)
-			+ (if f then 32 else 0)
-			+ (if g then 64 else 0)
-			+ (if h then 128 else 0)
+		+ (if b then 2 else 0)
+		+ (if c then 4 else 0)
+		+ (if d then 8 else 0)
+		+ (if e then 16 else 0)
+		+ (if f then 32 else 0)
+		+ (if g then 64 else 0)
+		+ (if h then 128 else 0)
 	)
 end
 
@@ -516,110 +516,206 @@ do
 end
 
 do
-	local uintCache = {}
-	function Squash.uint(bytes: number): SerDes<number>
-		if uintCache[bytes] then
-			return uintCache[bytes]
-		end
+	local u8 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 1)
+			pushu1(cursor, x)
+		end,
+		des = popu1,
+	}
+	function Squash.u8()
+		return u8
+	end
 
-		local push, pop
-		if bytes == 1 then
-			push, pop = pushu1, popu1
-		elseif bytes == 2 then
-			push, pop = pushu2, popu2
-		elseif bytes == 3 then
-			push, pop = pushu3, popu3
-		elseif bytes == 4 then
-			push, pop = pushu4, popu4
-		elseif bytes == 5 then
-			push, pop = pushu5, popu5
-		elseif bytes == 6 then
-			push, pop = pushu6, popu6
-		elseif bytes == 7 then
-			push, pop = pushu7, popu7
-		elseif bytes == 8 then
-			push, pop = pushu8, popu8
-		else
-			error(`uint bytes must be integer between [1, 8], got {bytes}`)
-		end
+	local u16 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 2)
+			pushu2(cursor, x)
+		end,
+		des = popu2,
+	}
+	function Squash.u16()
+		return u16
+	end
 
-		local num: SerDes<number> = {
-			ser = function(cursor, x)
-				tryrealloc(cursor, bytes)
-				push(cursor, x)
-			end,
-			des = pop,
-		}
-		uintCache[bytes] = num
-		return num
+	local u24 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 3)
+			pushu3(cursor, x)
+		end,
+		des = popu3,
+	}
+	function Squash.u24()
+		return u24
+	end
+
+	local u32 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 4)
+			pushu4(cursor, x)
+		end,
+		des = popu4,
+	}
+	function Squash.u32()
+		return u32
+	end
+
+	local u40 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 5)
+			pushu5(cursor, x)
+		end,
+		des = popu5,
+	}
+	function Squash.u40()
+		return u40
+	end
+
+	local u48 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 6)
+			pushu6(cursor, x)
+		end,
+		des = popu6,
+	}
+	function Squash.u48()
+		return u48
+	end
+
+	local u56 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 7)
+			pushu7(cursor, x)
+		end,
+		des = popu7,
+	}
+	function Squash.u56()
+		return u56
+	end
+
+	local u64 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 8)
+			pushu8(cursor, x)
+		end,
+		des = popu8,
+	}
+	function Squash.u64()
+		return u64
 	end
 end
 
 do
-	local intCache = {}
-	function Squash.int(bytes: number): SerDes<number>
-		if intCache[bytes] then
-			return intCache[bytes]
-		end
+	local i8 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 1)
+			pushi1(cursor, x)
+		end,
+		des = popi1,
+	}
+	function Squash.i8()
+		return i8
+	end
 
-		local push, pop
-		if bytes == 1 then
-			push, pop = pushi1, popi1
-		elseif bytes == 2 then
-			push, pop = pushi2, popi2
-		elseif bytes == 3 then
-			push, pop = pushi3, popi3
-		elseif bytes == 4 then
-			push, pop = pushi4, popi4
-		elseif bytes == 5 then
-			push, pop = pushi5, popi5
-		elseif bytes == 6 then
-			push, pop = pushi6, popi6
-		elseif bytes == 7 then
-			push, pop = pushi7, popi7
-		elseif bytes == 8 then
-			push, pop = pushi8, popi8
-		else
-			error(`int bytes must be integer between [1, 8], got {bytes}`)
-		end
+	local i16 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 2)
+			pushi2(cursor, x)
+		end,
+		des = popi2,
+	}
+	function Squash.i16()
+		return i16
+	end
 
-		local num: SerDes<number> = {
-			ser = function(cursor, x)
-				tryrealloc(cursor, bytes)
-				push(cursor, x)
-			end,
-			des = pop,
-		}
-		intCache[bytes] = num
-		return num
+	local i24 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 3)
+			pushi3(cursor, x)
+		end,
+		des = popi3,
+	}
+	function Squash.i24()
+		return i24
+	end
+
+	local i32 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 4)
+			pushi4(cursor, x)
+		end,
+		des = popi4,
+	}
+	function Squash.i32()
+		return i32
+	end
+
+	local i40 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 5)
+			pushi5(cursor, x)
+		end,
+		des = popi5,
+	}
+	function Squash.i40()
+		return i40
+	end
+
+	local i48 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 6)
+			pushi6(cursor, x)
+		end,
+		des = popi6,
+	}
+	function Squash.i48()
+		return i48
+	end
+
+	local i56 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 7)
+			pushi7(cursor, x)
+		end,
+		des = popi7,
+	}
+	function Squash.i56()
+		return i56
+	end
+
+	local i64 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 8)
+			pushi8(cursor, x)
+		end,
+		des = popi8,
+	}
+	function Squash.i64()
+		return i64
 	end
 end
 
 do
-	local numberCache = {}
-	function Squash.number(bytes: number): SerDes<number>
-		if numberCache[bytes] then
-			return numberCache[bytes]
-		end
+	local f32 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 4)
+			pushf4(cursor, x)
+		end,
+		des = popf4,
+	}
+	function Squash.f32()
+		return f32
+	end
 
-		local push, pop
-		if bytes == 4 then
-			push, pop = pushf4, popf4
-		elseif bytes == 8 then
-			push, pop = pushf8, popf8
-		else
-			error(`number bytes must be integer 4 or 8, got {bytes}`)
-		end
-
-		local num: SerDes<number> = {
-			ser = function(cursor, x)
-				tryrealloc(cursor, bytes)
-				push(cursor, x)
-			end,
-			des = pop,
-		}
-		numberCache[bytes] = num
-		return num
+	local f64 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 8)
+			pushf8(cursor, x)
+		end,
+		des = popf8,
+	}
+	function Squash.f64()
+		return f64
 	end
 end
 

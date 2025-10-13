@@ -13,13 +13,13 @@ local Squash = require(...)
 local T = Squash.T
 local rec = Squash.record
 local arr = Squash.array
-local i3 = Squash.int(3)
-local u2 = Squash.uint(2)
+local i3 = Squash.i24()
+local u2 = Squash.u16()
 
 local Serializers = {}
 ```
 
-The below example implementation wastes a few bytes at the end of each array to redundantly record a length that can only be stored once. The type could be changed to `{ { x: number, z: number, id: number } }` but that comes with a performance overhead for so many table creations when deserializing.
+The below example implementation wastes a few bytes at the end of each array to redundantly record a length that can be stored only once. The type could be changed to `{ { x: number, z: number, id: number } }` but that comes with a performance overhead because of so many table creations when deserializing.
 ```lua
 Serializers.enemies = rec {
 	x = T(arr(i3, u2)),

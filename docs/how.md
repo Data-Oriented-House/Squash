@@ -73,7 +73,7 @@ They may only be positive and can represent all possible permutations of their b
 
 ```lua
 local cursor = Squash.cursor()
-Squash.uint(1).ser(cursor, 243)
+Squash.u8().ser(cursor, 243)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 243 0 0 0 0 0 0 0 }
@@ -81,12 +81,12 @@ Squash.print(cursor)
 local buf = Squash.tobuffer(cursor)
 
 local cursor = Squash.frombuffer(buf)
-print(Squash.uint(1).des(cursor))
+print(Squash.u8().des(cursor))
 -- 243
 ```
 ```lua
 local cursor = Squash.cursor(1)
-Squash.uint(1).ser(cursor, -13)
+Squash.u8().ser(cursor, -13)
 Squash.print(cursor)
 -- Pos: 1 / 1
 -- Buf: { 243   }
@@ -94,12 +94,12 @@ Squash.print(cursor)
 local buf = Squash.tobuffer(cursor)
 
 local cursor = Squash.frombuffer(buf)
-print(Squash.uint(1).des(cursor))
+print(Squash.u8().des(cursor))
 -- 243
 ```
 ```lua
 local cursor = Squash.cursor(4, 1)
-Squash.uint(2).ser(cursor, 7365)
+Squash.u16().ser(cursor, 7365)
 Squash.print(cursor)
 -- Pos: 3 / 4
 -- Buf: { 0 197 28 0 }
@@ -107,7 +107,7 @@ Squash.print(cursor)
 local buf = Squash.tobuffer(cursor)
 
 local cursor = Squash.frombuffer(buf)
-print(Squash.uint(2).des(cursor))
+print(Squash.u16().des(cursor))
 -- 7365
 ```
 
@@ -131,7 +131,7 @@ They use [2's Compliment](https://en.wikipedia.org/wiki/Two%27s_complement) to r
 
 ```lua
 local cursor = Squash.cursor()
-Squash.int(1).ser(cursor, 127)
+Squash.i8().ser(cursor, 127)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 127 0 0 0 0 0 0 0 }
@@ -139,12 +139,12 @@ Squash.print(cursor)
 local buf = Squash.tobuffer(cursor)
 
 local cursor = Squash.frombuffer(buf)
-print(Squash.int(1).des(cursor))
+print(Squash.i8().des(cursor))
 -- 127
 ```
 ```lua
 local cursor = Squash.cursor()
-Squash.int(1).ser(cursor, -127)
+Squash.i8().ser(cursor, -127)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 129 0 0 0 0 0 0 0 }
@@ -152,12 +152,12 @@ Squash.print(cursor)
 local buf = Squash.tobuffer(cursor)
 
 local cursor = Squash.frombuffer(buf)
-print(Squash.int(1).des(cursor))
+print(Squash.i8().des(cursor))
 -- -127
 ```
 ```lua
 local cursor = Squash.cursor()
-Squash.int(1).ser(cursor, 128)
+Squash.i8().ser(cursor, 128)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 128 0 0 0 0 0 0 0 }
@@ -165,12 +165,12 @@ Squash.print(cursor)
 local buf = Squash.tobuffer(cursor)
 
 local cursor = Squash.frombuffer(buf)
-print(Squash.int(1).des(cursor))
+print(Squash.i8().des(cursor))
 -- -128
 ```
 ```lua
 local cursor = Squash.cursor()
-Squash.int(1).ser(cursor, -128)
+Squash.i8().ser(cursor, -128)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 128 0 0 0 0 0 0 0 }
@@ -178,7 +178,7 @@ Squash.print(cursor)
 local buf = Squash.tobuffer(cursor)
 
 local cursor = Squash.frombuffer(buf)
-print(Squash.int(1).des(cursor))
+print(Squash.i8().des(cursor))
 -- -128
 ```
 
@@ -202,7 +202,7 @@ The formula for calculating the value of a `double` from its sign, exponent, and
 
 ```lua
 local cursor = Squash.cursor()
-Squash.number(4).ser(cursor, 174302.923957475339573)
+Squash.f32().ser(cursor, 174302.923957475339573)
 Squash.print(cursor)
 -- Pos: 4 / 8
 -- Buf: { 187 55 42 72 0 0 0 0 }
@@ -210,12 +210,12 @@ Squash.print(cursor)
 local buf = Squash.tobuffer(cursor)
 
 local cursor = Squash.frombuffer(buf)
-print(Squash.number(4).des(cursor))
+print(Squash.f32().des(cursor))
 -- 174302.921875
 ```
 ```lua
 local cursor = Squash.cursor()
-Squash.number(8).ser(cursor, -17534840302.923957475339573)
+Squash.f64().ser(cursor, -17534840302.923957475339573)
 Squash.print(cursor)
 -- Pos: 8 / 8
 -- Buf: { 34 178 187 183 161 84 16 194   }
@@ -223,7 +223,7 @@ Squash.print(cursor)
 local buf = Squash.tobuffer(cursor)
 
 local cursor = Squash.frombuffer(buf)
-print(Squash.number(8).des(cursor))
+print(Squash.f64().des(cursor))
 -- -17534840302.923958
 ```
 
@@ -412,7 +412,7 @@ Arrays are a classic table type `{T}`. Like strings, which are also arrays (of b
 
 ```lua
 local arr = Squash.array
-local float = Squash.number(4)
+local float = Squash.f32()
 local myarr = arr(float)
 
 local cursor = Squash.cursor()
@@ -430,7 +430,7 @@ print(myarr.des(cursor))
 
 ```lua
 local arr = Squash.array
-local float = Squash.number(4)
+local float = Squash.f32()
 local myarr = arr(float, 8)
 
 local cursor = Squash.cursor()
@@ -484,11 +484,11 @@ If using the TypeScript port of Squash this is irrelevant, but for Luau users, t
 ```lua
 local T = Squash.T
 
-typeof(Squash.number(4))
+typeof(Squash.f32())
 -- SerDes<number>
-typeof(T(Squash.number(4)))
+typeof(T(Squash.f32()))
 -- number
-print(Squash.number(4) == T(Squash.number(4)))
+print(Squash.f32() == T(Squash.f32()))
 -- true
 ```
 
@@ -504,7 +504,7 @@ local u = Squash.uint
 local vlq = Squash.vlq()
 local bool = Squash.boolean()
 local str = Squash.string()
-local float = Squash.number(4)
+local float = Squash.f32()
 local vec2 = Squash.Vector2
 local arr = Squash.array
 local map = Squash.map
@@ -586,8 +586,8 @@ local S = Squash
 local T = S.T
 
 local mytuple = S.tuple(
-    T(S.Vector3(S.number(8))),
-    T(S.CFrame(S.int(1))),
+    T(S.Vector3(S.f64())),
+    T(S.CFrame(S.i8())),
     T(S.BrickColor()),
     T(S.EnumItem(Enum.HumanoidStateType))
 )
@@ -615,12 +615,12 @@ It has to store data for every value, the type of every value, every key, and th
 
 ```lua
 local serdes = Squash.table {
-    number = Squash.number(8),
+    number = Squash.f64(),
     string = Squash.string(),
     boolean = Squash.boolean(),
     table = Squash.table {
-        CFrame = Squash.CFrame(Squash.number(4)),
-        Vector3 = Squash.Vector3(Squash.int(2)),
+        CFrame = Squash.CFrame(Squash.f32()),
+        Vector3 = Squash.Vector3(Squash.i16()),
         number = Squash.vlq(),
     },
 }
