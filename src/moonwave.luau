@@ -65,6 +65,32 @@
 --- @return SerDes<number>
 --- Only supports 4 or 8 bytes.
 
+-- --- @class vector
+
+--- @function vector
+--- @within Squash
+--- @param serdes SerDes<number>
+--- @return SerDes<vector>
+--- Either vector3 or vector4 depending on the Luau configuration's default vector width.
+
+--- @function vector2
+--- @within Squash
+--- @param serdes SerDes<number>
+--- @return SerDes<vector>
+--- The x, y components.
+
+--- @function vector3
+--- @within Squash
+--- @param serdes SerDes<number>
+--- @return SerDes<vector>
+--- The x, y, z components.
+
+--- @function vector4
+--- @within Squash
+--- @param serdes SerDes<number>
+--- @return SerDes<vector>
+--- The x, y, z, w components.
+
 -- --- @class range
 
 --- @function range
