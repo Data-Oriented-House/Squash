@@ -1469,7 +1469,6 @@ do
 					local flag = flags[i + optboolCount]
 					if flag then
 						local prop = optProperties[i]
-						local serdes = (schema :: any)[prop]
 						new[prop] = optSerDes[i].des(cursor)
 					end
 				end
