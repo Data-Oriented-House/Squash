@@ -1741,49 +1741,50 @@ do
 end
 
 local rotser, rotdes
+
+local function cframeLookupEntries()
+	return {
+		CFrame.Angles(0, 0, 0),
+		CFrame.Angles(math.rad(90), 0, 0),
+		CFrame.Angles(0, math.rad(180), math.rad(180)),
+		CFrame.Angles(math.rad(-90), 0, 0),
+		CFrame.Angles(0, math.rad(180), math.rad(90)),
+		CFrame.Angles(0, math.rad(90), math.rad(90)),
+		CFrame.Angles(0, 0, math.rad(90)),
+		CFrame.Angles(0, math.rad(-90), math.rad(90)),
+		CFrame.Angles(math.rad(-90), math.rad(-90), 0),
+		CFrame.Angles(0, math.rad(-90), 0),
+		CFrame.Angles(math.rad(90), math.rad(-90), 0),
+		CFrame.Angles(0, math.rad(90), math.rad(180)),
+		CFrame.Angles(0, math.rad(-90), math.rad(180)),
+		CFrame.Angles(0, math.rad(180), math.rad(0)),
+		CFrame.Angles(math.rad(-90), math.rad(-180), math.rad(0)),
+		CFrame.Angles(0, math.rad(0), math.rad(180)),
+		CFrame.Angles(math.rad(90), math.rad(180), math.rad(0)),
+		CFrame.Angles(0, math.rad(0), math.rad(-90)),
+		CFrame.Angles(0, math.rad(-90), math.rad(-90)),
+		CFrame.Angles(0, math.rad(-180), math.rad(-90)),
+		CFrame.Angles(0, math.rad(90), math.rad(-90)),
+		CFrame.Angles(math.rad(90), math.rad(90), 0),
+		CFrame.Angles(0, math.rad(90), 0),
+		CFrame.Angles(math.rad(-90), math.rad(90), 0),
+	}
+end
+
+local function cframeSpecialCaseLookup(entries: { CFrame })
+	local lookup = {}
+
+	for i, v in entries do
+		lookup[vector.create(v:ToOrientation())] = i
+	end
+
+	return lookup
+end
+
+local idToRotation
+local rotationToId
+
 do
-	local function cframeLookupEntries()
-		return {
-			CFrame.Angles(0, 0, 0),
-			CFrame.Angles(math.rad(90), 0, 0),
-			CFrame.Angles(0, math.rad(180), math.rad(180)),
-			CFrame.Angles(math.rad(-90), 0, 0),
-			CFrame.Angles(0, math.rad(180), math.rad(90)),
-			CFrame.Angles(0, math.rad(90), math.rad(90)),
-			CFrame.Angles(0, 0, math.rad(90)),
-			CFrame.Angles(0, math.rad(-90), math.rad(90)),
-			CFrame.Angles(math.rad(-90), math.rad(-90), 0),
-			CFrame.Angles(0, math.rad(-90), 0),
-			CFrame.Angles(math.rad(90), math.rad(-90), 0),
-			CFrame.Angles(0, math.rad(90), math.rad(180)),
-			CFrame.Angles(0, math.rad(-90), math.rad(180)),
-			CFrame.Angles(0, math.rad(180), math.rad(0)),
-			CFrame.Angles(math.rad(-90), math.rad(-180), math.rad(0)),
-			CFrame.Angles(0, math.rad(0), math.rad(180)),
-			CFrame.Angles(math.rad(90), math.rad(180), math.rad(0)),
-			CFrame.Angles(0, math.rad(0), math.rad(-90)),
-			CFrame.Angles(0, math.rad(-90), math.rad(-90)),
-			CFrame.Angles(0, math.rad(-180), math.rad(-90)),
-			CFrame.Angles(0, math.rad(90), math.rad(-90)),
-			CFrame.Angles(math.rad(90), math.rad(90), 0),
-			CFrame.Angles(0, math.rad(90), 0),
-			CFrame.Angles(math.rad(-90), math.rad(90), 0),
-		}
-	end
-
-	local function cframeSpecialCaseLookup(entries: { CFrame })
-		local lookup = {}
-
-		for i, v in entries do
-			lookup[vector.create(v:ToOrientation())] = i
-		end
-
-		return lookup
-	end
-
-	local idToRotation
-	local rotationToId
-
 	function rotser(cursor, cframe: CFrame)
 		--? Not defined outside so pure Luau users don't suffer errors
 		idToRotation = idToRotation or cframeLookupEntries()
@@ -1837,24 +1838,54 @@ do
 			return cframeCache[positionSerDes]
 		end
 
-		local pushrealloc, pop = positionSerDes.ser, positionSerDes.des
-
-		local cframeserdes: SerDes<CFrame> = {
-			ser = function(cursor, cframe)
+		local size, push, pop = getNumberSizePushPop(positionSerDes)
+		local cframeserdes: SerDes<CFrame> = {} :: any
+		if not size then
+			function cframeserdes.ser(cursor, cframe)
 				rotser(cursor, cframe)
 
 				local pos = cframe.Position
-				pushrealloc(cursor, pos.Z)
-				pushrealloc(cursor, pos.Y)
-				pushrealloc(cursor, pos.X)
-			end,
+				push(cursor, pos.Z)
+				push(cursor, pos.Y)
+				push(cursor, pos.X)
+			end
+		else
+			size *= 3
+			function cframeserdes.ser(cursor, cframe)
+				--? Not defined outside so pure Luau users don't suffer errors
+				idToRotation = idToRotation or cframeLookupEntries()
+				rotationToId = rotationToId or cframeSpecialCaseLookup(idToRotation)
 
-			des = function(cursor)
-				local x, y, z = pop(cursor), pop(cursor), pop(cursor)
-				local rotation = rotdes(cursor)
-				return rotation + Vector3.new(x, y, z)
-			end,
-		}
+				local specialId = rotationToId[vector.create(cframe:ToOrientation())]
+				if specialId then
+					tryrealloc(cursor, 1 + size)
+					pushu1(cursor, specialId)
+				else
+					local axis, theta = cframe:ToAxisAngle()
+					axis *= math.sin(theta / 2)
+					tryrealloc(cursor, 7 + size)
+					local z = math.round((axis.Z + 1) * 2 ^ 15 - 1)
+					local y = math.round((axis.Y + 1) * 2 ^ 15 - 1)
+					local x = math.round((axis.X + 1) * 2 ^ 15 - 1)
+					pushu2(cursor, z)
+					pushu2(cursor, y)
+					pushu2(cursor, x)
+					pushu1(cursor, 0)
+				end
+
+				local pos = cframe.Position
+				push(cursor, pos.Z)
+				push(cursor, pos.Y)
+				push(cursor, pos.X)
+			end
+		end
+
+		function cframeserdes.des(cursor)
+			local x, y, z = pop(cursor), pop(cursor), pop(cursor)
+			local rotation = rotdes(cursor) :: CFrame
+			return rotation + Vector3.new(x, y, z)
+		end
+
 		cframeCache[positionSerDes] = cframeserdes
 		return cframeserdes
 	end
