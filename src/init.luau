@@ -157,7 +157,7 @@ local function popi2(cursor: Cursor)
 	return buffer.readi16(cursor.Buf, cursor.Pos)
 end
 
-local function pushi3(cursor, x)
+local function pushi3(cursor, x: number)
 	local x = if x >= 0 then x * 2 else -x * 2 - 1
 	buffer.writeu8(cursor.Buf, cursor.Pos, x % 256)
 	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
@@ -275,17 +275,15 @@ local function pushbool(
 	g: boolean?,
 	h: boolean?
 )
-	pushu1(
-		cursor,
-		(if a then 1 else 0)
-		+ (if b then 2 else 0)
-		+ (if c then 4 else 0)
-		+ (if d then 8 else 0)
-		+ (if e then 16 else 0)
-		+ (if f then 32 else 0)
-		+ (if g then 64 else 0)
-		+ (if h then 128 else 0)
-	)
+	local y = if a then 1 else 0
+	if b then y += 2 end
+	if c then y += 4 end
+	if d then y += 8 end
+	if e then y += 16 end
+	if f then y += 32 end
+	if g then y += 64 end
+	if h then y += 128 end
+	pushu1(cursor, y)
 end
 
 local function popbool(cursor: Cursor): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
@@ -719,6 +717,52 @@ do
 	end
 end
 
+local function getNumberSizePushPop(serdes: SerDes<number>): (number?, (Cursor, number) -> (), (Cursor) -> number)
+	if serdes == Squash.f64() then
+		return 8, pushf8, popf8
+	elseif serdes == Squash.f32() then
+		return 4, pushf4, popf4
+
+	-- unsigned ints
+	elseif serdes == Squash.u8() then
+		return 1, pushu1, popu1
+	elseif serdes == Squash.u16() then
+		return 2, pushu2, popu2
+	elseif serdes == Squash.u24() then
+		return 3, pushu3, popu3
+	elseif serdes == Squash.u32() then
+		return 4, pushu4, popu4
+	elseif serdes == Squash.u40() then
+		return 5, pushu5, popu5
+	elseif serdes == Squash.u48() then
+		return 6, pushu6, popu6
+	elseif serdes == Squash.u56() then
+		return 7, pushu7, popu7
+	elseif serdes == Squash.u64() then
+		return 8, pushu8, popu8
+
+	-- signed ints
+	elseif serdes == Squash.i8() then
+		return 1, pushi1, popi1
+	elseif serdes == Squash.i16() then
+		return 2, pushi2, popi2
+	elseif serdes == Squash.i24() then
+		return 3, pushi3, popi3
+	elseif serdes == Squash.i32() then
+		return 4, pushi4, popi4
+	elseif serdes == Squash.i40() then
+		return 5, pushi5, popi5
+	elseif serdes == Squash.i48() then
+		return 6, pushi6, popi6
+	elseif serdes == Squash.i56() then
+		return 7, pushi7, popi7
+	elseif serdes == Squash.i64() then
+		return 8, pushi8, popi8
+	else
+		return nil, serdes.ser, serdes.des
+	end
+end
+
 do
 	local vector2Cache = {}
 	function Squash.vector2(serdes: SerDes<number>): SerDes<vector>
@@ -726,18 +770,25 @@ do
 			return vector2Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<vector> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector2)
+				push(cursor, vector2.y)
+				push(cursor, vector2.x)
+			end
+		else
+			size *= 2
+			function vec.ser(cursor, vector2)
+				tryrealloc(cursor, size)
+				push(cursor, vector2.y)
+				push(cursor, vector2.x)
+			end
+		end
 
-		local vec: SerDes<vector> = {
-			ser = function(cursor, vector2)
-				pushrealloc(cursor, vector2.y)
-				pushrealloc(cursor, vector2.x)
-			end,
-
-			des = function(cursor)
-				return vector.create(pop(cursor), pop(cursor))
-			end,
-		}
+		function vec.des(cursor)
+			return vector.create(pop(cursor), pop(cursor))
+		end
 
 		vector2Cache[serdes] = vec
 		return vec
@@ -751,19 +802,27 @@ do
 			return vector3Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<vector> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector3)
+				push(cursor, vector3.z)
+				push(cursor, vector3.y)
+				push(cursor, vector3.x)
+			end
+		else
+			size *= 3
+			function vec.ser(cursor, vector3)
+				tryrealloc(cursor, size)
+				push(cursor, vector3.z)
+				push(cursor, vector3.y)
+				push(cursor, vector3.x)
+			end
+		end
 
-		local vec: SerDes<vector> = {
-			ser = function(cursor, vector3)
-				pushrealloc(cursor, vector3.z)
-				pushrealloc(cursor, vector3.y)
-				pushrealloc(cursor, vector3.x)
-			end,
-
-			des = function(cursor)
-				return vector.create(pop(cursor), pop(cursor), pop(cursor))
-			end,
-		}
+		function vec.des(cursor)
+			return vector.create(pop(cursor), pop(cursor), pop(cursor))
+		end
 
 		vector3Cache[serdes] = vec
 		return vec
@@ -777,20 +836,29 @@ do
 			return vector4Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<vector> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector4)
+				push(cursor, vector4.w)
+				push(cursor, vector4.z)
+				push(cursor, vector4.y)
+				push(cursor, vector4.x)
+			end
+		else
+			size *= 4
+			function vec.ser(cursor, vector4)
+				tryrealloc(cursor, size)
+				push(cursor, vector4.w)
+				push(cursor, vector4.z)
+				push(cursor, vector4.y)
+				push(cursor, vector4.x)
+			end
+		end
 
-		local vec: SerDes<vector> = {
-			ser = function(cursor, vector4)
-				pushrealloc(cursor, vector4.w)
-				pushrealloc(cursor, vector4.z)
-				pushrealloc(cursor, vector4.y)
-				pushrealloc(cursor, vector4.x)
-			end,
-
-			des = function(cursor)
-				return vector.create(pop(cursor), pop(cursor), pop(cursor), pop(cursor))
-			end,
-		}
+		function vec.des(cursor)
+			return vector.create(pop(cursor), pop(cursor), pop(cursor), pop(cursor))
+		end
 
 		vector4Cache[serdes] = vec
 		return vec
@@ -2078,27 +2146,33 @@ do
 end
 
 do
-	local vector3Cache = {}
-	function Squash.Vector3(serdes: SerDes<number>): SerDes<Vector3>
-		if vector3Cache[serdes] then
-			return vector3Cache[serdes]
+	local vector2Cache = {}
+	function Squash.Vector2(serdes: SerDes<number>): SerDes<Vector2>
+		if vector2Cache[serdes] then
+			return vector2Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<Vector2> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector2)
+				push(cursor, vector2.Y)
+				push(cursor, vector2.X)
+			end
+		else
+			size *= 2
+			function vec.ser(cursor, vector2)
+				tryrealloc(cursor, size)
+				push(cursor, vector2.Y)
+				push(cursor, vector2.X)
+			end
+		end
 
-		local vec: SerDes<Vector3> = {
-			ser = function(cursor, vector3)
-				pushrealloc(cursor, vector3.Z)
-				pushrealloc(cursor, vector3.Y)
-				pushrealloc(cursor, vector3.X)
-			end,
+		function vec.des(cursor)
+			return Vector2.new(pop(cursor), pop(cursor))
+		end
 
-			des = function(cursor)
-				return Vector3.new(pop(cursor), pop(cursor), pop(cursor))
-			end,
-		}
-
-		vector3Cache[serdes] = vec
+		vector2Cache[serdes] = vec
 		return vec
 	end
 end
@@ -2229,27 +2303,36 @@ do
 end
 
 do
-	local vector2Cache = {}
-	function Squash.Vector2(serdes: SerDes<number>): SerDes<Vector2>
-		if vector2Cache[serdes] then
-			return vector2Cache[serdes]
+	local vector3Cache = {}
+	function Squash.Vector3(serdes: SerDes<number>): SerDes<Vector3>
+		if vector3Cache[serdes] then
+			return vector3Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<Vector3> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector3)
+				push(cursor, vector3.Z)
+				push(cursor, vector3.Y)
+				push(cursor, vector3.X)
+			end
+		else
+			size *= 3
+			function vec.ser(cursor, vector3)
+				tryrealloc(cursor, size)
+				push(cursor, vector3.Z)
+				push(cursor, vector3.Y)
+				push(cursor, vector3.X)
+			end
+		end
 
-		local vec2: SerDes<Vector2> = {
-			ser = function(cursor, v)
-				pushrealloc(cursor, v.Y)
-				pushrealloc(cursor, v.X)
-			end,
+		function vec.des(cursor)
+			return Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+		end
 
-			des = function(cursor)
-				return Vector2.new(pop(cursor), pop(cursor))
-			end,
-		}
-
-		vector2Cache[serdes] = vec2
-		return vec2
+		vector3Cache[serdes] = vec
+		return vec
 	end
 end
 
