@@ -1529,7 +1529,7 @@ do
 		local lookup = {}
 
 		for i, v in entries do
-			lookup[Vector3.new(v:ToOrientation())] = i
+			lookup[vector.create(v:ToOrientation())] = i
 		end
 
 		return lookup
@@ -1543,7 +1543,7 @@ do
 		idToRotation = idToRotation or cframeLookupEntries()
 		rotationToId = rotationToId or cframeSpecialCaseLookup(idToRotation)
 
-		local specialId = rotationToId[Vector3.new(cframe:ToOrientation())]
+		local specialId = rotationToId[vector.create(cframe:ToOrientation())]
 		if specialId then
 			tryrealloc(cursor, 1)
 			pushu1(cursor, specialId)
