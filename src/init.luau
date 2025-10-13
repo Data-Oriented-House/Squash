@@ -684,11 +684,11 @@ do
 		local pushrealloc, pop = serdes.ser, serdes.des
 
 		local vec: SerDes<vector> = {
-			ser = function(cursor, vector3)
-				pushrealloc(cursor, vector3.w)
-				pushrealloc(cursor, vector3.z)
-				pushrealloc(cursor, vector3.y)
-				pushrealloc(cursor, vector3.x)
+			ser = function(cursor, vector4)
+				pushrealloc(cursor, vector4.w)
+				pushrealloc(cursor, vector4.z)
+				pushrealloc(cursor, vector4.y)
+				pushrealloc(cursor, vector4.x)
 			end,
 
 			des = function(cursor)
