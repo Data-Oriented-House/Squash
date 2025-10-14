@@ -51,7 +51,7 @@ print(Squash.boolean().des(cursor))
 
 ## Numbers
 
-In Luau, the `number` type is 8 bytes large, but only 52 of the bits are dedicated to storing the contents of the number. This means there is no need to serialize more than 7 bytes for any kind of integer.
+In Luau, the `number` type is 8 bytes large, but only 52 of the bits are dedicated to storing the contents of an integer. After this threshold, the spacing between numbers is larger than 1, and integers begin skipping. At 7 and 8 bytes, integers may or may not be represented properly anymore.
 
 ### Unsigned Integers
 
