@@ -1,6 +1,6 @@
 [package]
 name = "data-oriented-house/squash"
-version = "3.1.1"
+version = "4.0.0"
 registry = "https://github.com/UpliftGames/wally-index"
 licence = "MIT"
 authors = ["Sona"]
