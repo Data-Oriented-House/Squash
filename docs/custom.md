@@ -58,14 +58,19 @@ end
 
 The below implementation has less overhead and defines a custom format to only store the length once. It can serialize into the `{ { x: number, z: number, id: number } }` format, but then deserialize straight into the `{ x: { number }, z: { number }, id: { number } }` format.
 ```lua
+local getbuf = Squash.getbuf
+local getpos = Squash.getpos
+local setpos = Squash.setpos
+local tryrealloc = Squash.tryrealloc
+
 Serializers.enemiesManually = {
 	ser = function(cursor, data)
 		local n = #data.x
 
-		Squash.tryrealloc(cursor, 8 * n)
-		local buf = cursor.Buf
+		tryrealloc(cursor, 8 * n)
+		local buf = getbuf(cursor)
 
-		local p = cursor.Pos
+		local p = getpos(buf)
 		for i = 1, n do
 			local x, z, id = data.x[i], data.z[i], data.id[i]
 
@@ -88,12 +93,12 @@ Serializers.enemiesManually = {
 		buffer.writeu16(buf, p, n)
 		p += 2
 
-		cursor.Pos = p
+		setpos(buf, p)
 	end,
 
 	des = function(cursor)
-		local buf = cursor.Buf
-		local p = cursor.Pos
+		local buf = getbuf(cursor)
+		local p = getpos(buf)
 
 		p -= 2
 		local n = buffer.readu16(buf, p)
@@ -121,6 +126,8 @@ Serializers.enemiesManually = {
 
 			data.x[i], data.z[i], data.id[i] = x, z, id
 		end
+
+		setpos(buf, p)
 
 		return data
 	end,
