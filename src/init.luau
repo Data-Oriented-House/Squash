@@ -40,8 +40,8 @@ end
 local function tobuffer(cursor: Cursor): buffer
 	local buf = getbuf(cursor)
 	local pos = getpos(buf)
-	local newbuf = buffer.create(pos)
-	buffer.copy(newbuf, 0, buf, 0, pos)
+	local newbuf = buffer.create(pos - OFFSET_SIZE)
+	buffer.copy(newbuf, 0, buf, OFFSET_SIZE, pos - OFFSET_SIZE)
 	return newbuf
 end
 
@@ -622,6 +622,10 @@ Squash.cursor = newcursor
 Squash.frombuffer = frombuffer
 Squash.tobuffer = tobuffer
 Squash.tryrealloc = tryrealloc
+Squash.setpos = setpos
+Squash.getpos = getpos
+Squash.setbuf = setbuf
+Squash.getbuf = getbuf
 
 export type SerDes<T...> = {
 	ser: (cursor: Cursor, T...) -> (),
