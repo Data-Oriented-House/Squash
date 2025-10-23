@@ -43,27 +43,85 @@
 
 -- --- @class uint
 
---- @function uint
+--- @function u8
 --- @within Squash
---- @param bytes number
 --- @return SerDes<number>
---- Accuracy diminishes using 7 or 8 bytes.
+
+--- @function u16
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function u24
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function u32
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function u40
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function u48
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function u56
+--- @within Squash
+--- @return SerDes<number>
+--- Diminished accuracy, use wisely.
+
+--- @function u64
+--- @within Squash
+--- @return SerDes<number>
+--- Greatly diminished accuracy, use wisely.
 
 -- --- @class int
 
---- @function int
+--- @function i8
 --- @within Squash
---- @param bytes number
 --- @return SerDes<number>
---- Accuracy diminishes using 7 or 8 bytes.
 
--- --- @class number
-
---- @function number
+--- @function i16
 --- @within Squash
---- @param bytes number
 --- @return SerDes<number>
---- Only supports 4 or 8 bytes.
+
+--- @function i24
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function i32
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function i40
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function i48
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function i56
+--- @within Squash
+--- @return SerDes<number>
+--- Diminished accuracy, use wisely.
+
+--- @function i64
+--- @within Squash
+--- @return SerDes<number>
+--- Greatly diminished accuracy, use wisely.
+
+-- --- @class float
+
+--- @function f32
+--- @within Squash
+--- @return SerDes<number>
+
+--- @function f64
+--- @within Squash
+--- @return SerDes<number>
 
 -- --- @class vector
 

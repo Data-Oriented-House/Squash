@@ -13,18 +13,18 @@ local Squash = require(...)
 local T = Squash.T
 local rec = Squash.record
 local arr = Squash.array
-local i3 = Squash.int(3)
-local u2 = Squash.uint(2)
+local i24 = Squash.i24()
+local u16 = Squash.u16()
 
 local Serializers = {}
 ```
 
-The below example implementation wastes a few bytes at the end of each array to redundantly record a length that can only be stored once. The type could be changed to `{ { x: number, z: number, id: number } }` but that comes with a performance overhead for so many table creations when deserializing.
+The below example implementation wastes a few bytes at the end of each array to redundantly record a length that can be stored only once. The type could be changed to `{ { x: number, z: number, id: number } }` but that comes with a performance overhead because of so many table creations when deserializing.
 ```lua
 Serializers.enemies = rec {
-	x = T(arr(i3, u2)),
-	z = T(arr(i3, u2)),
-	id = T(arr(u2, u2))
+	x = T(arr(i24, u16)),
+	z = T(arr(i24, u16)),
+	id = T(arr(u16, u16))
 }
 
 do
@@ -58,14 +58,19 @@ end
 
 The below implementation has less overhead and defines a custom format to only store the length once. It can serialize into the `{ { x: number, z: number, id: number } }` format, but then deserialize straight into the `{ x: { number }, z: { number }, id: { number } }` format.
 ```lua
+local getbuf = Squash.getbuf
+local getpos = Squash.getpos
+local setpos = Squash.setpos
+local tryrealloc = Squash.tryrealloc
+
 Serializers.enemiesManually = {
 	ser = function(cursor, data)
 		local n = #data.x
 
-		Squash.tryrealloc(cursor, 8 * n)
-		local buf = cursor.Buf
+		tryrealloc(cursor, 8 * n)
+		local buf = getbuf(cursor)
 
-		local p = cursor.Pos
+		local p = getpos(buf)
 		for i = 1, n do
 			local x, z, id = data.x[i], data.z[i], data.id[i]
 
@@ -88,12 +93,12 @@ Serializers.enemiesManually = {
 		buffer.writeu16(buf, p, n)
 		p += 2
 
-		cursor.Pos = p
+		setpos(buf, p)
 	end,
 
 	des = function(cursor)
-		local buf = cursor.Buf
-		local p = cursor.Pos
+		local buf = getbuf(cursor)
+		local p = getpos(buf)
 
 		p -= 2
 		local n = buffer.readu16(buf, p)
@@ -121,6 +126,8 @@ Serializers.enemiesManually = {
 
 			data.x[i], data.z[i], data.id[i] = x, z, id
 		end
+
+		setpos(buf, p)
 
 		return data
 	end,

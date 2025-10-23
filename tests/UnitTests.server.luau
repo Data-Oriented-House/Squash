@@ -1,4 +1,4 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+deslocal ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Squash = require(ReplicatedStorage.Squash)
 
@@ -10,14 +10,14 @@ end
 
 local function test_alloci_and_popi()
 	local test_cases = {
-		{push = Squash.int(1).ser, pop = Squash.int(1).des, value = -128},
-		{push = Squash.int(2).ser, pop = Squash.int(2).des, value = -32768},
-		{push = Squash.int(3).ser, pop = Squash.int(3).des, value = -8388608},
-		{push = Squash.int(4).ser, pop = Squash.int(4).des, value = -2147483648},
-		{push = Squash.int(5).ser, pop = Squash.int(5).des, value = -549755813888},
-		{push = Squash.int(6).ser, pop = Squash.int(6).des, value = -140737488355328},
-		{push = Squash.int(7).ser, pop = Squash.int(7).des, value = -36028797018963968},
-		{push = Squash.int(8).ser, pop = Squash.int(8).des, value = -9223372036854775808},
+		{push = Squash.i8().ser, pop = Squash.i8().des, value = -128},
+		{push = Squash.i16().ser, pop = Squash.i16().des, value = -32768},
+		{push = Squash.i24().ser, pop = Squash.i24().des, value = -8388608},
+		{push = Squash.i32().ser, pop = Squash.i32().des, value = -2147483648},
+		{push = Squash.i40().ser, pop = Squash.i40().des, value = -549755813888},
+		{push = Squash.i48().ser, pop = Squash.i48().des, value = -140737488355328},
+		{push = Squash.i56().ser, pop = Squash.i56().des, value = -36028797018963968},
+		{push = Squash.i64().ser, pop = Squash.i64().des, value = -9223372036854775808},
 	}
 
 	for i, test_case in ipairs(test_cases) do
@@ -30,14 +30,14 @@ end
 
 local function test_allocu_and_popu()
 	local test_cases = {
-		{push = Squash.uint(1).ser, pop = Squash.uint(1).des, value = 255},
-		{push = Squash.uint(2).ser, pop = Squash.uint(2).des, value = 65535},
-		{push = Squash.uint(3).ser, pop = Squash.uint(3).des, value = 16777215},
-		{push = Squash.uint(4).ser, pop = Squash.uint(4).des, value = 4294967295},
-		{push = Squash.uint(5).ser, pop = Squash.uint(5).des, value = 1099511627775},
-		{push = Squash.uint(6).ser, pop = Squash.uint(6).des, value = 281474976710655},
-		{push = Squash.uint(7).ser, pop = Squash.uint(7).des, value = 72057594037927935},
-		{push = Squash.uint(8).ser, pop = Squash.uint(8).des, value = 18446744073709551615},
+		{push = Squash.u8().ser, pop = Squash.u8().des, value = 255},
+		{push = Squash.u16().ser, pop = Squash.u16().des, value = 65535},
+		{push = Squash.u24().ser, pop = Squash.u24().des, value = 16777215},
+		{push = Squash.u32().ser, pop = Squash.u32().des, value = 4294967295},
+		{push = Squash.u40().ser, pop = Squash.u40().des, value = 1099511627775},
+		{push = Squash.u48().ser, pop = Squash.u48().des, value = 281474976710655},
+		{push = Squash.u56().ser, pop = Squash.u56().des, value = 72057594037927935},
+		{push = Squash.u64().ser, pop = Squash.u64().des, value = 18446744073709551615},
 	}
 
 	for i, test_case in ipairs(test_cases) do
@@ -50,8 +50,8 @@ end
 
 local function test_number()
 	local test_cases = {
-		{push = Squash.number(4).ser, pop = Squash.number(4).des, value = 3.14},
-		{push = Squash.number(8).ser, pop = Squash.number(8).des, value = 2.718281828459045},
+		{push = Squash.f32().ser, pop = Squash.f32().des, value = 3.14},
+		{push = Squash.f64().ser, pop = Squash.f64().des, value = 2.718281828459045},
 	}
 
 	for i, test_case in ipairs(test_cases) do
@@ -136,8 +136,8 @@ end
 local function test_cframe()
 	local cursor = Squash.cursor()
 	local value = CFrame.new(1, 2, 3)
-	Squash.CFrame(Squash.number(4)).ser(cursor, value)
-	local result = Squash.CFrame(Squash.number(4)).des(cursor)
+	Squash.CFrame(Squash.f32()).ser(cursor, value)
+	local result = Squash.CFrame(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of CFrame failed")
 end
 
@@ -192,32 +192,32 @@ end
 local function test_numberrange()
 	local cursor = Squash.cursor()
 	local value = NumberRange.new(1, 2)
-	Squash.NumberRange(Squash.number(4)).ser(cursor, value)
-	local result = Squash.NumberRange(Squash.number(4)).des(cursor)
+	Squash.NumberRange(Squash.f32()).ser(cursor, value)
+	local result = Squash.NumberRange(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of NumberRange failed")
 end
 
 local function test_numbersequence()
 	local cursor = Squash.cursor()
 	local value = NumberSequence.new {NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0) }
-	Squash.NumberSequence(Squash.number(4)).ser(cursor, value)
-	local result = Squash.NumberSequence(Squash.number(4)).des(cursor)
+	Squash.NumberSequence(Squash.f32()).ser(cursor, value)
+	local result = Squash.NumberSequence(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of NumberSequence failed")
 end
 
 local function test_ray()
 	local cursor = Squash.cursor()
 	local value = Ray.new(Vector3.new(0, 0, 0), Vector3.new(1, 0, 0))
-	Squash.Ray(Squash.number(4)).ser(cursor, value)
-	local result = Squash.Ray(Squash.number(4)).des(cursor)
+	Squash.Ray(Squash.f32()).ser(cursor, value)
+	local result = Squash.Ray(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of Ray failed")
 end
 
 local function test_region3()
 	local cursor = Squash.cursor()
 	local value = Region3.new(Vector3.new(0, 0, 0), Vector3.new(1, 1, 1))
-	Squash.Region3(Squash.number(4)).ser(cursor, value)
-	local result = Squash.Region3(Squash.number(4)).des(cursor)
+	Squash.Region3(Squash.f32()).ser(cursor, value)
+	local result = Squash.Region3(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of Region3 failed")
 end
 
@@ -232,8 +232,8 @@ end
 local function test_rotationcurvekey()
 	local cursor = Squash.cursor()
 	local value = RotationCurveKey.new(1, CFrame.new(0, 0, 0), Enum.KeyInterpolationMode.Linear)
-	Squash.RotationCurveKey(Squash.number(4)).ser(cursor, value)
-	local result = Squash.RotationCurveKey(Squash.number(4)).des(cursor)
+	Squash.RotationCurveKey(Squash.f32()).ser(cursor, value)
+	local result = Squash.RotationCurveKey(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of RotationCurveKey failed")
 end
 
@@ -248,24 +248,24 @@ end
 local function test_udim()
 	local cursor = Squash.cursor()
 	local value = UDim.new(1, 2)
-	Squash.UDim(Squash.number(4)).ser(cursor, value)
-	local result = Squash.UDim(Squash.number(4)).des(cursor)
+	Squash.UDim(Squash.f32()).ser(cursor, value)
+	local result = Squash.UDim(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of UDim failed")
 end
 
 local function test_udim2()
 	local cursor = Squash.cursor()
 	local value = UDim2.new(1, 2, 3, 4)
-	Squash.UDim2(Squash.number(4)).ser(cursor, value)
-	local result = Squash.UDim2(Squash.number(4)).des(cursor)
+	Squash.UDim2(Squash.f32()).ser(cursor, value)
+	local result = Squash.UDim2(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of UDim2 failed")
 end
 
 local function test_vector2()
 	local cursor = Squash.cursor()
 	local value = Vector2.new(1, 2)
-	Squash.Vector2(Squash.number(4)).ser(cursor, value)
-	local result = Squash.Vector2(Squash.number(4)).des(cursor)
+	Squash.Vector2(Squash.f32()).ser(cursor, value)
+	local result = Squash.Vector2(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of Vector2 failed")
 end
 
@@ -280,8 +280,8 @@ end
 local function test_vector3()
 	local cursor = Squash.cursor()
 	local value = Vector3.new(1, 2, 3)
-	Squash.Vector3(Squash.number(4)).ser(cursor, value)
-	local result = Squash.Vector3(Squash.number(4)).des(cursor)
+	Squash.Vector3(Squash.f32()).ser(cursor, value)
+	local result = Squash.Vector3(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of Vector3 failed")
 end
 
@@ -296,8 +296,8 @@ end
 local function test_pathwaypoint()
 	local cursor = Squash.cursor()
 	local value = PathWaypoint.new(Vector3.new(1, 2, 3), Enum.PathWaypointAction.Jump, "Label")
-	Squash.PathWaypoint(Squash.number(4)).ser(cursor, value)
-	local result = Squash.PathWaypoint(Squash.number(4)).des(cursor)
+	Squash.PathWaypoint(Squash.f32()).ser(cursor, value)
+	local result = Squash.PathWaypoint(Squash.f32()).des(cursor)
 	assert_equal(result, value, "Serialization and deserialization of PathWaypoint failed")
 end
 
@@ -325,8 +325,8 @@ local function test_raycastresult()
 	local cursor = Squash.cursor()
 	local value = workspace:Raycast(Vector3.new(1, 2, 3), Vector3.new(-4, -5, -6))
 	assert(value, `No RaycastResult`)
-	Squash.RaycastResult(Squash.number(4)).ser(cursor, value)
-	local result = Squash.RaycastResult(Squash.number(4)).des(cursor)
+	Squash.RaycastResult(Squash.f32()).ser(cursor, value)
+	local result = Squash.RaycastResult(Squash.f32()).des(cursor)
 	assert_equal(result.Distance, value.Distance, "Serialization and deserialization of RaycastResult.Distance failed")
 	assert_equal(result.Instance, nil, "Serialization and deserialization of RaycastResult.Instance failed")
 	assert_equal(result.Material, value.Material, "Serialization and deserialization of RaycastResult.Material failed")
@@ -397,88 +397,88 @@ print(Squash.boolean().des(cursor))
 --* Unsigned Integers
 
 local cursor = Squash.cursor()
-Squash.uint(1).ser(cursor, 243)
+Squash.u8().ser(cursor, 243)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 243 0 0 0 0 0 0 0 }
 --            ^
-print(Squash.uint(1).des(cursor))
+print(Squash.u8().des(cursor))
 -- 243
 
 local cursor = Squash.cursor(1)
-Squash.uint(1).ser(cursor, -13)
+Squash.u8().ser(cursor, -13)
 Squash.print(cursor)
 -- Pos: 1 / 1
 -- Buf: { 243   }
 --            ^
-print(Squash.uint(1).des(cursor))
+print(Squash.u8().des(cursor))
 -- 243
 
 local cursor = Squash.cursor(4, 1)
-Squash.uint(2).ser(cursor, 7365)
+Squash.u16().ser(cursor, 7365)
 Squash.print(cursor)
 -- Pos: 3 / 4
 -- Buf: { 0 197 28 0 }
 --                 ^
-print(Squash.uint(2).des(cursor))
+print(Squash.u16().des(cursor))
 -- 7365
 
 --* Signed Integers
 
 local cursor = Squash.cursor()
-Squash.int(1).ser(cursor, 127)
+Squash.i8().ser(cursor, 127)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 127 0 0 0 0 0 0 0 }
 --            ^
-print(Squash.int(1).des(cursor))
+print(Squash.i8().des(cursor))
 -- 127
 
 local cursor = Squash.cursor()
-Squash.int(1).ser(cursor, -127)
+Squash.i8().ser(cursor, -127)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 129 0 0 0 0 0 0 0 }
 --            ^
-print(Squash.int(1).des(cursor))
+print(Squash.i8().des(cursor))
 -- -127
 
 local cursor = Squash.cursor()
-Squash.int(1).ser(cursor, 128)
+Squash.i8().ser(cursor, 128)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 128 0 0 0 0 0 0 0 }
 --            ^
-print(Squash.int(1).des(cursor))
+print(Squash.i8().des(cursor))
 -- -128
 
 local cursor = Squash.cursor()
-Squash.int(1).ser(cursor, -128)
+Squash.i8().ser(cursor, -128)
 Squash.print(cursor)
 -- Pos: 1 / 8
 -- Buf: { 128 0 0 0 0 0 0 0 }
 --            ^
-print(Squash.int(1).des(cursor))
+print(Squash.i8().des(cursor))
 -- -128
 
 --* Numbers
 
 local cursor = Squash.cursor()
-Squash.number(4).ser(cursor, 174302.923957475339573)
+Squash.f32().ser(cursor, 174302.923957475339573)
 Squash.print(cursor)
 -- Pos: 4 / 8
 -- Buf: { 187 55 42 72 0 0 0 0 }
 --                     ^
-print(Squash.number(4).des(cursor))
+print(Squash.f32().des(cursor))
 -- 174302.921875
 
 local cursor = Squash.cursor()
-Squash.number(8).ser(cursor, -17534840302.923957475339573)
+Squash.f64().ser(cursor, -17534840302.923957475339573)
 Squash.print(cursor)
 -- Pos: 8 / 8
 -- Buf: { 34 178 187 183 161 84 16 194   }
 --                                     ^
-print(Squash.number(8).des(cursor))
+print(Squash.f64().des(cursor))
 -- -17534840302.923958
 
 --* VLQ
@@ -570,12 +570,12 @@ print(Squash.string.convert(y, Squash.string.binary, Squash.string.utf8))
 --* Arrays
 
 local cursor = Squash.cursor()
-Squash.array(Squash.number(4)).ser(cursor, {1, 2, 3, 4, 5.5, 6.6, -7.7, -8.9, 10.01})
+Squash.array(Squash.f32()).ser(cursor, {1, 2, 3, 4, 5.5, 6.6, -7.7, -8.9, 10.01})
 Squash.print(cursor)
 -- Pos: 37 / 40
 -- Buf: { 0 0 128 63 0 0 0 64 0 0 64 64 0 0 128 64 0 0 176 64 51 51 211 64 102 102 246 192 102 102 14 193 246 40 32 65 137 0 0 0 }
 --                                                                                                                         ^
-print(Squash.array(Squash.number(4)).des(cursor))
+print(Squash.array(Squash.f32()).des(cursor))
 -- {
 --    [1] = 1,
 --    [2] = 2,
@@ -589,7 +589,7 @@ print(Squash.array(Squash.number(4)).des(cursor))
 -- }
 
 local arr = Squash.array
-local float = Squash.number(4)
+local float = Squash.f32()
 local myarr = arr(float, 8)
 
 local cursor = Squash.cursor()
@@ -641,7 +641,7 @@ local u = Squash.uint
 local vlq = Squash.vlq()
 local bool = Squash.boolean()
 local str = Squash.string()
-local float = Squash.number(4)
+local float = Squash.f32()
 local vec2 = Squash.Vector2
 local arr = Squash.array
 local map = Squash.map
@@ -733,8 +733,8 @@ local S = Squash
 local T = S.T
 
 local mytuple = S.tuple(
-	T(S.Vector3(S.number(8))),
-	T(S.CFrame(S.int(1))),
+	T(S.Vector3(S.f64())),
+	T(S.CFrame(S.i8())),
 	T(S.BrickColor()),
 	T(S.EnumItem(Enum.HumanoidStateType))
 )
@@ -751,12 +751,12 @@ print(mytuple.des(cursor))
 --* Tables
 
 local serdes = Squash.table {
-	number = Squash.number(8),
+	number = Squash.f64(),
 	string = Squash.string(),
 	boolean = Squash.boolean(),
 	table = Squash.table {
-		CFrame = Squash.CFrame(Squash.number(4)),
-		Vector3 = Squash.Vector3(Squash.int(2)),
+		CFrame = Squash.CFrame(Squash.f32()),
+		Vector3 = Squash.Vector3(Squash.i16()),
 		number = Squash.vlq(),
 	},
 }
@@ -794,7 +794,7 @@ print(serdes.des(cursor))
 -- }
 
 do
-	local serdes, data, n = Squash.array(Squash.uint(1)), { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 } :: { number }, 17
+	local serdes, data, n = Squash.array(Squash.u8()), { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 } :: { number }, 17
 	local c = Squash.cursor()
 	serdes.ser(c, data)
 	Squash.print(c)
@@ -807,7 +807,7 @@ do
 end
 
 do
-	local serdes, data, n = Squash.array(Squash.opt(Squash.uint(1))), { 1, 2, nil, nil, 5, 6, 7, 8, nil, 10, 11, 12, 13, nil, 15, 16, 17 } :: { number? }, 17
+	local serdes, data, n = Squash.array(Squash.opt(Squash.u8())), { 1, 2, nil, nil, 5, 6, 7, 8, nil, 10, 11, 12, 13, nil, 15, 16, 17 } :: { number? }, 17
 	local c = Squash.cursor()
 	serdes.ser(c, data)
 	Squash.print(c)
@@ -849,7 +849,7 @@ do
 	local T = Squash.T
 	local B = Squash.boolean()
 	local O = Squash.opt
-	local U = Squash.uint(1)
+	local U = Squash.u8()
 
 	local s = {
 		a = T(B),
@@ -936,13 +936,13 @@ do
 
 	do
 		local sqTest = S.record {
-			x = S.T(S.uint(2)),
-			y = S.T(S.uint(2)),
-			z = S.T(S.uint(2)),
+			x = S.T(S.u16()),
+			y = S.T(S.u16()),
+			z = S.T(S.u16()),
 			w = S.T(S.record {
-				x = S.uint(2),
-				y = S.uint(2),
-				z = S.uint(2),
+				x = S.u16(),
+				y = S.u16(),
+				z = S.u16(),
 				s1 = S.string(),
 				s2 = S.string(),
 				s3 = S.string(),

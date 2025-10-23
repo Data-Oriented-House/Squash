@@ -2,266 +2,359 @@
 --!native
 --!optimize 2
 
---- An import of the [Redblox Buffit Cursor](https://github.com/red-blox/Util/blob/main/libs/Buffit/Buffit.luau) type for better cross-library interaction
-export type Cursor = {
-	Buf: buffer,
-	Pos: number,
-}
+export type Cursor = { buffer }
 
-local function newcursor(size: number?, position: number?): Cursor
-	return {
-		Buf = buffer.create(size or 8), --? Chosen to not use too much space and not resize too quickly as a starting point
-		Pos = position or 0,
-	}
+local OFFSET_SIZE = 4
+
+local function getbuf(cursor: Cursor): buffer
+	return cursor[1]
 end
 
-local function frombuffer(buf: buffer)
-	return {
-		Buf = buf,
-		Pos = buffer.len(buf),
-	}
+local function setbuf(cursor: Cursor, to: buffer): ()
+	cursor[1] = to
+end
+
+local function getpos(buf: buffer): number
+	return buffer.readu32(buf, 0)
+end
+
+local function setpos(buf: buffer, to: number): ()
+	buffer.writeu32(buf, 0, to)
+end
+
+local function newcursor(size: number?, pos: number?): Cursor
+	local buf = buffer.create((size or 8) + OFFSET_SIZE)
+	buffer.writeu32(buf, 0, (pos or 0) + OFFSET_SIZE)
+	return { buf }
+end
+
+local function frombuffer(buf: buffer, pos: number?): Cursor
+	local newlen = buffer.len(buf)
+	local newbuf = buffer.create(newlen + OFFSET_SIZE)
+	local pos = (pos or newlen) + OFFSET_SIZE
+	buffer.writeu32(newbuf, 0, pos)
+	buffer.copy(newbuf, OFFSET_SIZE, buf, 0, newlen)
+	return { newbuf }
 end
 
 local function tobuffer(cursor: Cursor): buffer
-	local buf = buffer.create(cursor.Pos)
-	buffer.copy(buf, 0, cursor.Buf, 0, cursor.Pos)
-	return buf
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	local newbuf = buffer.create(pos - OFFSET_SIZE)
+	buffer.copy(newbuf, 0, buf, OFFSET_SIZE, pos - OFFSET_SIZE)
+	return newbuf
 end
 
 local function tryrealloc(cursor: Cursor, bytes: number)
-	local b = cursor.Buf
-	local p = cursor.Pos
-	local len = buffer.len(b)
-	if len < p + bytes then
-		local exponent = math.ceil(math.log((bytes + p) / len, 1.5))
-		local new = buffer.create(len * 1.5 ^ exponent)
-		buffer.copy(new, 0, b, 0)
-		cursor.Buf = new
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	local len = buffer.len(buf)
+	local targetlen = pos + bytes
+	if len < targetlen then
+		repeat
+			len *= 2
+		until len > targetlen
+		local oldbuf = buf
+		buf = buffer.create(len)
+		buffer.copy(buf, 0, oldbuf, 0, pos)
+		setbuf(cursor, buf)
 	end
 end
 
 local function pushu1(cursor: Cursor, x: number)
-	buffer.writeu8(cursor.Buf, cursor.Pos, x)
-	cursor.Pos += 1
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 1)
+	buffer.writeu8(buf, pos, x)
 end
 
 local function popu1(cursor: Cursor)
-	cursor.Pos -= 1
-	return buffer.readu8(cursor.Buf, cursor.Pos)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 1
+	setpos(buf, pos)
+	return buffer.readu8(buf, pos)
 end
 
 local function pushu2(cursor: Cursor, x: number)
-	buffer.writeu16(cursor.Buf, cursor.Pos, x)
-	cursor.Pos += 2
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 2)
+	buffer.writeu16(buf, pos, x)
 end
 
 local function popu2(cursor: Cursor)
-	cursor.Pos -= 2
-	return buffer.readu16(cursor.Buf, cursor.Pos)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 2
+	setpos(buf, pos)
+	return buffer.readu16(buf, pos)
 end
 
 local function pushu3(cursor: Cursor, x: number)
-	buffer.writeu8(cursor.Buf, cursor.Pos, x)
-	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
-	cursor.Pos += 3
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 3)
+	buffer.writeu8(buf, pos, x)
+	buffer.writeu16(buf, pos + 1, x // 256)
 end
 
 local function popu3(cursor: Cursor)
-	cursor.Pos -= 3
-	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readu16(cursor.Buf, cursor.Pos + 1)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 3
+	local x1 = buffer.readu8(buf, pos)
+	local x2 = buffer.readu16(buf, pos + 1)
+	setpos(buf, pos)
 	return x1 + x2 * 256
 end
 
 local function pushu4(cursor: Cursor, x: number)
-	buffer.writeu32(cursor.Buf, cursor.Pos, x)
-	cursor.Pos += 4
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 4)
+	buffer.writeu32(buf, pos, x)
 end
 
 local function popu4(cursor: Cursor)
-	cursor.Pos -= 4
-	return buffer.readu32(cursor.Buf, cursor.Pos)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 4
+	setpos(buf, pos)
+	return buffer.readu32(buf, pos)
 end
 
 local function pushu5(cursor: Cursor, x: number)
-	buffer.writeu8(cursor.Buf, cursor.Pos, x)
-	buffer.writeu32(cursor.Buf, cursor.Pos + 1, x // 256)
-	cursor.Pos += 5
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 5)
+	buffer.writeu8(buf, pos, x)
+	buffer.writeu32(buf, pos + 1, x // 256)
 end
 
 local function popu5(cursor: Cursor)
-	cursor.Pos -= 5
-	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 1)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 5
+	local x1 = buffer.readu8(buf, pos)
+	local x2 = buffer.readu32(buf, pos + 1)
+	setpos(buf, pos)
 	return x1 + x2 * 256
 end
 
 local function pushu6(cursor: Cursor, x: number)
-	buffer.writeu16(cursor.Buf, cursor.Pos, x)
-	buffer.writeu32(cursor.Buf, cursor.Pos + 2, x // 256 ^ 2)
-	cursor.Pos += 6
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 6)
+	buffer.writeu16(buf, pos, x)
+	buffer.writeu32(buf, pos + 2, x // (256 ^ 2))
 end
 
 local function popu6(cursor: Cursor)
-	cursor.Pos -= 6
-	local x1 = buffer.readu16(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 2)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 6
+	local x1 = buffer.readu16(buf, pos)
+	local x2 = buffer.readu32(buf, pos + 2)
+	setpos(buf, pos)
 	return x1 + x2 * (256 ^ 2)
 end
 
 local function pushu7(cursor: Cursor, x: number)
-	buffer.writeu8(cursor.Buf, cursor.Pos, x)
-	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
-	buffer.writeu32(cursor.Buf, cursor.Pos + 3, x // 256 ^ 3)
-	cursor.Pos += 7
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 7)
+	buffer.writeu8(buf, pos, x)
+	buffer.writeu16(buf, pos + 1, x // 256)
+	buffer.writeu32(buf, pos + 3, x // (256 ^ 3))
 end
 
 local function popu7(cursor: Cursor)
-	cursor.Pos -= 7
-	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readu16(cursor.Buf, cursor.Pos + 1)
-	local x3 = buffer.readu32(cursor.Buf, cursor.Pos + 3)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 7
+	local x1 = buffer.readu8(buf, pos)
+	local x2 = buffer.readu16(buf, pos + 1)
+	local x3 = buffer.readu32(buf, pos + 3)
+	setpos(buf, pos)
 	return x1 + x2 * 256 + x3 * (256 ^ 3)
 end
 
 local function pushu8(cursor: Cursor, x: number)
-	buffer.writeu32(cursor.Buf, cursor.Pos, x)
-	buffer.writeu32(cursor.Buf, cursor.Pos + 4, x // 256 ^ 4)
-	cursor.Pos += 8
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 8)
+	buffer.writeu32(buf, pos, x)
+	buffer.writeu32(buf, pos + 4, x // (256 ^ 4))
 end
 
 local function popu8(cursor: Cursor)
-	cursor.Pos -= 8
-	local x1 = buffer.readu32(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 4)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 8
+	local x1 = buffer.readu32(buf, pos)
+	local x2 = buffer.readu32(buf, pos + 4)
+	setpos(buf, pos)
 	return x1 + x2 * (256 ^ 4)
 end
 
 local function pushi1(cursor: Cursor, x: number)
-	buffer.writei8(cursor.Buf, cursor.Pos, x)
-	cursor.Pos += 1
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 1)
+	buffer.writei8(buf, pos, x)
 end
 
 local function popi1(cursor: Cursor)
-	cursor.Pos -= 1
-	return buffer.readi8(cursor.Buf, cursor.Pos)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 1
+	setpos(buf, pos)
+	return buffer.readi8(buf, pos)
 end
 
 local function pushi2(cursor: Cursor, x: number)
-	buffer.writei16(cursor.Buf, cursor.Pos, x)
-	cursor.Pos += 2
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 2)
+	buffer.writei16(buf, pos, x)
 end
 
 local function popi2(cursor: Cursor)
-	cursor.Pos -= 2
-	return buffer.readi16(cursor.Buf, cursor.Pos)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 2
+	setpos(buf, pos)
+	return buffer.readi16(buf, pos)
 end
 
-local function pushi3(cursor, x)
-	local x = if x >= 0 then x * 2 else -x * 2 - 1
-	buffer.writeu8(cursor.Buf, cursor.Pos, x % 256)
-	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
-	cursor.Pos += 3
+local function pushi3(cursor, x: number)
+	x %= 2 ^ 24
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 3)
+	buffer.writeu8(buf, pos, x % 256)
+	buffer.writeu16(buf, pos + 1, x / 256)
 end
 
 local function popi3(cursor)
-	cursor.Pos -= 3
-	local x1 = buffer.readu8 (cursor.Buf, cursor.Pos    )
-	local x2 = buffer.readu16(cursor.Buf, cursor.Pos + 1)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 3
+	local x1 = buffer.readu8(buf, pos)
+	local x2 = buffer.readu16(buf, pos + 1)
+	setpos(buf, pos)
 	local x = x1 + x2 * 256
-	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
+	return if x >= 2 ^ 23 then x - (2 ^ 24) else x
 end
 
 local function pushi4(cursor: Cursor, x: number)
-	buffer.writei32(cursor.Buf, cursor.Pos, x)
-	cursor.Pos += 4
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 4)
+	buffer.writei32(buf, pos, x)
 end
 
 local function popi4(cursor: Cursor)
-	cursor.Pos -= 4
-	return buffer.readi32(cursor.Buf, cursor.Pos)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 4
+	setpos(buf, pos)
+	return buffer.readi32(buf, pos)
 end
 
 local function pushi5(cursor: Cursor, x: number)
-	local x = if x >= 0 then x * 2 else -x * 2 - 1
-	buffer.writeu8(cursor.Buf, cursor.Pos, x)
-	buffer.writeu32(cursor.Buf, cursor.Pos + 1, x // 256)
-	cursor.Pos += 5
+	x %= 2 ^ 40
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 5)
+	buffer.writeu8(buf, pos, x)
+	buffer.writeu32(buf, pos + 1, x / 256)
 end
 
 local function popi5(cursor: Cursor)
-	cursor.Pos -= 5
-	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 1)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 5
+	setpos(buf, pos)
+	local x1 = buffer.readu8(buf, pos)
+	local x2 = buffer.readu32(buf, pos + 1)
 	local x = x1 + x2 * 256
-	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
+	return if x >= 2 ^ 39 then x - (2 ^ 40) else x
 end
 
 local function pushi6(cursor: Cursor, x: number)
-	local x = if x >= 0 then x * 2 else -x * 2 - 1
-	buffer.writeu16(cursor.Buf, cursor.Pos, x)
-	buffer.writeu32(cursor.Buf, cursor.Pos + 2, x // 256 ^ 2)
-	cursor.Pos += 6
+	x %= 2 ^ 48
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 6)
+	buffer.writeu16(buf, pos, x)
+	buffer.writeu32(buf, pos + 2, x / (256 ^ 2))
 end
 
 local function popi6(cursor: Cursor)
-	cursor.Pos -= 6
-	local x1 = buffer.readu16(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 2)
-	local x = x1 + x2 * 256 ^ 2
-	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 6
+	setpos(buf, pos)
+	local x1 = buffer.readu16(buf, pos)
+	local x2 = buffer.readu32(buf, pos + 2)
+	local x = x1 + x2 * (256 ^ 2)
+	return if x >= 2 ^ 47 then x - (2 ^ 48) else x
 end
 
 local function pushi7(cursor: Cursor, x: number)
-	local x = if x >= 0 then x * 2 else -x * 2 - 1
-	buffer.writeu8(cursor.Buf, cursor.Pos, x)
-	buffer.writeu16(cursor.Buf, cursor.Pos + 1, x // 256)
-	buffer.writeu32(cursor.Buf, cursor.Pos + 3, x // 256 ^ 3)
-	cursor.Pos += 7
+	x %= 2 ^ 56
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 7)
+	buffer.writeu8(buf, pos, x)
+	buffer.writeu16(buf, pos + 1, x / 256)
+	buffer.writeu32(buf, pos + 3, x / (256 ^ 3))
 end
 
 local function popi7(cursor: Cursor)
-	cursor.Pos -= 7
-	local x1 = buffer.readu8(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readu16(cursor.Buf, cursor.Pos + 1)
-	local x3 = buffer.readu32(cursor.Buf, cursor.Pos + 3)
-	local x = x1 + x2 * 256 + x3 * 256 ^ 3
-	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 7
+	setpos(buf, pos)
+	local x1 = buffer.readu8(buf, pos)
+	local x2 = buffer.readu16(buf, pos + 1)
+	local x3 = buffer.readu32(buf, pos + 3)
+	local x = x1 + x2 * 256 + x3 * (256 ^ 3)
+	return if x >= 2 ^ 55 then x - (2 ^ 56) else x
 end
 
 local function pushi8(cursor: Cursor, x: number)
-	local x = if x >= 0 then x * 2 else -x * 2 - 1
-	buffer.writeu32(cursor.Buf, cursor.Pos, x)
-	buffer.writeu32(cursor.Buf, cursor.Pos + 4, x // 256 ^ 4)
-	cursor.Pos += 8
+	x %= 2 ^ 64
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 8)
+	buffer.writeu32(buf, pos, x)
+	buffer.writeu32(buf, pos + 4, x / (256 ^ 4))
 end
 
 local function popi8(cursor: Cursor)
-	cursor.Pos -= 8
-	local x1 = buffer.readu32(cursor.Buf, cursor.Pos)
-	local x2 = buffer.readu32(cursor.Buf, cursor.Pos + 4)
-	local x = x1 + x2 * 256 ^ 4
-	return if x % 2 == 0 then x // 2 else -( (x + 1) // 2 )
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 8
+	setpos(buf, pos)
+	local x1 = buffer.readu32(buf, pos)
+	local x2 = buffer.readu32(buf, pos + 4)
+	local x = x1 + x2 * (256 ^ 4)
+	return if x >= 2 ^ 63 then x - (2 ^ 64) else x
 end
 
 local function pushf4(cursor: Cursor, x: number)
-	buffer.writef32(cursor.Buf, cursor.Pos, x)
-	cursor.Pos += 4
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 4)
+	buffer.writef32(buf, pos, x)
 end
 
 local function popf4(cursor: Cursor)
-	cursor.Pos -= 4
-	return buffer.readf32(cursor.Buf, cursor.Pos)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 4
+	setpos(buf, pos)
+	return buffer.readf32(buf, pos)
 end
 
 local function pushf8(cursor: Cursor, x: number)
-	buffer.writef64(cursor.Buf, cursor.Pos, x)
-	cursor.Pos += 8
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	setpos(buf, pos + 8)
+	buffer.writef64(buf, pos, x)
 end
 
 local function popf8(cursor: Cursor)
-	cursor.Pos -= 8
-	return buffer.readf64(cursor.Buf, cursor.Pos)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - 8
+	setpos(buf, pos)
+	return buffer.readf64(buf, pos)
 end
 
 local function pushbool(
@@ -275,17 +368,29 @@ local function pushbool(
 	g: boolean?,
 	h: boolean?
 )
-	pushu1(
-		cursor,
-		(if a then 1 else 0)
-			+ (if b then 2 else 0)
-			+ (if c then 4 else 0)
-			+ (if d then 8 else 0)
-			+ (if e then 16 else 0)
-			+ (if f then 32 else 0)
-			+ (if g then 64 else 0)
-			+ (if h then 128 else 0)
-	)
+	local y = if a then 1 else 0
+	if b then
+		y += 2
+	end
+	if c then
+		y += 4
+	end
+	if d then
+		y += 8
+	end
+	if e then
+		y += 16
+	end
+	if f then
+		y += 32
+	end
+	if g then
+		y += 64
+	end
+	if h then
+		y += 128
+	end
+	pushu1(cursor, y)
 end
 
 local function popbool(cursor: Cursor): (boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean)
@@ -297,17 +402,24 @@ local pushvlqrealloc, popvlq
 do
 	local SHIFT32 = 2 ^ 32
 	local SHIFT25 = 2 ^ 25
-	local BASE    = 2 ^ 7
+	local BASE = 2 ^ 7
 
 	function pushvlqrealloc(cursor: Cursor, x: number)
 		local count = 1
-		if     x >= 2 ^ 49 then count = 8
-		elseif x >= 2 ^ 42 then count = 7
-		elseif x >= 2 ^ 35 then count = 6
-		elseif x >= 2 ^ 28 then count = 5
-		elseif x >= 2 ^ 21 then count = 4
-		elseif x >= 2 ^ 14 then count = 3
-		elseif x >= 2 ^ 7 then count = 2
+		if x >= 2 ^ 49 then
+			count = 8
+		elseif x >= 2 ^ 42 then
+			count = 7
+		elseif x >= 2 ^ 35 then
+			count = 6
+		elseif x >= 2 ^ 28 then
+			count = 5
+		elseif x >= 2 ^ 21 then
+			count = 4
+		elseif x >= 2 ^ 14 then
+			count = 3
+		elseif x >= 2 ^ 7 then
+			count = 2
 		end
 
 		tryrealloc(cursor, count)
@@ -319,62 +431,62 @@ do
 
 		if count >= 2 then
 			local prevHi = hi
-			local rem    = prevHi % BASE
-			local newLo  = rem * SHIFT25 + (lo // BASE)
-			local newHi  = prevHi // BASE
+			local rem = prevHi % BASE
+			local newLo = rem * SHIFT25 + (lo // BASE)
+			local newHi = prevHi // BASE
 			pushu1(cursor, (newLo % BASE) + BASE)
 			lo, hi = newLo, newHi
 		end
 
 		if count >= 3 then
 			local prevHi = hi
-			local rem    = prevHi % BASE
-			local newLo  = rem * SHIFT25 + (lo // BASE)
-			local newHi  = prevHi // BASE
+			local rem = prevHi % BASE
+			local newLo = rem * SHIFT25 + (lo // BASE)
+			local newHi = prevHi // BASE
 			pushu1(cursor, (newLo % BASE) + BASE)
 			lo, hi = newLo, newHi
 		end
 
 		if count >= 4 then
 			local prevHi = hi
-			local rem    = prevHi % BASE
-			local newLo  = rem * SHIFT25 + (lo // BASE)
-			local newHi  = prevHi // BASE
+			local rem = prevHi % BASE
+			local newLo = rem * SHIFT25 + (lo // BASE)
+			local newHi = prevHi // BASE
 			pushu1(cursor, (newLo % BASE) + BASE)
 			lo, hi = newLo, newHi
 		end
 
 		if count >= 5 then
 			local prevHi = hi
-			local rem    = prevHi % BASE
-			local newLo  = rem * SHIFT25 + (lo // BASE)
-			local newHi  = prevHi // BASE
+			local rem = prevHi % BASE
+			local newLo = rem * SHIFT25 + (lo // BASE)
+			local newHi = prevHi // BASE
 			pushu1(cursor, (newLo % BASE) + BASE)
 			lo, hi = newLo, newHi
 		end
 
 		if count >= 6 then
 			local prevHi = hi
-			local rem    = prevHi % BASE
-			local newLo  = rem * SHIFT25 + (lo // BASE)
-			local newHi  = prevHi // BASE
+			local rem = prevHi % BASE
+			local newLo = rem * SHIFT25 + (lo // BASE)
+			local newHi = prevHi // BASE
 			pushu1(cursor, (newLo % BASE) + BASE)
 			lo, hi = newLo, newHi
 		end
 
 		if count >= 7 then
 			local prevHi = hi
-			local rem    = prevHi % BASE
-			local newLo  = rem * SHIFT25 + (lo // BASE)
-			local newHi  = prevHi // BASE
+			local rem = prevHi % BASE
+			local newLo = rem * SHIFT25 + (lo // BASE)
+			local newHi = prevHi // BASE
 			pushu1(cursor, (newLo % BASE) + BASE)
 			lo, hi = newLo, newHi
 		end
 
 		if count == 8 then
 			local prevHi = hi
-			local rem    = prevHi % BASE
-			local newLo  = rem * SHIFT25 + (lo // BASE)
+			local rem = prevHi % BASE
+			local newLo = rem * SHIFT25 + (lo // BASE)
 			pushu1(cursor, (newLo % BASE) + BASE)
 		end
 	end
@@ -430,8 +542,10 @@ end
 
 local function pushstr(cursor: Cursor, x: string, length: number?)
 	local len = length or #x
-	buffer.writestring(cursor.Buf, cursor.Pos, x)
-	cursor.Pos += len
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	buffer.writestring(buf, pos, x)
+	setpos(buf, pos + len)
 
 	if not length then
 		pushvlqrealloc(cursor, len)
@@ -440,14 +554,20 @@ end
 
 local function popstr(cursor: Cursor, length: number?)
 	local len = length or popvlq(cursor)
-	cursor.Pos -= len
-	return buffer.readstring(cursor.Buf, cursor.Pos, len)
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - len
+	setpos(buf, pos)
+	return buffer.readstring(buf, pos, len)
 end
 
 local function pushbuf(cursor: Cursor, x: buffer, length: number?)
 	local len = length or buffer.len(x)
-	buffer.copy(cursor.Buf, cursor.Pos, x, 0, len)
-	cursor.Pos += len
+	tryrealloc(cursor, len)
+
+	local buf = getbuf(cursor)
+	local pos = getpos(buf)
+	buffer.copy(buf, pos, x, 0, len)
+	setpos(buf, pos + len)
 
 	if not length then
 		pushvlqrealloc(cursor, len)
@@ -456,32 +576,38 @@ end
 
 local function popbuf(cursor: Cursor, length: number?)
 	local len = length or popvlq(cursor)
-	cursor.Pos -= len
-	local buf = buffer.create(len)
-	buffer.copy(buf, 0, cursor.Buf, cursor.Pos, len)
-	return buf
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - len
+	setpos(buf, pos)
+
+	local new = buffer.create(len)
+	buffer.copy(new, 0, buf, pos, len)
+	return new
 end
 
 local function printcursor(cursor: Cursor): ()
-	local bytes = { string.byte(buffer.tostring(cursor.Buf), 1, -1) }
+	local buf = getbuf(cursor)
+	local pos = getpos(buf) - OFFSET_SIZE
+
+	local bytes = { string.byte(buffer.tostring(buf), OFFSET_SIZE + 1, -1) }
 	local offset = 7
-	for i = 1, cursor.Pos do
+	for i = 1, pos do
 		local byte = bytes[i]
 		local digits = if byte == 0 then 1 else math.ceil(math.log10(1 + byte))
 		offset += digits + 1
 	end
 
-	local lastByte = bytes[cursor.Pos + 1]
+	local lastByte = bytes[pos + 1]
 	if lastByte then
 		local lastDigits = if lastByte == 0 then 1 else math.ceil(math.log10(1 + lastByte))
 		offset += lastDigits // 2
 	end
 
-	if #bytes == 0 or cursor.Pos == buffer.len(cursor.Buf) then
+	if #bytes == 0 or pos == buffer.len(buf) - OFFSET_SIZE then
 		table.insert(bytes, ' ' :: any)
 	end
 
-	print(`Pos: {cursor.Pos} / {buffer.len(cursor.Buf)}\nBuf: \{ {table.concat(bytes, ' ')} \}\n{string.rep(' ', offset)}^`)
+	print(`Pos: {pos} / {buffer.len(buf) - OFFSET_SIZE}\nBuf: \{ {table.concat(bytes, ' ')} \}\n{string.rep(' ', offset)}^`)
 end
 
 local Squash = {}
@@ -491,6 +617,10 @@ Squash.cursor = newcursor
 Squash.frombuffer = frombuffer
 Squash.tobuffer = tobuffer
 Squash.tryrealloc = tryrealloc
+Squash.setpos = setpos
+Squash.getpos = getpos
+Squash.setbuf = setbuf
+Squash.getbuf = getbuf
 
 export type SerDes<T...> = {
 	ser: (cursor: Cursor, T...) -> (),
@@ -516,110 +646,252 @@ do
 end
 
 do
-	local uintCache = {}
-	function Squash.uint(bytes: number): SerDes<number>
-		if uintCache[bytes] then
-			return uintCache[bytes]
-		end
+	local u8 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 1)
+			pushu1(cursor, x)
+		end,
+		des = popu1,
+	}
+	function Squash.u8()
+		return u8
+	end
 
-		local push, pop
-		if bytes == 1 then
-			push, pop = pushu1, popu1
-		elseif bytes == 2 then
-			push, pop = pushu2, popu2
-		elseif bytes == 3 then
-			push, pop = pushu3, popu3
-		elseif bytes == 4 then
-			push, pop = pushu4, popu4
-		elseif bytes == 5 then
-			push, pop = pushu5, popu5
-		elseif bytes == 6 then
-			push, pop = pushu6, popu6
-		elseif bytes == 7 then
-			push, pop = pushu7, popu7
-		elseif bytes == 8 then
-			push, pop = pushu8, popu8
-		else
-			error(`uint bytes must be integer between [1, 8], got {bytes}`)
-		end
+	local u16 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 2)
+			pushu2(cursor, x)
+		end,
+		des = popu2,
+	}
+	function Squash.u16()
+		return u16
+	end
 
-		local num: SerDes<number> = {
-			ser = function(cursor, x)
-				tryrealloc(cursor, bytes)
-				push(cursor, x)
-			end,
-			des = pop,
-		}
-		uintCache[bytes] = num
-		return num
+	local u24 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 3)
+			pushu3(cursor, x)
+		end,
+		des = popu3,
+	}
+	function Squash.u24()
+		return u24
+	end
+
+	local u32 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 4)
+			pushu4(cursor, x)
+		end,
+		des = popu4,
+	}
+	function Squash.u32()
+		return u32
+	end
+
+	local u40 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 5)
+			pushu5(cursor, x)
+		end,
+		des = popu5,
+	}
+	function Squash.u40()
+		return u40
+	end
+
+	local u48 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 6)
+			pushu6(cursor, x)
+		end,
+		des = popu6,
+	}
+	function Squash.u48()
+		return u48
+	end
+
+	local u56 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 7)
+			pushu7(cursor, x)
+		end,
+		des = popu7,
+	}
+	function Squash.u56()
+		return u56
+	end
+
+	local u64 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 8)
+			pushu8(cursor, x)
+		end,
+		des = popu8,
+	}
+	function Squash.u64()
+		return u64
 	end
 end
 
 do
-	local intCache = {}
-	function Squash.int(bytes: number): SerDes<number>
-		if intCache[bytes] then
-			return intCache[bytes]
-		end
+	local i8 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 1)
+			pushi1(cursor, x)
+		end,
+		des = popi1,
+	}
+	function Squash.i8()
+		return i8
+	end
 
-		local push, pop
-		if bytes == 1 then
-			push, pop = pushi1, popi1
-		elseif bytes == 2 then
-			push, pop = pushi2, popi2
-		elseif bytes == 3 then
-			push, pop = pushi3, popi3
-		elseif bytes == 4 then
-			push, pop = pushi4, popi4
-		elseif bytes == 5 then
-			push, pop = pushi5, popi5
-		elseif bytes == 6 then
-			push, pop = pushi6, popi6
-		elseif bytes == 7 then
-			push, pop = pushi7, popi7
-		elseif bytes == 8 then
-			push, pop = pushi8, popi8
-		else
-			error(`int bytes must be integer between [1, 8], got {bytes}`)
-		end
+	local i16 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 2)
+			pushi2(cursor, x)
+		end,
+		des = popi2,
+	}
+	function Squash.i16()
+		return i16
+	end
 
-		local num: SerDes<number> = {
-			ser = function(cursor, x)
-				tryrealloc(cursor, bytes)
-				push(cursor, x)
-			end,
-			des = pop,
-		}
-		intCache[bytes] = num
-		return num
+	local i24 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 3)
+			pushi3(cursor, x)
+		end,
+		des = popi3,
+	}
+	function Squash.i24()
+		return i24
+	end
+
+	local i32 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 4)
+			pushi4(cursor, x)
+		end,
+		des = popi4,
+	}
+	function Squash.i32()
+		return i32
+	end
+
+	local i40 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 5)
+			pushi5(cursor, x)
+		end,
+		des = popi5,
+	}
+	function Squash.i40()
+		return i40
+	end
+
+	local i48 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 6)
+			pushi6(cursor, x)
+		end,
+		des = popi6,
+	}
+	function Squash.i48()
+		return i48
+	end
+
+	local i56 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 7)
+			pushi7(cursor, x)
+		end,
+		des = popi7,
+	}
+	function Squash.i56()
+		return i56
+	end
+
+	local i64 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 8)
+			pushi8(cursor, x)
+		end,
+		des = popi8,
+	}
+	function Squash.i64()
+		return i64
 	end
 end
 
 do
-	local numberCache = {}
-	function Squash.number(bytes: number): SerDes<number>
-		if numberCache[bytes] then
-			return numberCache[bytes]
-		end
+	local f32 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 4)
+			pushf4(cursor, x)
+		end,
+		des = popf4,
+	}
+	function Squash.f32()
+		return f32
+	end
 
-		local push, pop
-		if bytes == 4 then
-			push, pop = pushf4, popf4
-		elseif bytes == 8 then
-			push, pop = pushf8, popf8
-		else
-			error(`number bytes must be integer 4 or 8, got {bytes}`)
-		end
+	local f64 = {
+		ser = function(cursor, x)
+			tryrealloc(cursor, 8)
+			pushf8(cursor, x)
+		end,
+		des = popf8,
+	}
+	function Squash.f64()
+		return f64
+	end
+end
 
-		local num: SerDes<number> = {
-			ser = function(cursor, x)
-				tryrealloc(cursor, bytes)
-				push(cursor, x)
-			end,
-			des = pop,
-		}
-		numberCache[bytes] = num
-		return num
+local function getNumberSizePushPop(serdes: SerDes<number>): (number?, (Cursor, number) -> (), (Cursor) -> number)
+	if serdes == Squash.f64() then
+		return 8, pushf8, popf8
+	elseif serdes == Squash.f32() then
+		return 4, pushf4, popf4
+
+		-- unsigned ints
+	elseif serdes == Squash.u8() then
+		return 1, pushu1, popu1
+	elseif serdes == Squash.u16() then
+		return 2, pushu2, popu2
+	elseif serdes == Squash.u24() then
+		return 3, pushu3, popu3
+	elseif serdes == Squash.u32() then
+		return 4, pushu4, popu4
+	elseif serdes == Squash.u40() then
+		return 5, pushu5, popu5
+	elseif serdes == Squash.u48() then
+		return 6, pushu6, popu6
+	elseif serdes == Squash.u56() then
+		return 7, pushu7, popu7
+	elseif serdes == Squash.u64() then
+		return 8, pushu8, popu8
+
+		-- signed ints
+	elseif serdes == Squash.i8() then
+		return 1, pushi1, popi1
+	elseif serdes == Squash.i16() then
+		return 2, pushi2, popi2
+	elseif serdes == Squash.i24() then
+		return 3, pushi3, popi3
+	elseif serdes == Squash.i32() then
+		return 4, pushi4, popi4
+	elseif serdes == Squash.i40() then
+		return 5, pushi5, popi5
+	elseif serdes == Squash.i48() then
+		return 6, pushi6, popi6
+	elseif serdes == Squash.i56() then
+		return 7, pushi7, popi7
+	elseif serdes == Squash.i64() then
+		return 8, pushi8, popi8
+	else
+		return nil, serdes.ser, serdes.des
 	end
 end
 
@@ -630,18 +902,25 @@ do
 			return vector2Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<vector> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector2)
+				push(cursor, vector2.y)
+				push(cursor, vector2.x)
+			end
+		else
+			size *= 2
+			function vec.ser(cursor, vector2)
+				tryrealloc(cursor, size)
+				push(cursor, vector2.y)
+				push(cursor, vector2.x)
+			end
+		end
 
-		local vec: SerDes<vector> = {
-			ser = function(cursor, vector2)
-				pushrealloc(cursor, vector2.y)
-				pushrealloc(cursor, vector2.x)
-			end,
-
-			des = function(cursor)
-				return vector.create(pop(cursor), pop(cursor))
-			end,
-		}
+		function vec.des(cursor)
+			return vector.create(pop(cursor), pop(cursor))
+		end
 
 		vector2Cache[serdes] = vec
 		return vec
@@ -655,19 +934,27 @@ do
 			return vector3Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<vector> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector3)
+				push(cursor, vector3.z)
+				push(cursor, vector3.y)
+				push(cursor, vector3.x)
+			end
+		else
+			size *= 3
+			function vec.ser(cursor, vector3)
+				tryrealloc(cursor, size)
+				push(cursor, vector3.z)
+				push(cursor, vector3.y)
+				push(cursor, vector3.x)
+			end
+		end
 
-		local vec: SerDes<vector> = {
-			ser = function(cursor, vector3)
-				pushrealloc(cursor, vector3.z)
-				pushrealloc(cursor, vector3.y)
-				pushrealloc(cursor, vector3.x)
-			end,
-
-			des = function(cursor)
-				return vector.create(pop(cursor), pop(cursor), pop(cursor))
-			end,
-		}
+		function vec.des(cursor)
+			return vector.create(pop(cursor), pop(cursor), pop(cursor))
+		end
 
 		vector3Cache[serdes] = vec
 		return vec
@@ -681,20 +968,29 @@ do
 			return vector4Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<vector> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector4)
+				push(cursor, vector4.w)
+				push(cursor, vector4.z)
+				push(cursor, vector4.y)
+				push(cursor, vector4.x)
+			end
+		else
+			size *= 4
+			function vec.ser(cursor, vector4)
+				tryrealloc(cursor, size)
+				push(cursor, vector4.w)
+				push(cursor, vector4.z)
+				push(cursor, vector4.y)
+				push(cursor, vector4.x)
+			end
+		end
 
-		local vec: SerDes<vector> = {
-			ser = function(cursor, vector4)
-				pushrealloc(cursor, vector4.w)
-				pushrealloc(cursor, vector4.z)
-				pushrealloc(cursor, vector4.y)
-				pushrealloc(cursor, vector4.x)
-			end,
-
-			des = function(cursor)
-				return vector.create(pop(cursor), pop(cursor), pop(cursor), pop(cursor))
-			end,
-		}
+		function vec.des(cursor)
+			return vector.create(pop(cursor), pop(cursor), pop(cursor), pop(cursor))
+		end
 
 		vector4Cache[serdes] = vec
 		return vec
@@ -702,7 +998,9 @@ do
 end
 
 do
-	local is4wide = pcall(function() return vector.zero.w end)
+	local is4wide = pcall(function()
+		return vector.zero.w
+	end)
 	Squash.vector = ((if is4wide then Squash.vector4 else Squash.vector3) :: any) :: typeof(Squash.vector3)
 end
 
@@ -812,7 +1110,7 @@ do
 
 			for i = 1, #inputDigits do
 				value = inputDigits[i] + carry * sourceBase
-				inputDigits[i] = math.floor(value / targetBase)
+				inputDigits[i] = value // targetBase
 				carry = value % targetBase
 			end
 
@@ -1305,7 +1603,6 @@ do
 					local flag = flags[i + optboolCount]
 					if flag then
 						local prop = optProperties[i]
-						local serdes = (schema :: any)[prop]
 						new[prop] = optSerDes[i].des(cursor)
 					end
 				end
@@ -1578,49 +1875,50 @@ do
 end
 
 local rotser, rotdes
+
+local function cframeLookupEntries()
+	return {
+		CFrame.Angles(0, 0, 0),
+		CFrame.Angles(math.rad(90), 0, 0),
+		CFrame.Angles(0, math.rad(180), math.rad(180)),
+		CFrame.Angles(math.rad(-90), 0, 0),
+		CFrame.Angles(0, math.rad(180), math.rad(90)),
+		CFrame.Angles(0, math.rad(90), math.rad(90)),
+		CFrame.Angles(0, 0, math.rad(90)),
+		CFrame.Angles(0, math.rad(-90), math.rad(90)),
+		CFrame.Angles(math.rad(-90), math.rad(-90), 0),
+		CFrame.Angles(0, math.rad(-90), 0),
+		CFrame.Angles(math.rad(90), math.rad(-90), 0),
+		CFrame.Angles(0, math.rad(90), math.rad(180)),
+		CFrame.Angles(0, math.rad(-90), math.rad(180)),
+		CFrame.Angles(0, math.rad(180), math.rad(0)),
+		CFrame.Angles(math.rad(-90), math.rad(-180), math.rad(0)),
+		CFrame.Angles(0, math.rad(0), math.rad(180)),
+		CFrame.Angles(math.rad(90), math.rad(180), math.rad(0)),
+		CFrame.Angles(0, math.rad(0), math.rad(-90)),
+		CFrame.Angles(0, math.rad(-90), math.rad(-90)),
+		CFrame.Angles(0, math.rad(-180), math.rad(-90)),
+		CFrame.Angles(0, math.rad(90), math.rad(-90)),
+		CFrame.Angles(math.rad(90), math.rad(90), 0),
+		CFrame.Angles(0, math.rad(90), 0),
+		CFrame.Angles(math.rad(-90), math.rad(90), 0),
+	}
+end
+
+local function cframeSpecialCaseLookup(entries: { CFrame })
+	local lookup = {}
+
+	for i, v in entries do
+		lookup[vector.create(v:ToOrientation())] = i
+	end
+
+	return lookup
+end
+
+local idToRotation
+local rotationToId
+
 do
-	local function cframeLookupEntries()
-		return {
-			CFrame.Angles(0, 0, 0),
-			CFrame.Angles(math.rad(90), 0, 0),
-			CFrame.Angles(0, math.rad(180), math.rad(180)),
-			CFrame.Angles(math.rad(-90), 0, 0),
-			CFrame.Angles(0, math.rad(180), math.rad(90)),
-			CFrame.Angles(0, math.rad(90), math.rad(90)),
-			CFrame.Angles(0, 0, math.rad(90)),
-			CFrame.Angles(0, math.rad(-90), math.rad(90)),
-			CFrame.Angles(math.rad(-90), math.rad(-90), 0),
-			CFrame.Angles(0, math.rad(-90), 0),
-			CFrame.Angles(math.rad(90), math.rad(-90), 0),
-			CFrame.Angles(0, math.rad(90), math.rad(180)),
-			CFrame.Angles(0, math.rad(-90), math.rad(180)),
-			CFrame.Angles(0, math.rad(180), math.rad(0)),
-			CFrame.Angles(math.rad(-90), math.rad(-180), math.rad(0)),
-			CFrame.Angles(0, math.rad(0), math.rad(180)),
-			CFrame.Angles(math.rad(90), math.rad(180), math.rad(0)),
-			CFrame.Angles(0, math.rad(0), math.rad(-90)),
-			CFrame.Angles(0, math.rad(-90), math.rad(-90)),
-			CFrame.Angles(0, math.rad(-180), math.rad(-90)),
-			CFrame.Angles(0, math.rad(90), math.rad(-90)),
-			CFrame.Angles(math.rad(90), math.rad(90), 0),
-			CFrame.Angles(0, math.rad(90), 0),
-			CFrame.Angles(math.rad(-90), math.rad(90), 0),
-		}
-	end
-
-	local function cframeSpecialCaseLookup(entries: { CFrame })
-		local lookup = {}
-
-		for i, v in entries do
-			lookup[vector.create(v:ToOrientation())] = i
-		end
-
-		return lookup
-	end
-
-	local idToRotation
-	local rotationToId
-
 	function rotser(cursor, cframe: CFrame)
 		--? Not defined outside so pure Luau users don't suffer errors
 		idToRotation = idToRotation or cframeLookupEntries()
@@ -1674,24 +1972,54 @@ do
 			return cframeCache[positionSerDes]
 		end
 
-		local pushrealloc, pop = positionSerDes.ser, positionSerDes.des
-
-		local cframeserdes: SerDes<CFrame> = {
-			ser = function(cursor, cframe)
+		local size, push, pop = getNumberSizePushPop(positionSerDes)
+		local cframeserdes: SerDes<CFrame> = {} :: any
+		if not size then
+			function cframeserdes.ser(cursor, cframe)
 				rotser(cursor, cframe)
 
 				local pos = cframe.Position
-				pushrealloc(cursor, pos.Z)
-				pushrealloc(cursor, pos.Y)
-				pushrealloc(cursor, pos.X)
-			end,
+				push(cursor, pos.Z)
+				push(cursor, pos.Y)
+				push(cursor, pos.X)
+			end
+		else
+			size *= 3
+			function cframeserdes.ser(cursor, cframe)
+				--? Not defined outside so pure Luau users don't suffer errors
+				idToRotation = idToRotation or cframeLookupEntries()
+				rotationToId = rotationToId or cframeSpecialCaseLookup(idToRotation)
 
-			des = function(cursor)
-				local x, y, z = pop(cursor), pop(cursor), pop(cursor)
-				local rotation = rotdes(cursor)
-				return rotation + Vector3.new(x, y, z)
-			end,
-		}
+				local specialId = rotationToId[vector.create(cframe:ToOrientation())]
+				if specialId then
+					tryrealloc(cursor, 1 + size)
+					pushu1(cursor, specialId)
+				else
+					local axis, theta = cframe:ToAxisAngle()
+					axis *= math.sin(theta / 2)
+					tryrealloc(cursor, 7 + size)
+					local z = math.round((axis.Z + 1) * 2 ^ 15 - 1)
+					local y = math.round((axis.Y + 1) * 2 ^ 15 - 1)
+					local x = math.round((axis.X + 1) * 2 ^ 15 - 1)
+					pushu2(cursor, z)
+					pushu2(cursor, y)
+					pushu2(cursor, x)
+					pushu1(cursor, 0)
+				end
+
+				local pos = cframe.Position
+				push(cursor, pos.Z)
+				push(cursor, pos.Y)
+				push(cursor, pos.X)
+			end
+		end
+
+		function cframeserdes.des(cursor)
+			local x, y, z = pop(cursor), pop(cursor), pop(cursor)
+			local rotation = rotdes(cursor) :: CFrame
+			return rotation + Vector3.new(x, y, z)
+		end
+
 		cframeCache[positionSerDes] = cframeserdes
 		return cframeserdes
 	end
@@ -1982,27 +2310,33 @@ do
 end
 
 do
-	local vector3Cache = {}
-	function Squash.Vector3(serdes: SerDes<number>): SerDes<Vector3>
-		if vector3Cache[serdes] then
-			return vector3Cache[serdes]
+	local vector2Cache = {}
+	function Squash.Vector2(serdes: SerDes<number>): SerDes<Vector2>
+		if vector2Cache[serdes] then
+			return vector2Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<Vector2> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector2)
+				push(cursor, vector2.Y)
+				push(cursor, vector2.X)
+			end
+		else
+			size *= 2
+			function vec.ser(cursor, vector2)
+				tryrealloc(cursor, size)
+				push(cursor, vector2.Y)
+				push(cursor, vector2.X)
+			end
+		end
 
-		local vec: SerDes<Vector3> = {
-			ser = function(cursor, vector3)
-				pushrealloc(cursor, vector3.Z)
-				pushrealloc(cursor, vector3.Y)
-				pushrealloc(cursor, vector3.X)
-			end,
+		function vec.des(cursor)
+			return Vector2.new(pop(cursor), pop(cursor))
+		end
 
-			des = function(cursor)
-				return Vector3.new(pop(cursor), pop(cursor), pop(cursor))
-			end,
-		}
-
-		vector3Cache[serdes] = vec
+		vector2Cache[serdes] = vec
 		return vec
 	end
 end
@@ -2133,27 +2467,36 @@ do
 end
 
 do
-	local vector2Cache = {}
-	function Squash.Vector2(serdes: SerDes<number>): SerDes<Vector2>
-		if vector2Cache[serdes] then
-			return vector2Cache[serdes]
+	local vector3Cache = {}
+	function Squash.Vector3(serdes: SerDes<number>): SerDes<Vector3>
+		if vector3Cache[serdes] then
+			return vector3Cache[serdes]
 		end
 
-		local pushrealloc, pop = serdes.ser, serdes.des
+		local size, push, pop = getNumberSizePushPop(serdes)
+		local vec: SerDes<Vector3> = {} :: any
+		if not size then
+			function vec.ser(cursor, vector3)
+				push(cursor, vector3.Z)
+				push(cursor, vector3.Y)
+				push(cursor, vector3.X)
+			end
+		else
+			size *= 3
+			function vec.ser(cursor, vector3)
+				tryrealloc(cursor, size)
+				push(cursor, vector3.Z)
+				push(cursor, vector3.Y)
+				push(cursor, vector3.X)
+			end
+		end
 
-		local vec2: SerDes<Vector2> = {
-			ser = function(cursor, v)
-				pushrealloc(cursor, v.Y)
-				pushrealloc(cursor, v.X)
-			end,
+		function vec.des(cursor)
+			return Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+		end
 
-			des = function(cursor)
-				return Vector2.new(pop(cursor), pop(cursor))
-			end,
-		}
-
-		vector2Cache[serdes] = vec2
-		return vec2
+		vector3Cache[serdes] = vec
+		return vec
 	end
 end
 
