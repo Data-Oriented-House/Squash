@@ -1744,7 +1744,7 @@ do
 	end
 end
 
-do
+if Axes ~= nil then
 	local axesCache: SerDes<Axes> = {
 		ser = function(cursor, axes)
 			tryrealloc(cursor, 2)
@@ -1773,7 +1773,7 @@ do
 	end
 end
 
-do
+if BrickColor ~= nil then
 	local brickcolorCache: SerDes<BrickColor> = {
 		ser = function(cursor, brickcolor)
 			tryrealloc(cursor, 2)
@@ -1791,7 +1791,7 @@ do
 end
 
 local enumitem
-do
+if Enum ~= nil then
 	local enumItemCache = {}
 	function Squash.EnumItem(enum: Enum): SerDes<EnumItem>
 		if enumItemCache[enum] then
@@ -1827,7 +1827,7 @@ do
 	enumitem = Squash.EnumItem
 end
 
-do
+if CatalogSearchParams ~= nil then
 	local catalogSearchParamsCache: SerDes<CatalogSearchParams> = {
 		ser = function(cursor, params)
 			tryrealloc(cursor, 1 + 1 + 4 + 4 + #params.CreatorName + #params.SearchKeyword)
@@ -1875,9 +1875,9 @@ do
 end
 
 local rotser, rotdes
-
-local function cframeLookupEntries()
-	return {
+local idToRotation, rotationToId
+if CFrame ~= nil then
+	idToRotation = {
 		CFrame.Angles(0, 0, 0),
 		CFrame.Angles(math.rad(90), 0, 0),
 		CFrame.Angles(0, math.rad(180), math.rad(180)),
@@ -1903,27 +1903,13 @@ local function cframeLookupEntries()
 		CFrame.Angles(0, math.rad(90), 0),
 		CFrame.Angles(math.rad(-90), math.rad(90), 0),
 	}
-end
 
-local function cframeSpecialCaseLookup(entries: { CFrame })
-	local lookup = {}
-
-	for i, v in entries do
-		lookup[vector.create(v:ToOrientation())] = i
+	rotationToId = {}
+	for i, v in idToRotation do
+		rotationToId[vector.create(v:ToOrientation())] = i
 	end
 
-	return lookup
-end
-
-local idToRotation
-local rotationToId
-
-do
 	function rotser(cursor, cframe: CFrame)
-		--? Not defined outside so pure Luau users don't suffer errors
-		idToRotation = idToRotation or cframeLookupEntries()
-		rotationToId = rotationToId or cframeSpecialCaseLookup(idToRotation)
-
 		local specialId = rotationToId[vector.create(cframe:ToOrientation())]
 		if specialId then
 			tryrealloc(cursor, 1)
@@ -1965,7 +1951,7 @@ do
 end
 
 local cframe
-do
+if CFrame ~= nil then
 	local cframeCache = {}
 	function Squash.CFrame(positionSerDes: SerDes<number>): SerDes<CFrame>
 		if cframeCache[positionSerDes] then
@@ -1986,10 +1972,6 @@ do
 		else
 			size *= 3
 			function cframeserdes.ser(cursor, cframe)
-				--? Not defined outside so pure Luau users don't suffer errors
-				idToRotation = idToRotation or cframeLookupEntries()
-				rotationToId = rotationToId or cframeSpecialCaseLookup(idToRotation)
-
 				local specialId = rotationToId[vector.create(cframe:ToOrientation())]
 				if specialId then
 					tryrealloc(cursor, 1 + size)
@@ -2026,15 +2008,18 @@ do
 	cframe = Squash.CFrame
 end
 
-local function pushcolor3(cursor, color3)
-	pushu1(cursor, color3.B * 255)
-	pushu1(cursor, color3.G * 255)
-	pushu1(cursor, color3.R * 255)
-end
-local function popcolor3(cursor)
-	return Color3.fromRGB(popu1(cursor), popu1(cursor), popu1(cursor))
-end
-do
+local pushcolor3, popcolor3
+if Color3 ~= nil then
+	function pushcolor3(cursor, color3)
+		pushu1(cursor, color3.B * 255)
+		pushu1(cursor, color3.G * 255)
+		pushu1(cursor, color3.R * 255)
+	end
+
+	function popcolor3(cursor)
+		return Color3.fromRGB(popu1(cursor), popu1(cursor), popu1(cursor))
+	end
+
 	local color3Cache: SerDes<Color3> = {
 		ser = function(cursor, x)
 			tryrealloc(cursor, 3)
@@ -2047,14 +2032,17 @@ do
 	end
 end
 
-local function pushcolorsequencekeypoint(cursor, keypoint)
-	pushcolor3(cursor, keypoint.Value)
-	pushu1(cursor, keypoint.Time * 255)
-end
-local function popcolorsequencekeypoint(cursor)
-	return ColorSequenceKeypoint.new(popu1(cursor) / 255, popcolor3(cursor))
-end
-do
+local pushcolorsequencekeypoint, popcolorsequencekeypoint
+if ColorSequenceKeypoint ~= nil then
+	function pushcolorsequencekeypoint(cursor, keypoint)
+		pushcolor3(cursor, keypoint.Value)
+		pushu1(cursor, keypoint.Time * 255)
+	end
+
+	function popcolorsequencekeypoint(cursor)
+		return ColorSequenceKeypoint.new(popu1(cursor) / 255, popcolor3(cursor))
+	end
+
 	local colorSequenceKeypointCache: SerDes<ColorSequenceKeypoint> = {
 		ser = function(cursor, x)
 			tryrealloc(cursor, 4)
@@ -2067,7 +2055,7 @@ do
 	end
 end
 
-do
+if ColorSequence ~= nil then
 	local colorSequenceCache: SerDes<ColorSequence> = {
 		ser = function(cursor, sequence)
 			tryrealloc(cursor, 4 * #sequence.Keypoints)
@@ -2091,7 +2079,7 @@ do
 	end
 end
 
-do
+if DateTime ~= nil then
 	local dateTimeCache: SerDes<DateTime> = {
 		ser = function(cursor, date)
 			tryrealloc(cursor, 6)
@@ -2106,7 +2094,7 @@ do
 	end
 end
 
-do
+if Faces ~= nil then
 	local facesCache: SerDes<Faces> = {
 		ser = function(cursor, face)
 			tryrealloc(cursor, 1)
@@ -2130,7 +2118,7 @@ do
 	end
 end
 
-do
+if FloatCurveKey ~= nil then
 	local floatCurveKeyCache: SerDes<FloatCurveKey> = {
 		ser = function(cursor, key)
 			enumitem(Enum.KeyInterpolationMode).ser(cursor, key.Interpolation)
@@ -2148,7 +2136,7 @@ do
 	end
 end
 
-do
+if Font ~= nil then
 	local fontCache: SerDes<Font> = {
 		ser = function(cursor, font)
 			local family = string.match(font.Family, 'rbxasset://fonts/families/(.+).json') or error(`Invalid font family {font.Family}`)
@@ -2174,7 +2162,7 @@ do
 	end
 end
 
-do
+if NumberRange ~= nil then
 	local numberRangeCache = {}
 	function Squash.NumberRange(serdes: SerDes<number>): SerDes<NumberRange>
 		if numberRangeCache[serdes] then
@@ -2199,7 +2187,7 @@ do
 end
 
 local numbersequencekeypoint
-do
+if NumberSequenceKeypoint ~= nil then
 	local numberSequenceKeypointCache = {}
 	function Squash.NumberSequenceKeypoint(serdes: SerDes<number>): SerDes<NumberSequenceKeypoint>
 		if numberSequenceKeypointCache[serdes] then
@@ -2229,7 +2217,7 @@ do
 	numbersequencekeypoint = Squash.NumberSequenceKeypoint
 end
 
-do
+if NumberSequence ~= nil then
 	local numberSequenceCache = {}
 	function Squash.NumberSequence(serdes: SerDes<number>): SerDes<NumberSequence>
 		if numberSequenceCache[serdes] then
@@ -2262,7 +2250,7 @@ do
 	end
 end
 
-do
+if OverlapParams ~= nil then
 	--- Does not encode instance data at all.
 	local overlapParamsCache: SerDes<OverlapParams> = {
 		ser = function(cursor, params)
@@ -2287,7 +2275,8 @@ do
 	end
 end
 
-do
+if RaycastParams ~= nil then
+	--- Does not encode instance data at all.
 	local raycastParamsCache: SerDes<RaycastParams> = {
 		ser = function(cursor, params)
 			tryrealloc(cursor, 1 + #params.CollisionGroup)
@@ -2309,7 +2298,7 @@ do
 	end
 end
 
-do
+if Vector2 ~= nil then
 	local vector2Cache = {}
 	function Squash.Vector2(serdes: SerDes<number>): SerDes<Vector2>
 		if vector2Cache[serdes] then
@@ -2341,7 +2330,7 @@ do
 	end
 end
 
-do
+if PathWaypoint ~= nil then
 	local pathWaypointCache = {}
 	function Squash.PathWaypoint(serdes: SerDes<number>): SerDes<PathWaypoint>
 		if pathWaypointCache[serdes] then
@@ -2373,7 +2362,7 @@ do
 	end
 end
 
-do
+if PhysicalProperties ~= nil then
 	local physicalPropertiesCache: SerDes<PhysicalProperties> = {
 		ser = function(cursor, props)
 			tryrealloc(cursor, 20)
@@ -2393,7 +2382,7 @@ do
 	end
 end
 
-do
+if Ray ~= nil then
 	local rayCache = {}
 	function Squash.Ray(serdes: SerDes<number>): SerDes<Ray>
 		if rayCache[serdes] then
@@ -2428,7 +2417,7 @@ export type SquashRaycastResult = {
 	Material: Enum.Material,
 }
 
-do
+if RaycastParams ~= nil then
 	local raycastResultCache = {}
 	function Squash.RaycastResult(serdes: SerDes<number>): { ser: (Cursor, RaycastResult) -> (), des: (Cursor) -> SquashRaycastResult }
 		if raycastResultCache[serdes] then
@@ -2466,7 +2455,7 @@ do
 	end
 end
 
-do
+if Vector3 ~= nil then
 	local vector3Cache = {}
 	function Squash.Vector3(serdes: SerDes<number>): SerDes<Vector3>
 		if vector3Cache[serdes] then
@@ -2500,7 +2489,7 @@ do
 	end
 end
 
-do
+if Rect ~= nil then
 	local rectCache = {}
 	function Squash.Rect(serdes: SerDes<number>): SerDes<Rect>
 		if rectCache[serdes] then
@@ -2526,7 +2515,7 @@ do
 	end
 end
 
-do
+if Region3 ~= nil then
 	local region3Cache = {}
 	function Squash.Region3(serdes: SerDes<number>): SerDes<Region3>
 		if region3Cache[serdes] then
@@ -2558,7 +2547,7 @@ do
 	end
 end
 
-do
+if Region3int16 ~= nil then
 	local region3int16Cache: SerDes<Region3int16> = {
 		ser = function(cursor, region)
 			tryrealloc(cursor, 12)
@@ -2583,7 +2572,7 @@ do
 	end
 end
 
-do
+if RotationCurveKey ~= nil then
 	local rotationCurveKeyCache = {}
 	function Squash.RotationCurveKey(positionSerDes: SerDes<number>): SerDes<RotationCurveKey>
 		if rotationCurveKeyCache[positionSerDes] then
@@ -2613,7 +2602,7 @@ do
 	end
 end
 
-do
+if TweenInfo ~= nil then
 	local tweenInfoCache: SerDes<TweenInfo> = {
 		ser = function(cursor, info)
 			tryrealloc(cursor, 9)
@@ -2640,7 +2629,7 @@ do
 	end
 end
 
-do
+if UDim ~= nil then
 	local udimCache = {}
 	function Squash.UDim(serdes: SerDes<number>): SerDes<UDim>
 		if udimCache[serdes] then
@@ -2665,7 +2654,7 @@ do
 	end
 end
 
-do
+if UDim2 ~= nil then
 	local udim2Cache = {}
 	function Squash.UDim2(serdes: SerDes<number>): SerDes<UDim2>
 		if udim2Cache[serdes] then
@@ -2692,7 +2681,7 @@ do
 	end
 end
 
-do
+if Vector2int16 ~= nil then
 	local vector2int16Cache: SerDes<Vector2int16> = {
 		ser = function(cursor, v)
 			tryrealloc(cursor, 4)
@@ -2709,7 +2698,7 @@ do
 	end
 end
 
-do
+if Vector3int16 ~= nil then
 	local vector3int16Cache: SerDes<Vector3int16> = {
 		ser = function(cursor, v)
 			tryrealloc(cursor, 6)
