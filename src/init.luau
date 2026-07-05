@@ -2154,9 +2154,11 @@ end
 if Font ~= nil then
 	local fontCache: SerDes<Font> = {
 		ser = function(cursor, font)
-			local family = string.match(font.Family, '^rbxasset://fonts/families/(.+)%.json$') or error(`Invalid font family {font.Family}`)
-			tryrealloc(cursor, #family)
+			local shortname = string.match(font.Family, '^rbxasset://fonts/families/(.+)%.json$')
+			local family = shortname or font.Family
+			tryrealloc(cursor, #family + 1)
 			pushstr(cursor, family)
+			pushbool(cursor, shortname ~= nil)
 			enumitem(Enum.FontWeight).ser(cursor, font.Weight)
 			enumitem(Enum.FontStyle).ser(cursor, font.Style)
 		end,
@@ -2164,8 +2166,12 @@ if Font ~= nil then
 		des = function(cursor)
 			local style = enumitem(Enum.FontStyle).des(cursor) :: Enum.FontStyle
 			local weight = enumitem(Enum.FontWeight).des(cursor) :: Enum.FontWeight
+			local builtin = popbool(cursor)
 			local family = popstr(cursor)
-			return Font.new(`rbxasset://fonts/families/{family}.json`, weight, style)
+			if builtin then
+				family = `rbxasset://fonts/families/{family}.json`
+			end
+			return Font.new(family, weight, style)
 		end,
 	}
 	function Squash.Font(): SerDes<Font>
