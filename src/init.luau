@@ -254,7 +254,7 @@ local function pushi5(cursor: Cursor, x: number)
 	local buf = getbuf(cursor)
 	local pos = getpos(buf)
 	setpos(buf, pos + 5)
-	buffer.writeu8(buf, pos, x)
+	buffer.writeu8(buf, pos, x % 256)
 	buffer.writeu32(buf, pos + 1, x // 256)
 end
 
@@ -272,7 +272,7 @@ local function pushi6(cursor: Cursor, x: number)
 	local buf = getbuf(cursor)
 	local pos = getpos(buf)
 	setpos(buf, pos + 6)
-	buffer.writeu16(buf, pos, x)
+	buffer.writeu16(buf, pos, x % (256 ^ 2))
 	buffer.writeu32(buf, pos + 2, x // (256 ^ 2))
 end
 
@@ -290,7 +290,7 @@ local function pushi7(cursor: Cursor, x: number)
 	local buf = getbuf(cursor)
 	local pos = getpos(buf)
 	setpos(buf, pos + 7)
-	buffer.writeu8(buf, pos, x)
+	buffer.writeu8(buf, pos, x % 256)
 	buffer.writeu16(buf, pos + 1, x // 256)
 	buffer.writeu32(buf, pos + 3, x // (256 ^ 3))
 end
@@ -1837,7 +1837,7 @@ if CatalogSearchParams ~= nil then
 			enumitem(Enum.CatalogCategoryFilter).ser(cursor, params.CategoryFilter)
 			enumitem(Enum.SalesTypeFilter).ser(cursor, params.SalesTypeFilter)
 			for _, assetType in params.AssetTypes do
-				enumitem(Enum.AssetType).ser(cursor, assetType)
+				enumitem(Enum.AvatarAssetType).ser(cursor, assetType)
 			end
 			pushvlqrealloc(cursor, #params.AssetTypes)
 		end,
@@ -1847,13 +1847,13 @@ if CatalogSearchParams ~= nil then
 			local assetCount = popvlq(cursor)
 			local assetTypes = table.create(assetCount)
 			for i = assetCount, 1, -1 do
-				assetTypes[i] = enumitem(Enum.AssetType).des(cursor) :: Enum.AssetType
+				assetTypes[i] = enumitem(Enum.AvatarAssetType).des(cursor) :: Enum.AvatarAssetType
 			end
 			params.AssetTypes = assetTypes
 
-			params.SalesTypeFilter = enumitem(Enum.SalesTypeFilter).des(cursor)
+			params.SalesTypeFilter = enumitem(Enum.SalesTypeFilter).des(cursor) :: Enum.SalesTypeFilter
 			params.CategoryFilter = enumitem(Enum.CatalogCategoryFilter).des(cursor) :: Enum.CatalogCategoryFilter
-			params.SortAggregation = enumitem(Enum.CatalogSortAggregation).des(cursor)
+			params.SortAggregation = enumitem(Enum.CatalogSortAggregation).des(cursor) :: Enum.CatalogSortAggregation
 			params.SortType = enumitem(Enum.CatalogSortType).des(cursor) :: Enum.CatalogSortType
 			params.SearchKeyword = popstr(cursor)
 			params.CreatorName = popstr(cursor)
@@ -1911,11 +1911,16 @@ if CFrame ~= nil then
 			pushu1(cursor, specialId)
 		else
 			local axis, theta = cframe:ToAxisAngle()
-			axis *= math.sin(theta / 2)
+			local half = theta / 2
+			local sin = math.sin(half)
+			if math.cos(half) < 0 then
+				sin = -sin
+			end
+			axis *= sin
 			tryrealloc(cursor, 7)
-			local z = math.round((axis.Z + 1) * 2 ^ 15 - 1)
-			local y = math.round((axis.Y + 1) * 2 ^ 15 - 1)
-			local x = math.round((axis.X + 1) * 2 ^ 15 - 1)
+			local z = math.clamp(math.round((axis.Z + 1) * 2 ^ 15 - 1), 0, 65535)
+			local y = math.clamp(math.round((axis.Y + 1) * 2 ^ 15 - 1), 0, 65535)
+			local x = math.clamp(math.round((axis.X + 1) * 2 ^ 15 - 1), 0, 65535)
 			pushu2(cursor, z)
 			pushu2(cursor, y)
 			pushu2(cursor, x)
@@ -1973,11 +1978,16 @@ if CFrame ~= nil then
 					pushu1(cursor, specialId)
 				else
 					local axis, theta = cframe:ToAxisAngle()
-					axis *= math.sin(theta / 2)
+					local half = theta / 2
+					local sin = math.sin(half)
+					if math.cos(half) < 0 then
+						sin = -sin
+					end
+					axis *= sin
 					tryrealloc(cursor, 7 + size)
-					local z = math.round((axis.Z + 1) * 2 ^ 15 - 1)
-					local y = math.round((axis.Y + 1) * 2 ^ 15 - 1)
-					local x = math.round((axis.X + 1) * 2 ^ 15 - 1)
+					local z = math.clamp(math.round((axis.Z + 1) * 2 ^ 15 - 1), 0, 65535)
+					local y = math.clamp(math.round((axis.Y + 1) * 2 ^ 15 - 1), 0, 65535)
+					local x = math.clamp(math.round((axis.X + 1) * 2 ^ 15 - 1), 0, 65535)
 					pushu2(cursor, z)
 					pushu2(cursor, y)
 					pushu2(cursor, x)
@@ -2006,9 +2016,9 @@ end
 local pushcolor3, popcolor3
 if Color3 ~= nil then
 	function pushcolor3(cursor, color3)
-		pushu1(cursor, color3.B * 255)
-		pushu1(cursor, color3.G * 255)
-		pushu1(cursor, color3.R * 255)
+		pushu1(cursor, math.round(math.clamp(color3.B, 0, 1) * 255))
+		pushu1(cursor, math.round(math.clamp(color3.G, 0, 1) * 255))
+		pushu1(cursor, math.round(math.clamp(color3.R, 0, 1) * 255))
 	end
 
 	function popcolor3(cursor)
@@ -2031,16 +2041,16 @@ local pushcolorsequencekeypoint, popcolorsequencekeypoint
 if ColorSequenceKeypoint ~= nil then
 	function pushcolorsequencekeypoint(cursor, keypoint)
 		pushcolor3(cursor, keypoint.Value)
-		pushu1(cursor, keypoint.Time * 255)
+		pushf4(cursor, keypoint.Time)
 	end
 
 	function popcolorsequencekeypoint(cursor)
-		return ColorSequenceKeypoint.new(popu1(cursor) / 255, popcolor3(cursor))
+		return ColorSequenceKeypoint.new(popf4(cursor), popcolor3(cursor))
 	end
 
 	local colorSequenceKeypointCache: SerDes<ColorSequenceKeypoint> = {
 		ser = function(cursor, x)
-			tryrealloc(cursor, 4)
+			tryrealloc(cursor, 7)
 			pushcolorsequencekeypoint(cursor, x)
 		end,
 		des = popcolorsequencekeypoint,
@@ -2053,7 +2063,7 @@ end
 if ColorSequence ~= nil then
 	local colorSequenceCache: SerDes<ColorSequence> = {
 		ser = function(cursor, sequence)
-			tryrealloc(cursor, 4 * #sequence.Keypoints)
+			tryrealloc(cursor, 7 * #sequence.Keypoints)
 			for _, keypoint in sequence.Keypoints do
 				pushcolorsequencekeypoint(cursor, keypoint)
 			end
@@ -2077,11 +2087,11 @@ end
 if DateTime ~= nil then
 	local dateTimeCache: SerDes<DateTime> = {
 		ser = function(cursor, date)
-			tryrealloc(cursor, 6)
-			pushu6(cursor, date.UnixTimestampMillis)
+			tryrealloc(cursor, 7)
+			pushi7(cursor, date.UnixTimestampMillis)
 		end,
 		des = function(cursor)
-			return DateTime.fromUnixTimestampMillis(popu6(cursor))
+			return DateTime.fromUnixTimestampMillis(popi7(cursor))
 		end,
 	}
 	function Squash.DateTime(): SerDes<DateTime>
@@ -2117,13 +2127,23 @@ if FloatCurveKey ~= nil then
 	local floatCurveKeyCache: SerDes<FloatCurveKey> = {
 		ser = function(cursor, key)
 			enumitem(Enum.KeyInterpolationMode).ser(cursor, key.Interpolation)
-			tryrealloc(cursor, 8)
+			tryrealloc(cursor, 16)
+			pushf4(cursor, key.RightTangent)
+			pushf4(cursor, key.LeftTangent)
 			pushf4(cursor, key.Value)
 			pushf4(cursor, key.Time)
 		end,
 
 		des = function(cursor)
-			return FloatCurveKey.new(popf4(cursor), popf4(cursor), enumitem(Enum.KeyInterpolationMode).des(cursor) :: any)
+			local time = popf4(cursor)
+			local value = popf4(cursor)
+			local leftTangent = popf4(cursor)
+			local rightTangent = popf4(cursor)
+			local interpolation = enumitem(Enum.KeyInterpolationMode).des(cursor)
+			local key = FloatCurveKey.new(time, value, interpolation :: any)
+			key.LeftTangent = leftTangent
+			key.RightTangent = rightTangent
+			return key
 		end,
 	}
 	function Squash.FloatCurveKey(): SerDes<FloatCurveKey>
@@ -2134,10 +2154,11 @@ end
 if Font ~= nil then
 	local fontCache: SerDes<Font> = {
 		ser = function(cursor, font)
-			local family = string.match(font.Family, 'rbxasset://fonts/families/(.+).json') or error(`Invalid font family {font.Family}`)
+			local shortname = string.match(font.Family, '^rbxasset://fonts/families/(.+)%.json$')
+			local family = shortname or font.Family
 			tryrealloc(cursor, #family + 1)
 			pushstr(cursor, family)
-			pushbool(cursor, font.Bold)
+			pushbool(cursor, shortname ~= nil)
 			enumitem(Enum.FontWeight).ser(cursor, font.Weight)
 			enumitem(Enum.FontStyle).ser(cursor, font.Style)
 		end,
@@ -2145,11 +2166,12 @@ if Font ~= nil then
 		des = function(cursor)
 			local style = enumitem(Enum.FontStyle).des(cursor) :: Enum.FontStyle
 			local weight = enumitem(Enum.FontWeight).des(cursor) :: Enum.FontWeight
-			local bold = popbool(cursor)
+			local builtin = popbool(cursor)
 			local family = popstr(cursor)
-			local font = Font.new(`rbxasset://fonts/families/{family}.json`, weight, style)
-			font.Bold = bold
-			return font
+			if builtin then
+				family = `rbxasset://fonts/families/{family}.json`
+			end
+			return Font.new(family, weight, style)
 		end,
 	}
 	function Squash.Font(): SerDes<Font>
@@ -2249,9 +2271,9 @@ if OverlapParams ~= nil then
 	--- Does not encode instance data at all.
 	local overlapParamsCache: SerDes<OverlapParams> = {
 		ser = function(cursor, params)
-			tryrealloc(cursor, 1 + 2 + #params.CollisionGroup)
+			tryrealloc(cursor, 1 + 4 + #params.CollisionGroup)
 			pushbool(cursor, params.BruteForceAllSlow, params.RespectCanCollide)
-			pushu2(cursor, params.MaxParts)
+			pushu4(cursor, params.MaxParts)
 			pushstr(cursor, params.CollisionGroup)
 			enumitem(Enum.RaycastFilterType).ser(cursor, params.FilterType)
 		end,
@@ -2260,7 +2282,7 @@ if OverlapParams ~= nil then
 			local params = OverlapParams.new()
 			params.FilterType = enumitem(Enum.RaycastFilterType).des(cursor) :: Enum.RaycastFilterType
 			params.CollisionGroup = popstr(cursor)
-			params.MaxParts = popu2(cursor)
+			params.MaxParts = popu4(cursor)
 			params.BruteForceAllSlow, params.RespectCanCollide = popbool(cursor)
 			return params
 		end,
@@ -2533,7 +2555,7 @@ if Region3 ~= nil then
 
 			des = function(cursor)
 				local position = Vector3.new(pop(cursor), pop(cursor), pop(cursor))
-				local size = 0.5 * Vector3.new(pop(cursor), pop(cursor), pop(cursor))
+				local size = Vector3.new(pop(cursor), pop(cursor), pop(cursor)) * 0.5
 				return Region3.new(position - size, position + size)
 			end,
 		}
@@ -2600,11 +2622,12 @@ end
 if TweenInfo ~= nil then
 	local tweenInfoCache: SerDes<TweenInfo> = {
 		ser = function(cursor, info)
-			tryrealloc(cursor, 9)
-			pushf4(cursor, info.DelayTime)
-			pushf4(cursor, info.Time)
+			tryrealloc(cursor, 17)
+			pushf8(cursor, info.DelayTime)
+			pushf8(cursor, info.Time)
 			pushbool(cursor, info.Reverses)
-			pushvlqrealloc(cursor, info.RepeatCount)
+			local rc = info.RepeatCount
+			pushvlqrealloc(cursor, if rc >= 0 then rc * 2 else -rc * 2 - 1)
 			enumitem(Enum.EasingDirection).ser(cursor, info.EasingDirection)
 			enumitem(Enum.EasingStyle).ser(cursor, info.EasingStyle)
 		end,
@@ -2612,10 +2635,11 @@ if TweenInfo ~= nil then
 		des = function(cursor)
 			local easing = enumitem(Enum.EasingStyle).des(cursor) :: Enum.EasingStyle
 			local direction = enumitem(Enum.EasingDirection).des(cursor) :: Enum.EasingDirection
-			local repeats = popvlq(cursor)
+			local zz = popvlq(cursor)
+			local repeats = if zz % 2 == 0 then zz // 2 else -((zz + 1) // 2)
 			local reverses = popbool(cursor)
-			local duration = popf4(cursor)
-			local delayTime = popf4(cursor)
+			local duration = popf8(cursor)
+			local delayTime = popf8(cursor)
 			return TweenInfo.new(duration, easing, direction, repeats, reverses, delayTime)
 		end,
 	}
